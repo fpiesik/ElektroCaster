@@ -69,6 +69,9 @@ void seqMoveIdx(){
 void steps(){
   float color[3]={0,0.5,0.5};
   for(int s=0;s<nStrings;s++){ 
+    if(arpMute[s]==0)color[0]=0,color[1]=0.5,color[2]=0.5;
+    if(arpMute[s]==1)color[0]=0.1,color[1]=0.1,color[2]=0.5;
+   
   for(int f=0;f<nLedFrets;f++){ 
   if(stepState[s][f]==1){
     pixState[s][f][0]=pixState[s][f][0]+color[0];

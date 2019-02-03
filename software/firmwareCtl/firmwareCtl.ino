@@ -111,6 +111,8 @@ int pOrderIdx=0;
 byte kickMode=3;
 bool kickOn=0;
 
+bool arpMute[nStrings]={0,0,0,0,0,0}; 
+
 byte lastKickMode=0;
 byte bowMode=2;
 bool bowOn=0;
@@ -129,12 +131,12 @@ byte seqNStp[nStrings]={16,16,16,16,16,16};
 byte seqSpd[nStrings]={6,6,6,6,6,6};
 
 float hidAVal[22];
-bool hidDVal[19];
+bool hidDVal[19]={1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 byte hidRVal[3];
 long hidEVal[8];
 
 float lastHidAVal[22];
-bool lastHidDVal[19];
+bool lastHidDVal[19]={1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 long lastHidRVal[3];
 long lastHidEVal[8];
 

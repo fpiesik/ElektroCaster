@@ -103,6 +103,18 @@ void loop() {
     lastHidDVal[5] = hidDVal[5];
   }
 
+  for(byte s=0;s<nStrings;s++){
+    byte pO=13;
+    if(hidDVal[pO+s]!=lastHidDVal[pO+s]){
+      if(hidDVal[pO+s]==0)arpMute[nStrings-s-1]=!arpMute[nStrings-s-1];
+      lastHidDVal[pO+s] = hidDVal[pO+s];
+//      Serial.print("mute ");
+//      Serial.print(nStrings-s-1);
+//      Serial.print(" ");
+//      Serial.println(arpMute[nStrings-s-1]);
+    }
+  }
+
   if(hidAVal[16]!=lastHidAVal[16])sndDelay(0,hidAVal[16]),lastHidAVal[16] = hidAVal[16];
   if(hidAVal[12]!=lastHidAVal[12])sndDelay(1,hidAVal[12]),lastHidAVal[12] = hidAVal[12];
   if(hidAVal[18]!=lastHidAVal[18])sndDelay(2,hidAVal[18]),lastHidAVal[18] = hidAVal[18];

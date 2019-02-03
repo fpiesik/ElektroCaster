@@ -59,11 +59,13 @@ void updSeq(){
           strNote(s,0);
           lStr[s]=0;
         }
-        if(rowUsed[s]>0&&stepState[s][seqIdx[s]]>0){
-          strNote(s,stepState[s][seqIdx[s]]);
-          lStr[s]=1;
+        if(arpMute[s]==0){
+          if(rowUsed[s]>0&&stepState[s][seqIdx[s]]>0){
+            strNote(s,stepState[s][seqIdx[s]]);
+            lStr[s]=1;
+          }
+          if(stepState[s][seqIdx[s]]==1&&rowUsed[s]>0&&kickMode==3)kickup(s);
         }
-        if(stepState[s][seqIdx[s]]==1&&rowUsed[s]>0&&kickMode==3)kickup(s);
       }
     }
   }
