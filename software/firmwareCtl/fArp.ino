@@ -12,7 +12,7 @@ void mkArp(byte aM){
 
   //calculate size of the sequence
   for(int s=0;s<nStrings;s++){
-    if(rowUsed[s]>0)arpSize=arpSize+arpRpt[s];
+    if(strUsed[s]>0)arpSize=arpSize+arpRpt[s];
   }
   
   int arpIdx=0;
@@ -20,7 +20,7 @@ void mkArp(byte aM){
   //-----make arp sequence by string order
   if(orderSrc==0){
     for(int s=0;s<nStrings;s++){
-      if(rowUsed[s]>0){
+      if(strUsed[s]>0){
         for(int r=0;r<arpRpt[s];r++){
           arpSeq[arpIdx]=s;
           arpIdx++;
@@ -35,7 +35,7 @@ void mkArp(byte aM){
     for(int i=0;i<arpSize;i++){
       int skipped=0;
       arpSeq[i]=pOrder[pOrderIdx-i-skip];
-      if(rowUsed[arpSeq[i]]==0)skipped=1;
+      if(strUsed[arpSeq[i]]==0)skipped=1;
       for(int r=1;r<=i;r++){
         if(arpSeq[i]==arpSeq[i-r])skipped=1;
       }
@@ -71,12 +71,4 @@ void mkArp(byte aM){
   for(int s=0;s<nStrings;s++){
   seqNStp[s]=arpSize;  
   }
-}
-
-void ersSteps(){
-  for(int s=0;s<nStrings;s++){
-    for(int f=0;f<nLedFrets;f++){
-      stepState[s][f]=0;    
-    }
-  } 
 }

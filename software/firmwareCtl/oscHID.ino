@@ -4,7 +4,7 @@ void rcvHidA(byte idx, int value){
   Serial.print(" ");
   Serial.println(value);
   sndDisp(0,idx,value);
-  hidAVal[idx]=value/1023.0;
+  hidAVal[idx]=value/200.0;
 }
 
 void rcvHidD(byte idx, int value){
@@ -28,8 +28,10 @@ void rcvHidE(byte idx, long value){
   Serial.print(idx);
   Serial.print(" ");
   Serial.println(value);
-  sndDisp(3,idx,value);
-  hidEVal[idx]=value;
+  hidEVal4[idx]=hidEVal4[idx]+value;
+  hidEVal[idx]=hidEVal4[idx]/4;
+  sndDisp(3,idx,hidEVal[idx]);
+  
 }
 
 void sndDisp(byte kind, byte idx, long val){
@@ -37,10 +39,10 @@ void sndDisp(byte kind, byte idx, long val){
   outbound.addByte(kind);
   outbound.addByte(idx);
   outbound.addLong(val);
-  outbound.streamPacket(&Serial3);
+  outbound.streamPacket(&Serial4);
 }
 
 void sndGetHid(){
   outbound.beginPacket("g");
-  outbound.streamPacket(&Serial3);
+  outbound.streamPacket(&Serial4);
 }

@@ -8,7 +8,7 @@ void serialEvent6() {
       drwVal(kind,idx,val);
     }
     if (inbound.fullMatch("g")) {
-      sendAllNew();
+      //sendAllNew();
     }
   }
 }

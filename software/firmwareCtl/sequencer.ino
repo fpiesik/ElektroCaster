@@ -1,39 +1,46 @@
 float pixState[nStrings][nLedFrets][3];
 
 void updateSteps(){
-static byte lastRowUsed[6];
-//readFretboard();
+//static byte lastStrUsed[6];
 for(int s=0;s<nStrings; s++){
-  if(lastRowUsed[s]!=rowUsed[s]&&rowUsed[s]>0)stepState[s][rowUsed[s]]=!stepState[s][rowUsed[s]];
-  lastRowUsed[s]=rowUsed[s];
+  if(lastStrUsed[s]!=strUsed[s]&&strUsed[s]>0)stepState[s][strUsed[s]]=!stepState[s][strUsed[s]];
+  //lastStrUsed[s]=strUsed[s];
   }
 }
 
 void updNStp(){
-static byte lastRowUsed[6];
+//static byte lastStrUsed[6];
 //readFretboard();
 for(int s=0;s<nStrings; s++){
-  if(lastRowUsed[s]!=rowUsed[s]&&rowUsed[s]>0)seqNStp[s]=rowUsed[s];
-  lastRowUsed[s]=rowUsed[s];
+  if(lastStrUsed[s]!=strUsed[s]&&strUsed[s]>0)seqNStp[s]=strUsed[s];
+  //lastStrUsed[s]=strUsed[s];
   }
 }
 
 void updSeqSpd(){
-static byte lastRowUsed[6];
+//static byte lastStrUsed[6];
 //readFretboard();
 for(int s=0;s<nStrings; s++){
-  if(lastRowUsed[s]!=rowUsed[s]&&rowUsed[s]>0)seqSpd[s]=rowUsed[s];
-  lastRowUsed[s]=rowUsed[s];
+  if(lastStrUsed[s]!=strUsed[s]&&strUsed[s]>0)seqSpd[s]=strUsed[s];
+  //lastStrUsed[s]=strUsed[s];
   }
 }
 
 void eraseSteps(){
-static byte lastRowUsed[6];
+//static byte lastStrUsed[6];
 //readFretboard();
 for(int s=0;s<nStrings; s++){
-  if(lastRowUsed[s]!=rowUsed[s]&&rowUsed[s]>0)stepState[s][rowUsed[s]]=0;
-  lastRowUsed[s]=rowUsed[s];
+  if(lastStrUsed[s]!=strUsed[s]&&strUsed[s]>0)stepState[s][strUsed[s]]=0;
+  //lastStrUsed[s]=strUsed[s];
   }
+}
+
+void ersSteps(){
+  for(int s=0;s<nStrings;s++){
+    for(int f=0;f<nLedFrets;f++){
+      stepState[s][f]=0;    
+    }
+  } 
 }
 
 void seqGrid(){
@@ -85,10 +92,14 @@ void seqMerge(){
   for(int f=0;f<nLedFrets;f++){ 
   if(pixState[s][f][0]>1)pixState[s][f][0]=1; 
   if(pixState[s][f][1]>1)pixState[s][f][1]=1; 
-  if(pixState[s][f][2]>1)pixState[s][f][2]=1; 
-  pixels.setPixelColor(pixPos[s][f], pixels.Color(cComp(0,pixState[s][f][0]),cComp(1,pixState[s][f][1]),cComp(2,pixState[s][f][2])));
-  //setPixel(pixPos[s][f], cComp(0,pixState[s][f][0]),cComp(1,pixState[s][f][1]),cComp(2,pixState[s][f][2]));
-  }}
+  if(pixState[s][f][2]>1)pixState[s][f][2]=1;
+  float c[3];
+  c[0]=pixState[s][f][0];
+  c[1]=pixState[s][f][1];
+  c[2]=pixState[s][f][2];
+  pixel(s,f,c); 
+  }
+  }
 }
 void mkFrame(){
   for(int s=0;s<nStrings;s++){ 

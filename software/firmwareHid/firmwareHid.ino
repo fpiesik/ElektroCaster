@@ -36,14 +36,14 @@ int lastAVal[nAnalog];
 bool dVal[nDigital];
 bool lastDVal[nDigital];
 
-long pos0 = -999;
-long pos1 = -999;
-long pos2 = -999;
-long pos3 = -999;
-long pos4 = -999;
-long pos5 = -999;
-long pos6 = -999;
-long pos7 = -999;
+long pos0 = 0;
+long pos1 = 0;
+long pos2 = 0;
+long pos3 = 0;
+long pos4 = 0;
+long pos5 = 0;
+long pos6 = 0;
+long pos7 = 0;
 
 long newEnc0,newEnc1,newEnc2,newEnc3,newEnc4,newEnc5,newEnc6,newEnc7;
 
@@ -51,21 +51,23 @@ int rsVal[12]={341,231,163,93,960,916,855,771,679,608,507,404};
 int rsWin=20;
 byte rsState[3]={0,0,0};
 byte lastRsState[3]={255,255,255};
+int waitS=50;
 
 void setup() {
   Serial.begin(115200);
-  Serial6.begin(500000);
-  u8g2.begin();
-  u8g2.clearBuffer();
-  draw();
-  u8g2.sendBuffer();
-
+  Serial6.begin(115200);
   for (int i = 0; i < nDigital; i++) {
     pinMode(dPin[i], INPUT);
     digitalWrite(dPin[i], HIGH);
   }
-  analogReadAveraging(400);
+  analogReadAveraging(200);
   //analogReadResolution(12);
+u8g2.begin();
+delay (2000);
+u8g2.clearBuffer();
+draw();
+u8g2.sendBuffer();
+sendAll();
 }
 
 void loop() {
@@ -73,20 +75,10 @@ void loop() {
     dVal[i] = digitalRead(dPin[i]);
   }
   
-//  for (int i = 0; i < nAnalog; i++) {
-//    int average = 0;
-//    for (int n=0; n < aSmpl; n++) {
-//      average = average + analogRead(aPin[i]);
-//    }
-//    aVal[i] = average/aSmpl;
-//  }
-//}
   for (int i = 0; i < nAnalog; i++) {
     aVal[i]=analogRead(aPin[i]);
     }
 
- 
-  
   newEnc0 = enc0.read();
   newEnc1 = enc1.read();
   newEnc2 = enc2.read();
@@ -104,5 +96,6 @@ void loop() {
       }
     }
   }
+  sendAllNew();
 
 }

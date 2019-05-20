@@ -1,15 +1,10 @@
 void updDisp(){
+  mkColors();
   if(frmCnt!=lastFrmCnt){
-    if(opmode==1&&dispMode==2&&editMode==1)updateSteps();
-    if(opmode==1&&dispMode==2&&editMode==2)updNStp();
-    if(opmode==1&&dispMode==2&&editMode==3)updSeqSpd();
-    if(dispMode==2)mkFrame();
-    if(dispMode==1){
-      if(shift==1)chRoot(),chScale();
-      dispScales();  
-    }
     if(dispMode==4){
-      dispMidiTones();
+      if(nDispSrc==1&&NotesOrTones==0)dispMidiTones();
+      if(nDispSrc==1&&NotesOrTones==1)dispMidiNotes();
+      if(nDispSrc==0)dispScale();
       if(arpSize==0)mkArp(arpMode);
     }
     if(dispMode==5){
@@ -20,29 +15,58 @@ void updDisp(){
       mkFrame();
       if(arpSize==0)mkArp(arpMode);
     }
-    pixels.show();
+    FastLED.show();
     lastFrmCnt=frmCnt;
     gotOsc=0;
   }
 }
 
-
+void rstLghtHold(){
+  for(int i=0;i<12;i++){
+    lastMidiTones[i]=0;
+  }
+  for(int i=0;i<128;i++){
+    lastMidiNotes[i]=0;
+  }
+}
 void ton(byte ton, float color[3]){
-for(int i=0;i<nStrings;i++){  
-for(int f=0;f<nLedFrets;f++){
-  byte fret=tuning[i]+f;
-if(fret%12==ton)pixels.setPixelColor(pixPos[i][f], pixels.Color(color[0]*redC,color[1]*greenC,color[2]*blueC));
-if(fret%12==ton)pixels.setPixelColor(pixPos[i][f], pixels.Color(cComp(0,color[0]),cComp(1,color[1]),cComp(2,color[2])));
-}}
+  for(int i=0;i<nStrings;i++){  
+    for(int f=0;f<nLedFrets;f++){
+      byte fret=tuning[i]+f;
+      if(fret%12==ton)pixel(i,f,color);
+      }
+    }
 }
 
 void pixel(byte s, byte f, float c[3]){
-  pixels.setPixelColor(pixPos[s][f], pixels.Color(cComp(0,c[0]),cComp(1,c[1]),cComp(2,c[2])));
+  frtPix[pixPos[s][f]]=CRGB(c[2]*blueC, c[0]*redC, c[1]*greenC);
 }
+
 void fret(byte f, float c[3]){
-  for(int i=0;i<nStrings;i++){  
-  pixels.setPixelColor(pixPos[i][f], pixels.Color(cComp(0,c[0]),cComp(1,c[1]),cComp(2,c[2])));
+  for(int i=0;i<nStrings;i++){ 
+    pixel(i,f,c); 
   }
+}
+
+
+void dispScale(){
+  for(int fret=0;fret<nLedFrets;fret++){
+    for(int s=0;s<nStrings;s++){ 
+      byte note=tuning[s]+fret;
+      byte idx=(note+12-rootNote)%12;
+      if(frtGrids[frtGrid][idx]==1){
+        trgtC[s][fret][0]=tnClrs[idx][0];
+        trgtC[s][fret][1]=tnClrs[idx][1];
+        trgtC[s][fret][2]=tnClrs[idx][2];
+        }
+      else{
+        trgtC[s][fret][0]=0;
+        trgtC[s][fret][1]=0;
+        trgtC[s][fret][2]=0;
+        }
+    }  
+  }
+  lightSlew();
 }
 
 void dispMidiTones(){
@@ -55,21 +79,22 @@ void dispMidiTones(){
   for(int fret=0;fret<nLedFrets;fret++){
     for(int i=0;i<nStrings;i++){  
       byte note=tuning[i]+fret;
-      //HSBtoRGB(n%12/12.0);
-      HSBtoRGB((note-rootNote)%12/12.0);
-      if(fret<nLedFrets&&midiTones[note%12]>0){
-        trgtC[i][fret][0]=hsbRGB[0];
-        trgtC[i][fret][1]=hsbRGB[1];
-        trgtC[i][fret][2]=hsbRGB[2];
+      int idx=(note-rootNote)%12;
+      
+      if(lghtHold==1 && lastMidiTones[note%12]>0){
+        trgtC[i][fret][0]=0.2;
+        trgtC[i][fret][1]=0.2;
+        trgtC[i][fret][2]=0.2;
       }
-      if(fret<nLedFrets&&midiTones[note%12]==0){
-        float bright=0;
-        byte idx=(note+12-rootNote)%12;
-        if(idx==0)bright=0.35;
-        if(idx!=0)bright=0.04;
-        trgtC[i][fret][0]=pianoRollC[idx][0]*bright;
-        trgtC[i][fret][1]=pianoRollC[idx][1]*bright;
-        trgtC[i][fret][2]=pianoRollC[idx][2]*bright;
+      if(midiTones[note%12]>0){
+        trgtC[i][fret][0]=tnClrs[idx][0];
+        trgtC[i][fret][1]=tnClrs[idx][1];
+        trgtC[i][fret][2]=tnClrs[idx][2];
+      }
+      if(midiTones[note%12]==0 && lastMidiTones[note%12]==0){
+        trgtC[i][fret][0]=0;
+        trgtC[i][fret][1]=0;
+        trgtC[i][fret][2]=0;
       }
     }
   }
@@ -80,20 +105,22 @@ void dispMidiNotes(){
   for(int fret=0;fret<nLedFrets;fret++){
     for(int i=0;i<nStrings;i++){  
       byte note=tuning[i]+fret;
-      HSBtoRGB((note-rootNote)%12/12.0);
-      if(midiNotes[note]>0){
-        trgtC[i][fret][0]=hsbRGB[0];
-        trgtC[i][fret][1]=hsbRGB[1];
-        trgtC[i][fret][2]=hsbRGB[2];
+      int idx=(note-rootNote)%12;
+      
+      if(lghtHold==1 && lastMidiNotes[note]>0){
+        trgtC[i][fret][0]=0.2;
+        trgtC[i][fret][1]=0.2;
+        trgtC[i][fret][2]=0.2;
       }
-      if(fret<nLedFrets&&midiNotes[note]==0){
-        float bright;
-        int idx=note-rootNote;
-        if(idx%12==0)bright=0.35;
-        if(idx%12!=0)bright=0.04;
-        trgtC[i][fret][0]=pianoRollC[idx%12][0]*bright;
-        trgtC[i][fret][1]=pianoRollC[idx%12][1]*bright;
-        trgtC[i][fret][2]=pianoRollC[idx%12][2]*bright;
+      if(midiNotes[note]>0){
+        trgtC[i][fret][0]=tnClrs[idx][0];
+        trgtC[i][fret][1]=tnClrs[idx][1];
+        trgtC[i][fret][2]=tnClrs[idx][2];
+      }
+      if(midiNotes[note]==0 && lastMidiNotes[note]==0){
+        trgtC[i][fret][0]=0;
+        trgtC[i][fret][1]=0;
+        trgtC[i][fret][2]=0;
       }
     }
   }
@@ -101,55 +128,39 @@ lightSlew();
 }
 
 
+
 void lightSlew(){
-  float slew=0.6; //smaller=faster
-  float thrsh=0.05;
+  static float c[nStrings][nLedFrets][3]; 
+  float slew=0.25; //smaller=faster
+  float thrsh=0.1;
   for(int s=0;s<nStrings;s++){  
     for(int f=0;f<nLedFrets;f++){
-      float c[3];
       if(trgtC[s][f][0]<actC[s][f][0])actC[s][f][0]=actC[s][f][0]*slew;
-      if(actC[s][f][0]<thrsh)actC[s][f][0]=0;
+      if(actC[s][f][0]<=thrsh)actC[s][f][0]=0;
       if(trgtC[s][f][0]>=actC[s][f][0])actC[s][f][0]=trgtC[s][f][0];
 
       if(trgtC[s][f][1]<actC[s][f][1])actC[s][f][1]=actC[s][f][1]*slew;
-      if(actC[s][f][1]<thrsh)actC[s][f][1]=0;
+      if(actC[s][f][1]<=thrsh)actC[s][f][1]=0;
       if(trgtC[s][f][1]>=actC[s][f][1])actC[s][f][1]=trgtC[s][f][1];
 
       if(trgtC[s][f][2]<actC[s][f][2])actC[s][f][2]=actC[s][f][2]*slew;
-      if(actC[s][f][2]<thrsh)actC[s][f][2]=0;
+      if(actC[s][f][2]<=thrsh)actC[s][f][2]=0;
       if(trgtC[s][f][2]>=actC[s][f][2])actC[s][f][2]=trgtC[s][f][2];
-      
-      c[0]=actC[s][f][0];
-      c[1]=actC[s][f][1];
-      c[2]=actC[s][f][2];
 
-      pixels.setPixelColor(pixPos[s][f], pixels.Color(cComp(0,c[0]),cComp(1,c[1]),cComp(2,c[2])));
+      //if(c[s][f][0]!=actC[s][f][0] || c[s][f][1]!=actC[s][f][1] || c[s][f][2]!=actC[s][f][2]){
+        pixel(s,f,actC[s][f]);
+//        c[s][f][0]=actC[s][f][0];
+//        c[s][f][1]=actC[s][f][1];
+//        c[s][f][2]=actC[s][f][2];
+      //}
     }
   }
 }
 
 
-byte cComp(byte color,float value){
-  byte out;
-  if(color==0)out=redC*value;
-  if(color==1)out=greenC*value;
-  if(color==2)out=blueC*value;
-  if(out==0&&value>0)out=1;
-  return out;
-}
-
-
-
-
 
 void ledsClr(){
-  for(int i=0;i<NUMPIXELS;i++){  
-  pixels.setPixelColor(i, pixels.Color(0,0,0));
-  }
-}
-
-void ledsOff(){
-  for(int i=0;i<NUMPIXELS;i++){  
-    pixels.setPixelColor(i, pixels.Color(0,0,0)); 
+  for(int i=0;i<NUMPIXELS;i++){
+    frtPix[i]=CRGB(0, 0, 0);
   }
 }

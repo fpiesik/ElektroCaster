@@ -1,102 +1,143 @@
-void loop(void){
+void serialEvent5(){
+        static int incoming;
+        byte sbyte = Serial5.read();
+        //Serial.write(serbyte);
+        if (sbyte > 199 && sbyte <= 255) incoming = sbyte - 200;
+
+//        if (incoming == 12) usbMIDI.sendRealTime(usbMIDI.Clock);
+//        if (incoming == 13) usbMIDI.sendRealTime(usbMIDI.Start);
+//        if (incoming == 14) usbMIDI.sendRealTime(usbMIDI.Stop);
+        //if (incoming == 17)sndNotes();
+
+        if (incoming == 0){
+          byte a;
+          byte b;
+          while(Serial5.available() == 0);
+          a=Serial5.read();
+          while(Serial5.available() == 0);
+          b=Serial5.read();
+          seqHit(a, b/199.0);
+          incoming = -1;
+        }
+         
+        if (incoming == 1){
+          byte a;
+          byte b;
+          while(Serial5.available() == 0);
+          a=Serial5.read();
+          while(Serial5.available() == 0);
+          b=Serial5.read();
+          //strFret(a, b);
+          strState[a]=b;
+          incoming = -1;
+        }
+
+        if (incoming == 7){
+          byte a;
+          byte b;
+          while(Serial5.available() == 0);
+          a=Serial5.read();
+          while(Serial5.available() == 0);
+          b=Serial5.read();
+          float sclVal=scale(b/199.0,1,sclEnvA[a]);
+          chEnvA(a,sclVal);
+          incoming = -1;
+        }
+
+        if (incoming == 8){
+          byte a;
+          byte b;
+          while(Serial5.available() == 0);
+          a=Serial5.read();
+          while(Serial5.available() == 0);
+          b=Serial5.read();
+          float sclVal=scale(b/199.0,1,sclEnvF[a]);
+          chEnvF(a,sclVal);
+          incoming = -1;
+        }
+
+        if (incoming == 9){
+          byte a;
+          byte b;
+          while(Serial5.available() == 0);
+          a=Serial5.read();
+          while(Serial5.available() == 0);
+          b=Serial5.read();
+          valFilter[a]=scale(b/199.0,1,sclFilter[a]);
+          chFilter(a,valFilter[a]);
+          incoming = -1;
+        }
+
+        if (incoming == 15){
+          byte a;
+          byte b;
+          while(Serial5.available() == 0);
+          a=Serial5.read();
+          while(Serial5.available() == 0);
+          b=Serial5.read();
+          valFX[a]=scale(b/199.0,1,sclFX[a]);
+          chFX(a,valFX[a]);
+          incoming = -1;
+        }
+
+        if (incoming == 16){
+           byte a;
+           float b;
+           while(Serial5.available() == 0);
+           a=Serial5.read();
+           while(Serial5.available() == 0);
+           b=Serial5.read();         
+           valLfo1[a]=scale(b/199.0,1,sclLfo1[a]);
+           for(int i=0;i<nStrings;i++){
+            chLfo1(a,valLfo1[a],i);
+           }
+          incoming = -1;
+          }
+        
+        
+        if (sbyte <= 199){
+                
+          if (incoming == 2) chOpMode(sbyte);
+          if (incoming == 3) chDispMode(sbyte);
+          if (incoming == 4) chKickMode(sbyte);
+          if (incoming == 5) chBowMode(sbyte);
+          if (incoming == 6) bowOn=(sbyte);
+
+          if (incoming == 11){
+            float val=sbyte/199.0;
+            val=val*val;
+            ampOut.gain(val+0.0001);
+            Serial.println("gain: ");
+            Serial.println(val);
+          }      
+}
+}
+
+void loop(){
   usbMIDI.read();
 
-  if (inbound.parseStream( &Serial5 ) ) {
-    
-    if (inbound.fullMatch("opMode") ) {
-      chOpMode(inbound.nextByte());
+
+//---Do control functions-----
+if (millis()-ctlTimer > ctlInt){ 
+  for(int i=0;i<nStrings;i++){
+    if(strState[i]!=lastStrState[i]){
+      strFret(i,strState[i]);
+      lastStrState[i]=strState[i];
     }
-    if (inbound.fullMatch("dispMode") ) {
-      chDispMode(inbound.nextByte());
-    }
-    if (inbound.fullMatch("kickMode") ) {
-      chKickMode(inbound.nextByte());
-    }
-    if (inbound.fullMatch("bowMode") ) {
-      chBowMode(inbound.nextByte());
-    }
-    if (inbound.fullMatch("bowOn") ) {
-      bowOn=(inbound.nextByte());
-    }
-    
-    if (inbound.fullMatch("seqHit")) {
-      byte str=inbound.nextByte();
-      float val=inbound.nextFloat();
-      seqHit(str, val);
-    }
-    if (inbound.fullMatch("strFret")) {
-      byte str=inbound.nextByte();
-      float val=inbound.nextFloat();
-      strFret(str, val);
-    }
-    if (inbound.fullMatch("env1")) {
-      byte para=inbound.nextByte();
-      float val=inbound.nextFloat();
-      valEnv1[para]=scale(val,0,sclEnv1[para]);
-      chEnv1(para,valEnv1[para]);
-    }
-    if (inbound.fullMatch("env2")) {
-      byte para=inbound.nextByte();
-      float val=inbound.nextFloat();
-      valEnv2[para]=scale(val,0,sclEnv2[para]);
-      chEnv2(para,valEnv2[para]);
-    }
-    if (inbound.fullMatch("fil")) {
-      byte para=inbound.nextByte();
-      float val=inbound.nextFloat();
-      valFilter[para]=scale(val,1,sclFilter[para]);
-      chFilter(para,valFilter[para]);
-    }
-    if (inbound.fullMatch("vol")) {
-      float val=inbound.nextFloat();
-      ampOut.gain(val*val);
-    }
-    if (inbound.fullMatch("c")) {
-      usbMIDI.sendRealTime(usbMIDI.Clock);
-    }
-    if (inbound.fullMatch("start")) {
-      usbMIDI.sendRealTime(usbMIDI.Start);
-    }
-    if (inbound.fullMatch("stop")) {
-      usbMIDI.sendRealTime(usbMIDI.Stop);
-    }
-    if (inbound.fullMatch("del")) {
-      byte para=inbound.nextByte();
-      float val=inbound.nextFloat();
-      valDelay[para]=scale(val,1,sclDelay[para]);
-      chDelay(para,valDelay[para]);
-    }
-    if (inbound.fullMatch("lfo1")) {
-      byte para=inbound.nextByte();
-      float val=inbound.nextFloat();
-      valLfo1[para]=scale(val,1,sclLfo1[para]);
-      chLfo1(para,valLfo1[para]);
-    }                   
-    if (inbound.fullMatch("g")) {
-      sndNotes();
-    }   
-    if (inbound.fullMatch("cc")) {
-      byte para=inbound.nextByte();
-      byte val=inbound.nextByte();
-      usbMIDI.sendControlChange(para, val, 1);
-    }
-    if (inbound.fullMatch("trnsp")) {
-      byte para=inbound.nextByte();
-      byte val=inbound.nextByte();
-      if(val==1)usbMIDI.sendNoteOn(2, 127, 16);
-      if(val==0)usbMIDI.sendNoteOff(2, 0, 16);
-    }
- }
-       
+  }
+  ctlTimer=millis();
+}
+
+
 if(bowOn!=lastBowOn){
 for (int i=0; i<nStrings; i++) {
-    if(bowOn==0)amps[i]->gain(0);
-    if(bowOn==1&&strState[i]>0)amps[i]->gain(50);
+    if(bowOn==0)cAmps[i]->gain(0.0001);
+    if(bowOn==1&&strState[i]>0)cAmps[i]->gain(50);
   }
   lastBowOn=bowOn;
 }
    
-if(1) {
+if(0) {
   if(millis() - last_time >= 3000) {
     Serial.print("Proc = ");
     Serial.print(AudioProcessorUsage());

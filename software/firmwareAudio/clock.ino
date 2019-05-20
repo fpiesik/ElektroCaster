@@ -1,12 +1,18 @@
 static long mClock=0;
 
 void midiClock() {
-sndClock(mClock);
-mClock++;
+//sndClock(mClock);
+//mClock++;
+Serial5.write(202);
+delayMicroseconds(waitS);
+//sndNotes();
+sndCC();
 }
 
 void midiStart() {
-mClock=-1;
+//mClock=-1;
+Serial5.write(203);
+delayMicroseconds(waitS);
 //sndClock(mClock);
 }
 
@@ -15,6 +21,8 @@ void midiContinue() {
 }
 
 void midiStop() {
-mClock=0;
-sndClock(mClock);
+Serial5.write(204);
+delayMicroseconds(waitS);
+//mClock=0;
+//sndClock(mClock);
 }
