@@ -1,7 +1,7 @@
 void setup() {
 
 Serial.begin(115200);
-Serial1.begin(250000);
+Serial1.begin(500000);
 Serial3.begin(500000);
 
 

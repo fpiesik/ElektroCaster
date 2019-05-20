@@ -272,21 +272,24 @@ float envF[6]={0,50,0,200,0.3,80};
 
 void chOpMode(byte data){
   opmode=data;
-  for (int i=0; i<nStrings; i++) {
-    if(opmode==0)envs[i]->sustain(1);
-    if(opmode>0)envs[i]->sustain(envP[4]);
-    
-    if(opmode==0)envs2[i]->sustain(1);
-    if(opmode>0)envs2[i]->sustain(envP[4]);
-    
+  for (int i=0; i<nStrings; i++){
+    //if(opmode==0)envs[i]->sustain(1);
+    //if(opmode==0)envs2[i]->sustain(1);
+    //if(opmode>0)envs2[i]->sustain(envP[4]);
     if(opmode==0){
       envs[i]->sustain(1);
       envs[i]->noteOn();
-      
       envs2[i]->sustain(1);
       envs2[i]->noteOn();
     }
+    if(opmode>0){
+      envs[i]->sustain(envP[4]);
+      envs[i]->noteOff();
+      envs2[i]->sustain(envP[4]);
+      envs2[i]->noteOff();
+    }
   }
+  
   Serial.print("opmode-t: ");
   Serial.println(opmode);
   }

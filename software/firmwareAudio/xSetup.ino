@@ -1,7 +1,7 @@
 void setup(void){
   
   Serial.begin(115200);
-  Serial5.begin(250000);
+  Serial5.begin(500000);
 
 
   AudioMemory(2000);

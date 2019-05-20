@@ -16,9 +16,11 @@ void serialEvent1() {
     }
     if ( inbound.fullMatch("f") ) {
       //sndGetHid();
-      if(gotOsc>0&&frmCnt>lastFrmCnt)updDisp();
-      gotOsc++;
-      lastFrmCnt=frmCnt;
+      if(frmCnt>lastFrmCnt){
+        updDisp();
+        lastFrmCnt=frmCnt;
+      }
+      
     }
   }
  }
@@ -47,8 +49,6 @@ void serialEvent3() {
       rcvHidE(idx,val);
     }
     if (inbound.fullMatch("f")) {
-      if(gotOsc>0)updDisp();
-      gotOsc++;
       sndGetMidi();
     }
   }
