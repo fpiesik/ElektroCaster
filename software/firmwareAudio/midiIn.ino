@@ -34,10 +34,14 @@ void rcvCC(byte ch, byte cc, byte data) {
     }
   }
 
-  for(int n=0;n<6;n++){
-    if(cc==ccEnv1[n]){
+  for(int n=0;n<7;n++){
+    if(cc==ccEnvA[n]){
       float sclVal=scale(val,1,sclEnvA[n]);
       chEnvA(n,sclVal);
+    }
+    if(cc==ccEnvF[n]){
+      float sclVal=scale(val,1,sclEnvF[n]);
+      chEnvF(n,sclVal);
     }
   }
 }

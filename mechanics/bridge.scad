@@ -1,10 +1,10 @@
 include <parameter.scad>;
 
-bridge(2);
+//bridge(1);
 
 //bockCut();
 //scrw(3);
-//bock();
+bock();
 
 //translate([0,0,0])difference(){
 //bridgeMount();
@@ -44,7 +44,7 @@ translate([0,0,z-headZ])cylinder(d1=dia,d2=headD,h=headZ);
 
 module bockCut(){
 $fn=16;
-t=0.2;
+t=0.4;
 rotate([0,0,0])
 for(i=[0:nStrings-1]){
 translate([strStrt,i*strDistB-strSpanB/2,0]){
@@ -101,6 +101,12 @@ translate([yA/2,x/2+strSpanB/2+strDistB/2,-z+topZ+0.001])scrw(scrwD);
 translate([yA/2,x/2-(strSpanB/2+strDistB/2),-z+topZ+0.001])scrw(scrwD);
 }
 
+translate([mntY/2-StrMountT/2,0,zStrM-topZ]){
+translate([yA/2,x/2,-z+topZ+0.001])scrw(scrwD);
+translate([yA/2,x/2+strSpanB/2+strDistB/2,-z+topZ+0.001])scrw(scrwD); 
+translate([yA/2,x/2-(strSpanB/2+strDistB/2),-z+topZ+0.001])scrw(scrwD);
+}
+
 translate([0,x/2,-5])bockCut();
 
 }
@@ -144,6 +150,10 @@ translate([0,scrwOff,0]){
 translate([0,0,-bottomZ-0.001])scrw(scrwTD);
 translate([-(strSpanB/2+strDistB/2),0,-bottomZ-0.001])scrw(scrwTD);
 }
+translate([0,-(mntY/2-StrMountT/2),0]){
+translate([0,0,-bottomZ-0.001])scrw(scrwTD);
+translate([-(strSpanB/2+strDistB/2),0,-bottomZ-0.001])scrw(scrwTD);
+}
 
 if(part==1)translate([0,0,(z-topZ)/2-bottomZ])cube([300,300,z-topZ],center=true);
 if(part==2)translate([0,0,z/2+slotXY])cube([300,300,z],center=true);
@@ -154,7 +164,7 @@ if(part==2)translate([0,0,z/2+slotXY])cube([300,300,z],center=true);
 module bock(){
 $fn=16;
 bockDia=bockSlotDia-0.4;
-z=z/2+bockDia/2-scrwHeadZ;
+z=z/2+bockDia/2-scrwHeadZ-1;
 hull(){
 translate([0,strDistB/2-bockSlotDia/2-bockSlotSpc/2,0])rotate([0,0,0])cylinder(d=bockDia,h=z-bockSlotDia/2);
 translate([0,-(strDistB/2-bockSlotDia/2-bockSlotSpc/2),0])rotate([0,0,0])cylinder(d=bockDia,h=z-bockSlotDia/2);

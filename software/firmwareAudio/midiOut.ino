@@ -7,3 +7,7 @@ void sndMidiNote(byte str,byte fret){
       //usbMIDI.sendNoteOff(lastStrState[str]+tuning[str], 0, 2, 0);
     }
 }
+
+void sndMidiCC(byte cc, byte val){
+  usbMIDI.sendControlChange(cc, val, midiCh);
+}

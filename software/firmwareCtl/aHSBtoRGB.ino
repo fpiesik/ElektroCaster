@@ -7,6 +7,15 @@ void mkColors(){
   }
 }
 
+void mkColorsHd(){
+  for(int i=0;i<120;i++){
+    HSBtoRGB(float(i/120.0));
+    tnClrsHd[i][0]=hsbRGB[0];
+    tnClrsHd[i][1]=hsbRGB[1];
+    tnClrsHd[i][2]=hsbRGB[2];
+  }
+}
+
 void HSBtoRGB(float hue) {
    float red = 0;
    float green = 0;

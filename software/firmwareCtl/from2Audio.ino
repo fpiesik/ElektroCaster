@@ -69,6 +69,14 @@ void rcvCC(byte cc, byte value){
   }
 } 
 
+void rcvStrP(byte a, byte b, byte c){
+  strP[a]=b+c/100.0;
+  Serial.print("strPitch: ");
+  Serial.print(a);
+  Serial.print(" ");
+  Serial.println(strP[a]);
+} 
+
 void strNote(byte str, float vel){
   Serial1.write(200);
   delayMicroseconds(waitS);
@@ -120,6 +128,7 @@ void sndBowMode(byte mode){
 void sndBowOn(byte mode){
   Serial1.write(206);
   Serial1.write(mode);
+  bowOn=mode;
 }
 
 void sndEnv1(byte para, float val){

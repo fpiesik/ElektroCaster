@@ -93,15 +93,26 @@ void serialEvent5(){
            }
           incoming = -1;
           }
+
+        if (incoming == 18){
+           byte a;
+           byte b;
+           while(Serial5.available() == 0);
+           a=Serial5.read();
+           while(Serial5.available() == 0);
+           b=Serial5.read();         
+          if(a==2)sndMidiCC(3,b/2);
+          incoming = -1;
+          }
         
         
         if (sbyte <= 199){
                 
-          if (incoming == 2) chOpMode(sbyte);
-          if (incoming == 3) chDispMode(sbyte);
-          if (incoming == 4) chKickMode(sbyte);
-          if (incoming == 5) chBowMode(sbyte);
-          if (incoming == 6) bowOn=(sbyte);
+          if (incoming == 2) chOpMode(sbyte),incoming = -1;
+          if (incoming == 3) chDispMode(sbyte),incoming = -1;
+          if (incoming == 4) chKickMode(sbyte),incoming = -1;
+          if (incoming == 5) chBowMode(sbyte),incoming = -1;
+          if (incoming == 6) bowOn=(sbyte),incoming = -1;
 
           if (incoming == 11){
             float val=sbyte/199.0;
@@ -109,6 +120,7 @@ void serialEvent5(){
             ampOut.gain(val+0.0001);
             Serial.println("gain: ");
             Serial.println(val);
+            incoming = -1;
           }      
 }
 }
@@ -116,6 +128,22 @@ void serialEvent5(){
 void loop(){
   usbMIDI.read();
 
+//
+//if (nFreq[0]->available()) {
+//        float note = nFreq[0]->read();
+//        float prob = nFreq[0]->probability();
+//        double mNote = base_pitch + (12.0 * log(note / base_frequency) / log(2));
+//        //Serial.printf("freq1: %3.2f | Probability: %.2f\n", note, prob);
+//        Serial.printf("mNote1: %3.2f | Probability: %.2f\n", mNote, prob);
+//    }
+//
+//if (nFreq2.available()) {
+//        float note = nFreq2.read();
+//        float prob = nFreq2.probability();
+//        double mNote = base_pitch + (12.0 * log(note / base_frequency) / log(2));
+//        //Serial.printf("freq2: %3.2f | Probability: %.2f\n", note, prob);
+//        Serial.printf("mNote2: %3.2f | Probability: %.2f\n", mNote, prob);
+//    }
 
 //---Do control functions-----
 if (millis()-ctlTimer > ctlInt){ 
@@ -126,6 +154,39 @@ if (millis()-ctlTimer > ctlInt){
     }
   }
   ctlTimer=millis();
+}
+
+if (millis()-nFrqTimer > nFrqInt){ 
+static int i=0;
+static int cntSmp;
+static int nSmp=5;
+    if (nFreq[i]->available()) {
+        float note = nFreq[i]->read();
+        float prob = nFreq[i]->probability();
+        
+        float mNote = base_pitch + (12.0 * log(note / base_frequency) / log(2));
+        if(prob>0.95){
+          strP[i]=mNote;
+          //Serial.printf("freq1: %3.2f | Probability: %.2f\n", note, prob);    
+          Serial.print(i+1);
+          Serial.print(" ");
+          Serial.printf("mNote: %3.2f | Probability: %.2f\n", mNote, prob);
+        }               
+    } 
+    cntSmp++;
+    if (cntSmp>=nSmp){
+      nFreq[i]->stop();
+      nFreq[(i+1)%nStrings]->resume();
+      cntSmp=0;
+      i++;
+      i=i%nStrings;
+    }
+    //else{
+//      nFreq[i]->stop();
+//      nFreq[(i+1)%nStrings]->resume(); 
+    //}
+  sndStrP();
+  nFrqTimer=millis();
 }
 
 

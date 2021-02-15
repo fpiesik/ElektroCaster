@@ -3,8 +3,9 @@ void setup(void){
   Serial.begin(115200);
   Serial5.begin(250000);
 
+  delay(1500);
 
-  AudioMemory(1500);
+  AudioMemory(1200);
 
   audioShield.enable();
   audioShield.volume(1);
@@ -14,6 +15,16 @@ void setup(void){
 //  midiFreq[x] = (tP / 32) * (2 ^ ((x - 9) / 12));
 //}
 
+//  nFreq6.begin(.15);
+  nFreq2.begin(.15);
+
+  for (int i=0; i<nStrings; i++) {
+    nFreq[i]->begin(0.05);
+  }
+
+  for (int i=0; i<nStrings; i++) {
+    nFreq[i]->stop();
+  }
   
   for (int i=0; i<nStrings; i++) {
     filter[i]->frequency(0);

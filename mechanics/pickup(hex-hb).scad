@@ -1,7 +1,7 @@
 include <parameter.scad>
 pickup();
 
-!rotate([0,0,0])coil();
+rotate([0,0,0])coil();
 
 
 module pickup(){

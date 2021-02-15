@@ -8,9 +8,9 @@ void readFretboard() {
       strUsed[s]=!digitalRead(strSnsPins[s]);
       if (strUsed[s]!=lastStrUsed[s]){
         strFret(s, strUsed[s]);
-        if(runSeq==0 && strUsed[s]==1){
+        if((runSeq==0||bowOn==1) && strUsed[s]==1){
           if(kickSeq==1)kickCue[s]=1;
-          strNote(s,1); 
+          if(runSeq==0)strNote(s,1); 
         }
         if(runSeq==0 && strUsed[s]==0){
         strNote(s,0); 
@@ -20,4 +20,3 @@ void readFretboard() {
     }
   }
 }
- 

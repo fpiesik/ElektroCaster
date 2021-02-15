@@ -1,15 +1,16 @@
 void serialEvent4(){    
-  serbyte = Serial4.read();
+  int incoming=-1;
+  byte serbyte = Serial4.read();
   if (serbyte > 200 && serbyte < 255) incoming = serbyte - 201;
-  if (serbyte == 255)sndGetMidi();
-  if (serbyte <= 200){      
-    Serial.print(incoming);
-    Serial.print(": ");
-    Serial.println(serbyte);
-    if (incoming <19) rcvHidD(incoming,serbyte);
-    if (incoming >=19 && incoming < 38) rcvHidA(incoming-19,serbyte);
-    if (incoming >=38 && incoming < 41) rcvHidR(incoming-38,serbyte);
-    if (incoming >=41 && incoming < 49) rcvHidE(incoming-41,serbyte-100);
+  //if (serbyte == 255)sndGetMidi();
+
+  if(incoming>=0){
+    while(Serial4.available() == 0);
+    byte val=Serial4.read();
+    if (incoming <19) rcvHidD(incoming,val),incoming=-1;
+    if (incoming >=19 && incoming < 38) rcvHidA(incoming-19,val);
+    if (incoming >=38 && incoming < 41) rcvHidR(incoming-38,val);
+    if (incoming >=41 && incoming < 49) rcvHidE(incoming-41,val-100);
   }
 }
 
@@ -17,44 +18,6 @@ void serialEvent1(){
   int incoming=-1;
   byte sbyte = Serial1.read();
   if (sbyte > 199 && sbyte <= 255) incoming = sbyte - 200;
-
-//        if (incoming == 0){ 
-//          if(frmCnt>lastFrmCnt){
-//           fine USE_WS2812SERIAL
-#include <FastLED.h>
-
-#define DATA_PIN     33   //led pin
-#define NUMPIXELS    150   
-
-#include <AsciiMassagePacker.h>
-AsciiMassagePacker outbound;  //to drive the display
-
-CRGB frtPix[NUMPIXELS];
-
-
-//constants------------------------------------- 
-const int nStrings=6; //how many Strings
-const int nLedFrets=25; //how many led frets
-
-const byte pixPos[nStrings][nLedFrets]={
-  {144,143,132,131,120,119,108,107,96,95,84,83,72,71,60,59,48,47,36,35,24,23,12,11,0},
-  {145,142,133,130,121,118,109,106,97,94,85,82,73,70,61,58,49,46,37,34,25,22,13,10,1},
-  {146,141,134,129,122,117,110,105,98,93,86,81,74,69,62,57,50,45,38,33,26,21,14,9,2},
-  {147,140,135,128,123,116,111,104,99,92,87,80,75,68,63,56,51,44,39,32,27,20,15,8,3},
-  {148,139,136,127,124,115,112,103,100,91,88,79,76,67,64,55,52,43,40,31,28,19,16,7,4},
-  {149,138,137,126,125,114,113,102,101,90,89,78,77,66,65,54,53,42,41,30,29,18,17,6,5}};
-
-
-//settings----------------------------------
-byte tuning[nStrings]={64,59,55,50,45,40};
-byte rootNote=0 ;
-int actScale=0;
-const int nScales=3;
-
- updDisp();
-//            lastFrmCnt=frmCnt;
-//          }
-//        }       
  
   if (incoming == 1){
     byte a;
@@ -64,7 +27,6 @@ const int nScales=3;
     while(Serial1.available() == 0);
     b=Serial1.read();
     rcvNote(a,b);
-    incoming = -1;
   }
 
   if (incoming == 2)midiClock();
@@ -80,19 +42,34 @@ const int nScales=3;
     b=Serial1.read();
     rcvCC(a,b);
   }
-  incoming = -1;
+    if (incoming == 6){
+    byte a;
+    byte b;
+    byte c;
+    while(Serial1.available() == 0);
+    a=Serial1.read();
+    while(Serial1.available() == 0);
+    b=Serial1.read();
+    while(Serial1.available() == 0);
+    c=Serial1.read();
+    rcvStrP(a,b,c);
+  }
 }
+
 void loop() {  
   long Millis=millis();
   readFretboard();
-  
   for(int s=0;s<nStrings;s++){
     if (Millis-kickTimer[s] >= kickDur[s] && kickState[s]==1){ 
       digitalWrite(kickupPins[s],0);
       kickState[s]=0;
     }
   }
-
+  if (Millis-debugTimer > debugInt){ 
+//    memmon();
+//    debugTimer=Millis;
+//    drwVal(2,1,0.5);
+  }
   if (millis()-intClockTimer > intClockInt){ 
     intClock();
   }
@@ -101,7 +78,7 @@ void loop() {
   cueKicks();
   }
   //control
-  if (millis()-ctlTimer > ctlInt){ 
+  if (Millis-ctlTimer > ctlInt){ 
 
   if (hidDVal[12]!=lastHidDVal[12]){
     if(hidDVal[12]==0)nDispSrc=0;
@@ -185,7 +162,7 @@ void loop() {
 
   if(hidAVal[13]!=lastHidAVal[13])sndVol(hidAVal[13]),lastHidAVal[13] = hidAVal[13];
 
-  if(hidDVal[3]!=lastHidDVal[3])bowOn=hidDVal[3],sndBowOn(hidDVal[3]),lastHidDVal[3] = hidDVal[3];
+  if(hidDVal[3]!=lastHidDVal[3])sndBowOn(hidDVal[3]),lastHidDVal[3] = hidDVal[3];
   if(hidDVal[4]!=lastHidDVal[4])kickSeq=hidDVal[4],lastHidDVal[4] = hidDVal[4];
 
   if(hidDVal[1]!=lastHidDVal[1])shift=!hidDVal[1],lastHidDVal[1] = hidDVal[1];
@@ -224,8 +201,13 @@ void loop() {
   for(int i=1;i<=nStrings;i++){
     if(hidEVal[i]!=lastHidEVal[i]){
       int s=i-1;
-      if(arpMode<=7)arpRpt[s]=arpRpt[s]+hidEVal[i]-lastHidEVal[i],lastHidEVal[i] = hidEVal[i];
-      if(arpMode>7)seqNDur[s]=seqNDur[s]+hidEVal[i]-lastHidEVal[i],lastHidEVal[i] = hidEVal[i];
+      if(dispMode==4){
+        tuning[s]=tuning[s]+hidEVal[i]-lastHidEVal[i],lastHidEVal[i] = hidEVal[i];
+      }
+      if(dispMode==6){
+        if(arpMode<=7)arpRpt[s]=arpRpt[s]+hidEVal[i]-lastHidEVal[i],lastHidEVal[i] = hidEVal[i];
+        if(arpMode>7)seqNDur[s]=seqNDur[s]+hidEVal[i]-lastHidEVal[i],lastHidEVal[i] = hidEVal[i];
+      }
     }
     //if(hidEVal[i]!=lastHidEVal[i])arpRpt[(6-i)]=abs(hidEVal[i]),lastHidEVal[i] = hidEVal[i];
   }

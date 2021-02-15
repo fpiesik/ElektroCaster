@@ -78,7 +78,7 @@ void updSeq(){
             lStr[s]=1;
           }
           //if(stepState[s][seqIdx[s]]==1&&strUsed[s]>0&&kickMode==3)kickup(s);
-          if(stepState[s][seqIdx[s]]==1&&strUsed[s]>0&&kickSeq==1)kickCue[s]=1;
+          if(stepState[s][seqIdx[s]]==1&&strUsed[s]>0&&kickSeq==1&&bowOn==0)kickCue[s]=1;
         }
       }
     }

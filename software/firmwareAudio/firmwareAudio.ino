@@ -1,14 +1,15 @@
 #include <Audio.h>
 //#include "./libs/Audio/Audio.h"
 #include <Wire.h>
-#include <SPI.h>
-#include <SD.h>
-#include <SerialFlash.h>
+//#include <SPI.h>
+//#include <SD.h>
+//#include <SerialFlash.h>
 #include <Bounce.h>
-#include <OSCBundle.h>
-#include <OSCBoards.h>
-#include <OSCMessage.h>
-#include "effect_gate.h"
+//#include <OSCBundle.h>
+//#include <OSCBoards.h>
+//#include <OSCMessage.h>
+//#include "effect_gate.h"
+#include "notefreq.h"
 //#include "libs/AudioEffectDynamics/effect_dynamics.h"
 
 const byte nStrings=6;
@@ -32,8 +33,11 @@ float tuning[nStrings]={59,54,50,45,40,35}; //{35,40,45,50,54,59};
 unsigned long ctlTimer;
 unsigned int ctlInt=10;
 
+unsigned long nFrqTimer;
+unsigned int nFrqInt=20;
+
 //ControlChangeRoutings
-byte ccFilter[4]={1,2,3,4};
+byte ccFilter[4]={53,54,55,56};
 float valFilter[4]={0,1,0,4};
 float sclFilter[4]={5000,7,3,7};
 
@@ -46,12 +50,13 @@ float sclFX[4]={1,1,1,20};
 float valLfo1[2]={60,1};
 float sclLfo1[2]={127,1};
 
-byte ccEnv1[7]={5,6,7,8,9,10,11};
+byte ccEnvA[7]={102,103,104,105,106,107,108};
+byte ccEnvF[7]={109,110,111,112,113,114,115};
 
 float sclEnvA[7]={50,1000,300,1000,1,300,1};
 float sclEnvF[7]={50,1000,300,1000,1,300,1};
 
-float strGain[nStrings]={1.7,1.2,1,1,1,1};
+float strGain[nStrings]={1.7,1.2,1,1.5,1,1};
 
 byte strState[nStrings]={0,0,0,0,0,0};
 byte lastStrState[nStrings]={0,0,0,0,0,0};
@@ -61,6 +66,9 @@ byte lastNoteState[128];
 
 byte ccState[128];
 byte lastCCState[128];
+
+float strP[nStrings];
+float lastStrP[nStrings];
 
 int tP=440.0; //tuning pitch
 
@@ -190,9 +198,16 @@ AudioEffectMultiply       mulA4;
 AudioEffectMultiply       mulA5;
 AudioEffectMultiply       mulA6;
 
-AudioEffectFreeverb       verb; 
+//AudioEffectFreeverb       verb; 
 
 AudioSynthWaveformDc     dcFEnv;
+
+AudioAnalyzeMonoFrequency nFreq1;
+AudioAnalyzeMonoFrequency nFreq2;
+AudioAnalyzeMonoFrequency nFreq3;
+AudioAnalyzeMonoFrequency nFreq4;
+AudioAnalyzeMonoFrequency nFreq5;
+AudioAnalyzeMonoFrequency nFreq6;
 
 AudioEffectEnvelope      *aEnvs[nStrings] = {
   &aEnv1, &aEnv2, &aEnv3,
@@ -242,6 +257,17 @@ AudioMixer4   *fBiasM[nStrings]={
   &fBiasM4, &fBiasM5, &fBiasM6
 };
 
+AudioAnalyzeMonoFrequency *nFreq[nStrings]={
+  &nFreq1, &nFreq2, &nFreq3,
+  &nFreq4, &nFreq5, &nFreq6
+};
+
+AudioConnection patchCord1(inGain1, 0, nFreq1, 0);
+AudioConnection patchCord2(inGain2, 0, nFreq2, 0);
+AudioConnection patchCord3(inGain3, 0, nFreq3, 0);
+AudioConnection patchCord4(inGain4, 0, nFreq4, 0);
+AudioConnection patchCord5(inGain5, 0, nFreq5, 0);
+AudioConnection patchCord6(inGain6, 0, nFreq6, 0);
 
 AudioConnection c16(audioInput, 2, inGain1, 0);
 AudioConnection c17(audioInput, 0, inGain2, 0);
@@ -386,9 +412,9 @@ AudioConnection c275(fBiasM6, 0, filter6, 1);
 //AudioConnection c51(delay0, 0, mixer4 , 1);
 //AudioConnection c52(mixer4, 0, ampOut, 0);
 
-AudioConnection c052(mixer2, 0, verb, 0);
+//AudioConnection c052(mixer2, 0, verb, 0);
 AudioConnection c53(mixer2, 0, outMix8, 0);
-AudioConnection c053(verb, 0, outMix8, 1);
+//AudioConnection c053(verb, 0, outMix8, 1);
 AudioConnection c52(outMix8, 0, ampOut, 0);
 
 AudioConnection c1000(not0,0, outMix1,3);
@@ -421,7 +447,8 @@ AudioControlCS42448 audioShield;
 unsigned long last_time = millis();
 
 
-
+double base_frequency = 440.0;
+double base_pitch = 69.0;
 
 
 void chOpMode(byte data){
@@ -483,18 +510,4 @@ void strFret(byte str, byte fret){
   //strState[str]=data;
   //sndMidiNote(str,fret);
   chLfo1(2,0,str);
-}
-
-void sndCC(){
-  for(byte i = 0;i<=127;i++){
-    if(ccState[i]!=lastCCState[i]){
-      Serial5.write(205);
-      delayMicroseconds(waitS);
-      Serial5.write(i);
-      delayMicroseconds(waitS);
-      Serial5.write(ccState[i]);
-      delayMicroseconds(waitS);
-      lastCCState[i]=ccState[i];  
-    }
-  }
 }

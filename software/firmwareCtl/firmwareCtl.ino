@@ -1,16 +1,20 @@
- #include <OSCMessage.h>
 #include <WS2812Serial.h>
 #define USE_WS2812SERIAL
 #include <FastLED.h>
+//#include <U8g2lib.h>
+#include <Wire.h>
+//#include <Arduino.h>
 
 #define DATA_PIN     33   //led pin
 #define NUMPIXELS    150   
 
-#include <AsciiMassagePacker.h>
-AsciiMassagePacker outbound;  //to drive the display
+//#include <AsciiMassagePacker.h>
+//AsciiMassagePacker outbound;  //to drive the display
 
 CRGB frtPix[NUMPIXELS];
 
+//display-------------------------------------------------------
+//U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
 
 //constants------------------------------------- 
 const int nStrings=6; //how many Strings
@@ -31,6 +35,10 @@ byte rootNote=0 ;
 int actScale=0;
 const int nScales=3;
 
+// debug-----------------------------------------
+int dbgLvl=0; //debug level
+unsigned long debugTimer;
+unsigned int debugInt=2000;
 
 bool dispEncFnc=0;
 
@@ -62,7 +70,7 @@ byte cEnvP[6];
 int waitS=50; //wait after each serial send
 
 //ledFrets
-float bright = 0.7; //brightness
+float bright = 0.75; //brightness
 float redC = 150;  //compensate the "wood filament filter"
 float greenC= 255; //compensate the "wood filament filter"
 float blueC = 255; //compensate the "wood filament filter"
@@ -79,7 +87,7 @@ unsigned long kCueTimer;
 unsigned int kCueInt=2;
 
 //pin assignments
-const byte kickupPins[6]={23,22,21,20,19,18};
+const byte kickupPins[6]={39,38,37,36,35,34};//{23,22,21,20,19,18};
 const byte strSnsPins[nStrings]={2,3,4,5,6,7};
 
 //variables
@@ -108,9 +116,13 @@ unsigned long lastTdClock[nStrings]={0,0,0,0,0,0};
 int seqIdx[nStrings]; //index of the seq/arp (different than the tdClock?)
 int lastSeqIdx[nStrings];
 
+float strP[nStrings];
+float lastStrP[nStrings];
+
 long mClockDev;
 
 float tnClrs[12][3];
+float tnClrsHd[120][3];
 
 bool stepState[nStrings][nLedFrets];
 byte clockMode=1;
@@ -150,8 +162,8 @@ float midiTones[12];
 float lastMidiTones[12];
 
 
-bool lghtHold=1;
-bool lastLghtHold=1;
+bool lghtHold=0;
+bool lastLghtHold=0;
 bool ntLghtHold[12]; // gather incoming Notes to display
 
 float hsbRGB[3]={0,0,0};
