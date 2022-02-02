@@ -11,8 +11,11 @@ m3Dia=3.3;
 m3NutDia=6.6;
 m3NutZ=2.5;
 m3HeadZ=2;
+m3HeadDia=6;
+m2Dia=2.4;
+m2HeadZ=2;
 strDistN=7;
-strDistB=10.25;
+strDistB=10.5;
 scale=645;
 neckSlotY=500;
 

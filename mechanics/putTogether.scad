@@ -1,14 +1,11 @@
-include <slotBody.scad>;
-include <head.scad>;
-//include <bridge.scad>;
-include <body.scad>;
-include <neck.scad>;
-include <body.scad>;
-include <parameter.scad>;
-//include <fret.scad>;
-include <neck.scad>;
-include <hexPickup.scad>;
-include <kickup.scad>;
+include <skeleton/slotBody.scad>;
+//include <head/head.scad>;
+//include <bridge/bridge.scad>;
+//include <body/body.scad>;
+//include <neck/neck.scad>;
+//include <parameter.scad>;
+//include <neck/neck.scad>;
+//include <kickup_meBow/kickup.scad>;
 
 
 //color([1,0,1])fretboard(1);
@@ -16,7 +13,7 @@ include <kickup.scad>;
 //neckBack();
 //translate([0,0,-20])color([0,1,0])body();
 //projection(cut = false) slotBody();
-//slotBody();
+slotBody();
 //slotBd_spacer();
 //neck(0);
 //translate([0,neckSlotY-slotXY*2-6,0])head();

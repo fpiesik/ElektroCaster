@@ -3,44 +3,44 @@
 #include <FastLED.h>
 //#include <U8g2lib.h>
 #include <Wire.h>
-//#include <Arduino.h>
+#include <EEPROM.h>
 
 #define DATA_PIN     33   //led pin
 #define NUMPIXELS    150   
 
-//#include <AsciiMassagePacker.h>
-//AsciiMassagePacker outbound;  //to drive the display
+#include <AsciiMassagePacker.h>
+AsciiMassagePacker outbound;  //to drive the display
 
 CRGB frtPix[NUMPIXELS];
-
-//display-------------------------------------------------------
-//U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
+CRGB lastFrtPix[NUMPIXELS];
 
 //constants------------------------------------- 
 const int nStrings=6; //how many Strings
-const int nLedFrets=25; //how many led frets
+
+const int nLedFrets=23; //how many led frets
 
 const byte pixPos[nStrings][nLedFrets]={
-  {144,143,132,131,120,119,108,107,96,95,84,83,72,71,60,59,48,47,36,35,24,23,12,11,0},
-  {145,142,133,130,121,118,109,106,97,94,85,82,73,70,61,58,49,46,37,34,25,22,13,10,1},
-  {146,141,134,129,122,117,110,105,98,93,86,81,74,69,62,57,50,45,38,33,26,21,14,9,2},
-  {147,140,135,128,123,116,111,104,99,92,87,80,75,68,63,56,51,44,39,32,27,20,15,8,3},
-  {148,139,136,127,124,115,112,103,100,91,88,79,76,67,64,55,52,43,40,31,28,19,16,7,4},
-  {149,138,137,126,125,114,113,102,101,90,89,78,77,66,65,54,53,42,41,30,29,18,17,6,5}};
+{144,143,132,131,120,119,108,107,96,95,84,83,72,71,60,59,48,47,36,35,24,23,12},//11}, //0 for 25 frets
+{145,142,133,130,121,118,109,106,97,94,85,82,73,70,61,58,49,46,37,34,25,22,13},//10}, //1 for 25 frets
+{146,141,134,129,122,117,110,105,98,93,86,81,74,69,62,57,50,45,38,33,26,21,14},//9}, //2 for 25 frets
+{147,140,135,128,123,116,111,104,99,92,87,80,75,68,63,56,51,44,39,32,27,20,15},//8}, //3 for 25 frets
+{148,139,136,127,124,115,112,103,100,91,88,79,76,67,64,55,52,43,40,31,28,19,16},//7}, //4 for 25 frets
+{149,138,137,126,125,114,113,102,101,90,89,78,77,66,65,54,53,42,41,30,29,18,17}};//6}}; //5 for 25 frets
+
+const int nFrets=22;
+
+char* toneNm[12]={"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
+const int nScales=7;
+const char* sclNm[nScales]={"root","major","pentatonic", "mixob9b13","whole tone","wholeHalf","altered"};
+
+
+int scaleStp=0;
 
 
 //settings----------------------------------
 byte tuning[nStrings]={64,59,55,50,45,40};
-byte rootNote=0 ;
+byte rootNote=0;
 int actScale=0;
-const int nScales=3;
-
-// debug-----------------------------------------
-int dbgLvl=0; //debug level
-unsigned long debugTimer;
-unsigned int debugInt=2000;
-
-bool dispEncFnc=0;
 
 //continious controller message assignments
 byte ccArpMode=28;
@@ -84,15 +84,22 @@ bool kickCue[nStrings]={0,0,0,0,0,0};
 bool kickState[nStrings];
 unsigned long kickTimer[nStrings];
 unsigned long kCueTimer; 
-unsigned int kCueInt=2;
+unsigned int kCueInt=3;
 
 //pin assignments
 const byte kickupPins[6]={39,38,37,36,35,34};//{23,22,21,20,19,18};
-const byte strSnsPins[nStrings]={2,3,4,5,6,7};
+const byte strSnsPins[nStrings]={18,19,20,21,22,23};
+byte frtPins[] = {16,15,2,3,4,5,6,7,8,9,10,11,12,24,25,26,27,28,29,30,14,13};
 
 //variables
 long frmCnt=0;
 long lastFrmCnt=0;
+
+int dispEncFnc=0;
+int nDispEncFnc=3;
+
+int strEncFnc=0;
+int nStrEncFnc=2;
 
 unsigned long intClockTimer;
 unsigned int intClockInt=50;
@@ -100,6 +107,9 @@ unsigned int bpm=90;
 
 unsigned long frameTimer; //timer for the led update
 unsigned int frameInt=50;
+
+unsigned long dispTimer;
+unsigned int dispIntvl=100;
 
 unsigned long ctlTimer; //timer for control actions
 unsigned int ctlInt=10;
@@ -119,6 +129,9 @@ int lastSeqIdx[nStrings];
 float strP[nStrings];
 float lastStrP[nStrings];
 
+float strA[nStrings];
+float lastStrA[nStrings];
+
 long mClockDev;
 
 float tnClrs[12][3];
@@ -129,10 +142,14 @@ byte clockMode=1;
 byte lastClockMode=0;
 byte opmode=0;
 byte lastOpmode=0;
+
+//led Display mode
 byte dispMode=0;
-byte nDispSrc=0;
-byte frtGrid=1;
 byte lastDispMode=0;
+
+byte nDispSrc=0;
+byte scaleSel=1;
+
 byte arpMode=0;
 byte arpClkMode=0;
 byte arpRpt[6]={1,1,1,1,1,1};
@@ -184,6 +201,8 @@ bool lastHidDVal[19]={0,-1,-1,-1,-1,-1,-1,-1,-1,-1,0,-1,-1,0,0,0,0,0,0};
 long lastHidRVal[3];
 long lastHidEVal[8];
 long lastHidEVal4[8];
+
+int strUsed[]={0,0,0,0,0,0};
 
 bool shift=0 ;
 bool runSeq=0;

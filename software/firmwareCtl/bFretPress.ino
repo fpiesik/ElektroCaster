@@ -1,5 +1,3 @@
-int strUsed[]={0,0,0,0,0,0};
-
 void readFretboard() {
   long Millis=millis();
   for (int s=0; s < nStrings; s++) {
@@ -18,5 +16,11 @@ void readFretboard() {
         lastFretRead[s]=Millis;
       }
     }
+//probably couses bug, needs investigation
+//    if(lastStrUsed[s]==0&&strUsed[s]>0 && pOrder[pOrderIdx]!=s){
+//      pOrderIdx++;
+//      pOrder[pOrderIdx]=s;
+//    } 
+  
   }
 }

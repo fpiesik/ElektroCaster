@@ -1,0 +1,132 @@
+#N canvas 368 150 1171 527 10;
+#X msg 233 170 devices;
+#X obj 163 267 comport;
+#X msg 279 225 close;
+#X obj 157 303 tof/from_ascii_code 10;
+#X obj 113 135 tof/to_ascii_code 10;
+#X msg 29 94 echo \$1 5.8 12;
+#X floatatom 91 26 5 0 0 0 - - -;
+#X msg 169 68 echo 45 5.8 12;
+#X floatatom 343 77 5 0 0 0 - - -;
+#X msg 162 363 echo 22 5.8 12;
+#X obj 161 339 prepend set;
+#X obj 55 341 print;
+#X obj 341 -38 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0
+1;
+#X msg 406 146 echo \$1 5.8 12 1 2 3 4 5 6 7 8 9 10 11 12 13 14 16
+17 18 19;
+#X msg 312 104 echo \$1 5.8 12;
+#X obj 41 192 length;
+#X floatatom 10 232 5 0 0 0 - - -;
+#X floatatom 448 82 5 0 0 0 - - -;
+#X obj 446 -33 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0
+1;
+#X obj 516 43 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X msg 358 398 49 50 32 49 51 32 49 52 32 49 54 32 49 55 32 49 56 32
+49 57 10;
+#X msg 356 341 101 99 104 111 32 \$1 50 32 53 46 56 32 49 50 32 49
+32 50 32 51 32 52 32 53 32 54 32 55 32 56 32 57 32 49 48 32 49 49 32
+;
+#X obj 469 218 t b b;
+#X obj 476 192 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X obj 454 251 count 9;
+#X obj 455 283 + 49;
+#X obj 571 171 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0
+1;
+#X floatatom 372 270 5 0 0 0 - - -;
+#X obj 380 240 + 1;
+#X obj 543 254 delay 10;
+#X msg 81 257 dtr 1 \, rts 1;
+#X obj 237 274 print stuff;
+#X obj 438 488 t b b;
+#X obj 442 462 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X obj 496 571 count 9;
+#X obj 497 603 + 49;
+#X floatatom 602 617 5 0 0 0 - - -;
+#X obj 610 587 + 1;
+#X obj 539 468 metro 25;
+#X obj 509 524 delay 10;
+#X msg 322 611 101 99 104;
+#X msg 324 668 111 32 \$1 50 32 53 46 56 32 49 50 32 49 32 50 32 51
+32 52 32 53 32 54 32 55 32 56 32 57 32 49 48 32 49 49 32 49 50 32 49
+51 32 49 52 32 49 54 32 49 55 32 49 56 32 49 57 10;
+#X obj 620 488 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0
+1;
+#X obj 326 19 metro 100;
+#X obj 431 24 metro 70;
+#X obj 573 198 metro 70;
+#X obj 865 231 mrpeach/slipenc 65536;
+#X msg 767 81 /echo 0 5.8 12 1 2 3 4 5 6 7 8 9 10 11 12 13 14 16 17
+18 19;
+#X obj 865 261 length;
+#X msg 896 110 /echo 45 5.8 12;
+#X text 767 56 Compare message lengths with OSC;
+#X floatatom 858 308 5 0 0 0 - - -;
+#X obj 989 168 tof/to_ascii_code 10;
+#X obj 1032 242 length;
+#X floatatom 1025 289 5 0 0 0 - - -;
+#X msg 1010 122 /echo 32454 6.3284;
+#X obj 849 178 mrpeach/packOSC;
+#X msg 266 197 open 6 \, baud 57600;
+#X connect 0 0 1 0;
+#X connect 1 0 3 0;
+#X connect 1 1 31 0;
+#X connect 2 0 1 0;
+#X connect 3 0 10 0;
+#X connect 3 0 11 0;
+#X connect 4 0 1 0;
+#X connect 4 0 15 0;
+#X connect 5 0 4 0;
+#X connect 6 0 5 0;
+#X connect 7 0 4 0;
+#X connect 8 0 14 0;
+#X connect 10 0 9 0;
+#X connect 12 0 43 0;
+#X connect 13 0 4 0;
+#X connect 14 0 4 0;
+#X connect 15 0 16 0;
+#X connect 17 0 13 0;
+#X connect 18 0 44 0;
+#X connect 19 0 17 0;
+#X connect 20 0 1 0;
+#X connect 21 0 1 0;
+#X connect 22 0 29 0;
+#X connect 22 1 24 0;
+#X connect 23 0 22 0;
+#X connect 24 0 25 0;
+#X connect 24 0 28 0;
+#X connect 25 0 21 0;
+#X connect 26 0 45 0;
+#X connect 28 0 27 0;
+#X connect 29 0 20 0;
+#X connect 30 0 1 0;
+#X connect 32 0 39 0;
+#X connect 32 1 40 0;
+#X connect 33 0 32 0;
+#X connect 34 0 35 0;
+#X connect 34 0 37 0;
+#X connect 35 0 41 0;
+#X connect 37 0 36 0;
+#X connect 38 0 33 0;
+#X connect 39 0 34 0;
+#X connect 40 0 1 0;
+#X connect 41 0 1 0;
+#X connect 42 0 38 0;
+#X connect 43 0 8 0;
+#X connect 44 0 17 0;
+#X connect 45 0 23 0;
+#X connect 46 0 48 0;
+#X connect 47 0 52 0;
+#X connect 47 0 56 0;
+#X connect 48 0 51 0;
+#X connect 49 0 52 0;
+#X connect 49 0 56 0;
+#X connect 52 0 53 0;
+#X connect 53 0 54 0;
+#X connect 55 0 52 0;
+#X connect 55 0 56 0;
+#X connect 56 0 46 0;
+#X connect 57 0 1 0;

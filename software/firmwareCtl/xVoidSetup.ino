@@ -6,14 +6,13 @@ void setup() {
   Serial.begin(115200);
   Serial1.begin(250000);
   Serial4.begin(115200);
-
-//setup display
-//  u8g2.begin();
-//  delay (1000);
-//  u8g2.clearBuffer();
-//  draw();
-//  u8g2.sendBuffer();
-
+  
+  for (int f=0; f < nFrets; f++) {
+      byte frtPin = frtPins[f];
+      pinMode(frtPin, OUTPUT);
+      digitalWrite(frtPin, LOW);
+  }
+    
 //setup kickup
   for(int s=0;s<nStrings;s++){ 
     pinMode(kickupPins[s],OUTPUT);
@@ -24,10 +23,10 @@ void setup() {
     pinMode(strSnsPins[s],INPUT_PULLUP);
   }
 
+  readEep();
 
   mkColors();
-  mkColorsHd();
-  
+   
   hidEVal[7]=90;
   hidEVal4[7]=hidEVal[7]*4;
 

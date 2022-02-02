@@ -11,6 +11,7 @@ void midiClock() {
   cmpClck(mClock);
 }
 void midiStart() {
+rstLghtHold();
 clockMode=2;
 mClock=-1;
 }
@@ -20,12 +21,14 @@ allNOff();
 }
 
 void intClock(){
-  if(clockMode==1){
-    if(mClock==-1)sndClock(1);
-    sndClock(0);
-    mClock++;
-    cmpClck(mClock);    
-    intClockTimer=millis();    
+  if (millis()-intClockTimer > intClockInt){
+    if(clockMode==1){
+      if(mClock==-1)sndClock(1);
+      sndClock(0);
+      mClock++;
+      cmpClck(mClock);    
+      intClockTimer=millis();    
+    }
   }
 }
 

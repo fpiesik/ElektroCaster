@@ -30,11 +30,21 @@ void kickup(byte s){
       kickState[s]=1;
       kickTimer[s]=millis();
       }
+  }
 }
+
+void kickOff(){
+  for(int s=0;s<nStrings;s++){
+    if (millis()-kickTimer[s] >= kickDur[s] && kickState[s]==1){ 
+      digitalWrite(kickupPins[s],0);
+      kickState[s]=0;
+      }
+  }
 }
 
 //fire the multiple kick at once in a short sequence to prevent voltage drop
 void cueKicks(){
+  if (millis()-kCueTimer > kCueInt){ 
     for(int s=0;s<nStrings;s++){
       if(kickCue[s]==1){
         kickup(s);
@@ -43,31 +53,5 @@ void cueKicks(){
       }
     }
     kCueTimer=millis();
+  }
 }
-    
-
-
-//void kickOff1(){
-//digitalWrite(kickupPins[0],0);
-//kTimer1.end();
-//}
-//void kickOff2(){
-//digitalWrite(kickupPins[1],0);
-//kTimer2.end();
-//}
-//void kickOff3(){
-//digitalWrite(kickupPins[2],0);
-//kTimer3.end();
-//}
-//void kickOff4(){
-//digitalWrite(kickupPins[3],0);
-//kTimer4.end();
-//}
-//void kickOff5(){
-//digitalWrite(kickupPins[4],0);
-//kTimer5.end();
-//}
-//void kickOff6(){
-//digitalWrite(kickupPins[5],0);
-//kTimer6.end();
-//}

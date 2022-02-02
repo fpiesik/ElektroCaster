@@ -71,10 +71,18 @@ void rcvCC(byte cc, byte value){
 
 void rcvStrP(byte a, byte b, byte c){
   strP[a]=b+c/100.0;
-  Serial.print("strPitch: ");
-  Serial.print(a);
-  Serial.print(" ");
-  Serial.println(strP[a]);
+//  Serial.print("strPitch: ");
+//  Serial.print(a);
+//  Serial.print(" ");
+//  Serial.println(strP[a]);
+} 
+
+void rcvStrA(byte a, byte b){
+  strA[a]=b/100.0;
+//  Serial.print("strAmp: ");
+//  Serial.print(a);
+//  Serial.print(" ");
+//  Serial.println(strA[a]);
 } 
 
 void strNote(byte str, float vel){
@@ -160,6 +168,12 @@ void sndVol(float val){
   Serial1.write(byte(val*199));
 }
 
+void sndBpm(int val){
+  if (val>200)val=200;
+  Serial1.write(217);
+  Serial1.write(byte(val));
+}
+
 void sndClock(byte type){
   if(type==0)Serial1.write(212);
   if(type==1)Serial1.write(213);
@@ -180,10 +194,6 @@ void sndLfo1(byte para, float val){
   Serial1.write(para);
   delayMicroseconds(waitS);
   Serial1.write(byte(val*199));
-}
-
-void sndGetMidi(){
-  Serial1.write(217);
 }
 
 void sndTrnsp(byte para,byte val){

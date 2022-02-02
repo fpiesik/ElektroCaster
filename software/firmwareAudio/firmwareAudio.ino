@@ -11,30 +11,35 @@
 //#include "effect_gate.h"
 #include "notefreq.h"
 //#include "libs/AudioEffectDynamics/effect_dynamics.h"
+#include "effect_tapedelay10tap.h"
 
 const byte nStrings=6;
 const int nCtlFrets=17; //how many led frets
 byte midiCh=15;
 
-int cutoff=3500;
-float q=1;
-float ampGain=20;
-
+byte bpm=90;
 byte opmode=0;
 byte kickMode=0;
 byte bowMode=0;
-byte bowOn=0;
+byte bowOn=1;
 byte lastBowOn=0;
 byte lastBowMode=0;
 byte dispMode=0;
 byte lastDispMode=0;
-int waitS=20;
+int waitS=100;
+
+float strGain[nStrings]={0.1,0.1,0.1,0.1,0.1,0.1};
 float tuning[nStrings]={59,54,50,45,40,35}; //{35,40,45,50,54,59};
+//int inputHicut[nStrings]={5000,4500,4000,3500,3000,2500}; //{35,40,45,50,54,59};
+int inputHicut[nStrings]={10000,10000,10000,10000,10000,10000}; //{35,40,45,50,54,59};
 unsigned long ctlTimer;
 unsigned int ctlInt=10;
 
 unsigned long nFrqTimer;
 unsigned int nFrqInt=20;
+
+unsigned long peakTimer;
+unsigned int peakInt=100;
 
 //ControlChangeRoutings
 byte ccFilter[4]={53,54,55,56};
@@ -47,16 +52,14 @@ float sclDelay[3]={1,1,1};
 float valFX[4]={1,1,1,1};
 float sclFX[4]={1,1,1,20};
 
-float valLfo1[2]={60,1};
+float valLfo1[2]={0,1};
 float sclLfo1[2]={127,1};
 
 byte ccEnvA[7]={102,103,104,105,106,107,108};
 byte ccEnvF[7]={109,110,111,112,113,114,115};
 
-float sclEnvA[7]={50,1000,300,1000,1,300,1};
-float sclEnvF[7]={50,1000,300,1000,1,300,1};
-
-float strGain[nStrings]={1.7,1.2,1,1.5,1,1};
+float sclEnvA[7]={50,1000,300,5000,1,300,1};
+float sclEnvF[7]={50,1000,300,5000,1,300,1};
 
 byte strState[nStrings]={0,0,0,0,0,0};
 byte lastStrState[nStrings]={0,0,0,0,0,0};
@@ -70,6 +73,9 @@ byte lastCCState[128];
 float strP[nStrings];
 float lastStrP[nStrings];
 
+float strA[nStrings];
+float lastStrA[nStrings];
+
 int tP=440.0; //tuning pitch
 
 //float midiFreq[127];
@@ -79,10 +85,6 @@ void midiFreq(float note){
 }
 float envPA[6]={0,50,0,200,0,80};
 float envPF[6]={0,50,0,200,0,80};
-
-
-#define DELAY_MAX_LEN 10000
-//short tape_delay_bank[DELAY_MAX_LEN] = {};
 
 AudioInputTDM   audioInput;
 AudioOutputTDM  audioOutput;
@@ -114,10 +116,17 @@ AudioMixer4     outMix3;
 AudioMixer4     outMix4;
 AudioMixer4     outMix5;
 AudioMixer4     outMix6;
-AudioMixer4     outMix7;
-AudioMixer4     outMix8;
+//AudioMixer4     outMix7;
+//AudioMixer4     outMix8;
 
 AudioMixer4     mainMix;
+
+//AudioFilterBiquad inputLpFilter1;
+//AudioFilterBiquad inputLpFilter2;
+//AudioFilterBiquad inputLpFilter3;
+//AudioFilterBiquad inputLpFilter4;
+//AudioFilterBiquad inputLpFilter5;
+//AudioFilterBiquad inputLpFilter6;
 
 AudioFilterStateVariable  filter1; 
 AudioFilterStateVariable  filter2; 
@@ -134,7 +143,7 @@ AudioAmplifier           cAmp4;
 AudioAmplifier           cAmp5;
 AudioAmplifier           cAmp6;
 
-//to get more intense sustein effect
+//to get more intense sustein effect (eBow)
 AudioEffectWaveshaper    waveshaper1;
 AudioEffectWaveshaper    waveshaper2;
 AudioEffectWaveshaper    waveshaper3;
@@ -174,8 +183,6 @@ AudioEffectEnvelope      fEnv6;
 
 AudioSynthWaveform       not0;
 
-
-
 //to smooth clipping
 AudioEffectWaveshaper    ws1;
 AudioEffectWaveshaper    ws2;
@@ -209,6 +216,13 @@ AudioAnalyzeMonoFrequency nFreq4;
 AudioAnalyzeMonoFrequency nFreq5;
 AudioAnalyzeMonoFrequency nFreq6;
 
+AudioAnalyzeRMS  peak1;
+AudioAnalyzeRMS  peak2;
+AudioAnalyzeRMS  peak3;
+AudioAnalyzeRMS  peak4;
+AudioAnalyzeRMS  peak5;
+AudioAnalyzeRMS  peak6;
+
 AudioEffectEnvelope      *aEnvs[nStrings] = {
   &aEnv1, &aEnv2, &aEnv3,
   &aEnv4, &aEnv5, &aEnv6 
@@ -229,6 +243,12 @@ AudioAmplifier           *preA[nStrings]={
   &preA1, &preA2, &preA3,
   &preA4, &preA5, &preA6
 };
+
+//AudioFilterBiquad               *inputLpFilter[nStrings]={
+//  &inputLpFilter1, &inputLpFilter2, &inputLpFilter3,
+//  &inputLpFilter4, &inputLpFilter5, &inputLpFilter6
+//};
+
 AudioFilterStateVariable        *filter[nStrings]={
   &filter1, &filter2, &filter3, 
   &filter4, &filter5, &filter6 
@@ -262,19 +282,102 @@ AudioAnalyzeMonoFrequency *nFreq[nStrings]={
   &nFreq4, &nFreq5, &nFreq6
 };
 
+AudioAnalyzeRMS *peak[nStrings]={
+  &peak1, &peak2, &peak3, 
+  &peak4, &peak5, &peak6
+};
+
+//AudioConnection c16(audioInput, 2, inGain1, 0);
+//AudioConnection c17(audioInput, 0, inGain2, 0);
+//AudioConnection c18(audioInput, 4, inGain3, 0);
+//AudioConnection c19(audioInput, 10, inGain4, 0);
+//AudioConnection c20(audioInput, 6, inGain5, 0);
+//AudioConnection c21(audioInput, 8, inGain6, 0);
+
+//AudioConnection c16(audioInput, 8, inGain1, 0);
+//AudioConnection c17(audioInput, 0, inGain2, 0);
+//AudioConnection c18(audioInput, 10, inGain3, 0);
+//AudioConnection c19(audioInput, 2, inGain4, 0);
+//AudioConnection c20(audioInput, 4, inGain5, 0);
+//AudioConnection c21(audioInput, 6, inGain6, 0);
+
+//AudioConnection c16(audioInput, 0, inGain1, 0);
+//AudioConnection c17(audioInput, 8, inGain2, 0);
+//AudioConnection c18(audioInput, 2, inGain3, 0);
+//AudioConnection c19(audioInput, 4, inGain4, 0);
+//AudioConnection c20(audioInput, 6, inGain5, 0);
+//AudioConnection c21(audioInput, 10, inGain6, 0);
+
+//AudioConnection c16(audioInput, 8, inGain1, 0);
+//AudioConnection c17(audioInput, 0, inGain2, 0);
+//AudioConnection c18(audioInput, 10, inGain3, 0);
+//AudioConnection c19(audioInput, 6, inGain4, 0);
+//AudioConnection c20(audioInput, 4, inGain5, 0);
+//AudioConnection c21(audioInput, 2, inGain6, 0);
+
+//AudioConnection c16(audioInput, 6, inGain1, 0);
+//AudioConnection c17(audioInput, 4, inGain2, 0);
+//AudioConnection c18(audioInput, 0, inGain3, 0);
+//AudioConnection c19(audioInput, 2, inGain4, 0);
+//AudioConnection c20(audioInput, 10, inGain5, 0);
+//AudioConnection c21(audioInput, 8, inGain6, 0);
+
+//AudioConnection c16(audioInput, 2, inGain1, 0);
+//AudioConnection c17(audioInput, 10, inGain2, 0);
+//AudioConnection c18(audioInput, 4, inGain3, 0);
+//AudioConnection c19(audioInput, 8, inGain4, 0);
+//AudioConnection c20(audioInput, 0, inGain5, 0);
+//AudioConnection c21(audioInput, 6, inGain6, 0);
+
+AudioConnection c16(audioInput, 10, inGain1, 0);
+AudioConnection c17(audioInput, 8, inGain2, 0);
+AudioConnection c18(audioInput, 6, inGain3, 0);
+AudioConnection c19(audioInput, 4, inGain4, 0);
+AudioConnection c20(audioInput, 2, inGain5, 0);
+AudioConnection c21(audioInput, 0, inGain6, 0);
+
+
+//AudioConnection inLpfilC1(inGain1, 0, inputLpFilter1, 0);
+//AudioConnection inLpfilC2(inGain2, 0, inputLpFilter2, 0);
+//AudioConnection inLpfilC3(inGain3, 0, inputLpFilter3, 0);
+//AudioConnection inLpfilC4(inGain4, 0, inputLpFilter4, 0);
+//AudioConnection inLpfilC5(inGain5, 0, inputLpFilter5, 0);
+//AudioConnection inLpfilC6(inGain6, 0, inputLpFilter6, 0);
+
+//AudioConnection peakC1(inputLpFilter1, 0, peak1, 0);
+//AudioConnection peakC2(inputLpFilter2, 0, peak2, 0);
+//AudioConnection peakC3(inputLpFilter3, 0, peak3, 0);
+//AudioConnection peakC4(inputLpFilter4, 0, peak4, 0);
+//AudioConnection peakC5(inputLpFilter5, 0, peak5, 0);
+//AudioConnection peakC6(inputLpFilter6, 0, peak6, 0);
+
+//AudioConnection patchCord1(inputLpFilter1, 0, nFreq1, 0);
+//AudioConnection patchCord2(inputLpFilter2, 0, nFreq2, 0);
+//AudioConnection patchCord3(inputLpFilter3, 0, nFreq3, 0);
+//AudioConnection patchCord4(inputLpFilter4, 0, nFreq4, 0);
+//AudioConnection patchCord5(inputLpFilter5, 0, nFreq5, 0);
+//AudioConnection patchCord6(inputLpFilter6, 0, nFreq6, 0);
+//
+//AudioConnection c1100(inputLpFilter1, 0, preA1, 0);
+//AudioConnection c1101(inputLpFilter2, 0, preA2, 0);
+//AudioConnection c1102(inputLpFilter3, 0, preA3, 0);
+//AudioConnection c1103(inputLpFilter4, 0, preA4, 0);
+//AudioConnection c1104(inputLpFilter5, 0, preA5, 0);
+//AudioConnection c1105(inputLpFilter6, 0, preA6, 0);
+
+AudioConnection peakC1(inGain1, 0, peak1, 0);
+AudioConnection peakC2(inGain2, 0, peak2, 0);
+AudioConnection peakC3(inGain3, 0, peak3, 0);
+AudioConnection peakC4(inGain4, 0, peak4, 0);
+AudioConnection peakC5(inGain5, 0, peak5, 0);
+AudioConnection peakC6(inGain6, 0, peak6, 0);
+
 AudioConnection patchCord1(inGain1, 0, nFreq1, 0);
 AudioConnection patchCord2(inGain2, 0, nFreq2, 0);
 AudioConnection patchCord3(inGain3, 0, nFreq3, 0);
 AudioConnection patchCord4(inGain4, 0, nFreq4, 0);
 AudioConnection patchCord5(inGain5, 0, nFreq5, 0);
 AudioConnection patchCord6(inGain6, 0, nFreq6, 0);
-
-AudioConnection c16(audioInput, 2, inGain1, 0);
-AudioConnection c17(audioInput, 0, inGain2, 0);
-AudioConnection c18(audioInput, 4, inGain3, 0);
-AudioConnection c19(audioInput, 10, inGain4, 0);
-AudioConnection c20(audioInput, 6, inGain5, 0);
-AudioConnection c21(audioInput, 8, inGain6, 0);
 
 AudioConnection c1100(inGain1, 0, preA1, 0);
 AudioConnection c1101(inGain2, 0, preA2, 0);
@@ -303,13 +406,6 @@ AudioConnection c68(lfo3, 0, mulA3, 1);
 AudioConnection c69(lfo4, 0, mulA4, 1);
 AudioConnection c70(lfo5, 0, mulA5, 1);
 AudioConnection c71(lfo6, 0, mulA6, 1);
-//
-//AudioConnection c72(mulA1, 0, aEnv1, 0);
-//AudioConnection c73(mulA2, 0, aEnv2, 0);
-//AudioConnection c74(mulA3, 0, aEnv3, 0);
-//AudioConnection c75(mulA4, 0, aEnv4, 0);
-//AudioConnection c76(mulA5, 0, aEnv5, 0);
-//AudioConnection c77(mulA6, 0, aEnv6, 0);
 
 AudioConnection c72(mulA1, 0, aBiasM1, 0);
 AudioConnection c73(mulA2, 0, aBiasM2, 0);
@@ -339,43 +435,16 @@ AudioConnection c234(aBiasM4, 0, filter4, 0);
 AudioConnection c235(aBiasM5, 0, filter5, 0);
 AudioConnection c236(aBiasM6, 0, filter6, 0);
 
-AudioConnection c7(filter1, 0, mixer1, 0);
-AudioConnection c8(filter2, 0, mixer1, 1);
-AudioConnection c9(filter3, 0, mixer1, 2);
-AudioConnection c10(filter4, 0, mixer1, 3);
-AudioConnection c11(mixer1, 0, mixer2, 0);
-AudioConnection c12(filter5, 0, mixer2, 1);
-AudioConnection c13(filter6, 0, mixer2, 2);
+AudioConnection c7d(filter1, 0, mixer1, 0);
+AudioConnection c8d(filter2, 0, mixer1, 1);
+AudioConnection c9d(filter3, 0, mixer1, 2);
+AudioConnection c10d(filter4, 0, mixer1, 3);
+AudioConnection c11d(mixer1, 0, mixer2, 0);
+AudioConnection c12d(filter5, 0, mixer2, 1);
+AudioConnection c13d(filter6, 0, mixer2, 2);
 
-
-AudioConnection c22(cAmp1, 0, outMix1, 0);
-AudioConnection c23(cAmp2, 0, outMix2, 0);
-AudioConnection c24(cAmp3, 0, outMix3, 0);
-AudioConnection c25(cAmp4, 0, outMix4, 0);
-AudioConnection c26(cAmp5, 0, outMix5, 0);
-AudioConnection c27(cAmp6, 0, outMix6, 0);
-
-
-AudioConnection c29(audioInput, 2, waveshaper1, 0);
-AudioConnection c30(waveshaper1, 0, cAmp1, 0);
-
-AudioConnection c31(audioInput, 0, waveshaper2, 0);
-AudioConnection c32(waveshaper2, 0, cAmp2, 0);
-
-AudioConnection c33(audioInput, 4, waveshaper3, 0);
-AudioConnection c34(waveshaper3, 0, cAmp3, 0);
-
-AudioConnection c35(audioInput, 10, waveshaper4, 0);
-//AudioConnection c32(audioInput, 10, delay1, 0);
-AudioConnection c36(waveshaper4, 0, cAmp4, 0);
-
-
-AudioConnection c37(audioInput, 6, waveshaper5, 0);
-AudioConnection c38(waveshaper5, 0, cAmp5, 0);
-
-AudioConnection c39(audioInput, 8, waveshaper6, 0);
-AudioConnection c40(waveshaper6, 0, cAmp6, 0);
-
+//AudioConnection c53(mixer2, 0, outMix8, 0);
+AudioConnection c52(mixer2, 0, ampOut, 0);
 
 AudioConnection c254(dcFEnv,0, fBiasM1, 0);
 AudioConnection c255(dcFEnv, 0, fBiasM2, 0);
@@ -398,24 +467,46 @@ AudioConnection c263(fEnv4, 0, fBiasM4, 1);
 AudioConnection c264(fEnv5, 0, fBiasM5, 1);
 AudioConnection c265(fEnv6, 0, fBiasM6, 1);
 
-AudioConnection c270(fBiasM1, 0, filter1, 1);
-AudioConnection c271(fBiasM2, 0, filter2, 1);
-AudioConnection c272(fBiasM3, 0, filter3, 1);
-AudioConnection c273(fBiasM4, 0, filter4, 1);
-AudioConnection c274(fBiasM5, 0, filter5, 1);
-AudioConnection c275(fBiasM6, 0, filter6, 1);
+//AudioConnection c270(fBiasM1, 0, filter1, 1);
+//AudioConnection c271(fBiasM2, 0, filter2, 1);
+//AudioConnection c272(fBiasM3, 0, filter3, 1);
+//AudioConnection c273(fBiasM4, 0, filter4, 1);
+//AudioConnection c274(fBiasM5, 0, filter5, 1);
+//AudioConnection c275(fBiasM6, 0, filter6, 1);
 
-//AudioConnection c47(mixer2, 0, mixer4, 0);
-//AudioConnection c48(mixer2, 0, mixer3, 0);
-//AudioConnection c49(mixer3, 0, delay0 , 0);
-//AudioConnection c50(delay0, 0, mixer3 , 1);
-//AudioConnection c51(delay0, 0, mixer4 , 1);
-//AudioConnection c52(mixer4, 0, ampOut, 0);
+AudioConnection c270(fEnv1, 0, filter1, 1);
+AudioConnection c271(fEnv1, 0, filter2, 1);
+AudioConnection c272(fEnv1, 0, filter3, 1);
+AudioConnection c273(fEnv1, 0, filter4, 1);
+AudioConnection c274(fEnv1, 0, filter5, 1);
+AudioConnection c275(fEnv1, 0, filter6, 1);
 
-//AudioConnection c052(mixer2, 0, verb, 0);
-AudioConnection c53(mixer2, 0, outMix8, 0);
-//AudioConnection c053(verb, 0, outMix8, 1);
-AudioConnection c52(outMix8, 0, ampOut, 0);
+AudioConnection c29(inGain1, 0, waveshaper1, 0);
+AudioConnection c30(waveshaper1, 0, cAmp1, 0);
+AudioConnection c31(inGain2, 0, waveshaper2, 0);
+AudioConnection c32(waveshaper2, 0, cAmp2, 0);
+AudioConnection c33(inGain3, 0, waveshaper3, 0);
+AudioConnection c34(waveshaper3, 0, cAmp3, 0);
+AudioConnection c35(inGain4, 0, waveshaper4, 0);
+AudioConnection c36(waveshaper4, 0, cAmp4, 0);
+AudioConnection c37(inGain5, 0, waveshaper5, 0);
+AudioConnection c38(waveshaper5, 0, cAmp5, 0);
+AudioConnection c39(inGain6, 0, waveshaper6, 0);
+AudioConnection c40(waveshaper6, 0, cAmp6, 0);
+
+//AudioConnection c29(inGain1, 0, cAmp1, 0);
+//AudioConnection c31(inGain2, 0, cAmp2, 0);
+//AudioConnection c33(inGain3, 0, cAmp3, 0);
+//AudioConnection c35(inGain4, 0, cAmp4, 0);
+//AudioConnection c37(inGain5, 0, cAmp5, 0);
+//AudioConnection c39(inGain6, 0, cAmp6, 0);
+
+//AudioConnection c22(cAmp1, 0, outMix1, 0);
+//AudioConnection c23(cAmp2, 0, outMix2, 0);
+//AudioConnection c24(cAmp3, 0, outMix3, 0);
+//AudioConnection c25(cAmp4, 0, outMix4, 0);
+//AudioConnection c26(cAmp5, 0, outMix5, 0);
+//AudioConnection c27(cAmp6, 0, outMix6, 0);
 
 AudioConnection c1000(not0,0, outMix1,3);
 AudioConnection c1001(not0,0, outMix2,3);
@@ -423,22 +514,33 @@ AudioConnection c1002(not0,0, outMix3,3);
 AudioConnection c1003(not0,0, outMix4,3);
 AudioConnection c1004(not0,0, outMix5,3);
 AudioConnection c1005(not0,0, outMix6,3);
-AudioConnection c1006(not0,0, outMix7,3);
-AudioConnection c1007(not0,0, outMix8,3);
 
-AudioConnection c1008(outMix1,0, audioOutput,0);
-AudioConnection c1009(outMix2,0, audioOutput,2);
-AudioConnection c1010(outMix3,0, audioOutput,4);
-AudioConnection c1011(outMix4,0, audioOutput,6);
-AudioConnection c1012(outMix5,0, audioOutput,8);
-AudioConnection c1013(outMix6,0, audioOutput,10);
-AudioConnection c1014(outMix7,0, audioOutput,12);
+//AudioConnection c1008(outMix1,0, audioOutput,0);
+//AudioConnection c1009(outMix2,0, audioOutput,2);
+//AudioConnection c1010(outMix3,0, audioOutput,4);
+//AudioConnection c1011(outMix4,0, audioOutput,6);
+//AudioConnection c1012(outMix5,0, audioOutput,8);
+//AudioConnection c1013(outMix6,0, audioOutput,10);
+//AudioConnection c1014(outMix7,0, audioOutput,12);
 
+AudioConnection c1008(cAmp1,0, audioOutput,10);
+AudioConnection c1009(cAmp2,0, audioOutput,8);
+AudioConnection c1010(cAmp3,0, audioOutput,6);
+AudioConnection c1011(cAmp4,0, audioOutput,4);
+AudioConnection c1012(cAmp5,0, audioOutput,2);
+AudioConnection c1013(cAmp6,0, audioOutput,0);
+
+//AudioConnection c1008(inGain1,0, audioOutput,0);
+//AudioConnection c1009(inGain2,0, audioOutput,2);
+//AudioConnection c1010(inGain3,0, audioOutput,4);
+//AudioConnection c1011(inGain4,0, audioOutput,6);
+//AudioConnection c1012(inGain5,0, audioOutput,8);
+//AudioConnection c1013(inGain6,0, audioOutput,10);
 
 AudioConnection c1200(ampOut,0, mainMix,0);
 //AudioConnection c1201(usbIn,0, mainMix,2);
 
-AudioConnection c1015(mainMix,0, audioOutput,14);
+AudioConnection c1015(mainMix,0, audioOutput,12);
 //AudioConnection c1202(mainMix,0, usbOut,0);
 
 AudioControlCS42448 audioShield;
@@ -490,7 +592,7 @@ void chDispMode(byte data){
   Serial.println(dispMode);
   }
 
-void seqHit(byte str, float val){
+void trigEnv(byte str, float val){
   if(val>0){
     aEnvs[str]->noteOn();
     fEnvs[str]->noteOn();
@@ -506,8 +608,14 @@ void seqHit(byte str, float val){
 
 void strFret(byte str, byte fret){
   if(fret==0)cAmps[str]->gain(0);
-  if(bowOn==1&&fret>0)cAmps[str]->gain(20);
-  //strState[str]=data;
+  if(bowOn==1&&fret>0){
+    cAmps[str]->gain(50);
+    Serial.print("Str: ");
+    Serial.print(str);
+    Serial.print(" Fret: ");
+    Serial.println(fret);
+    //strState[str]=data;   
+  }
   //sndMidiNote(str,fret);
-  chLfo1(2,0,str);
+  //chLfo1(2,0,str);
 }

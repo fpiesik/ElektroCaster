@@ -8,6 +8,9 @@
 #include <AsciiMassagePacker.h>
 AsciiMassagePacker outbound;
 
+#define BUFFER_LENGTH 64
+char receivedString[BUFFER_LENGTH];
+
 Encoder enc0(16, 15);
 Encoder enc1(3, 2);
 Encoder enc2(6, 5);
@@ -62,12 +65,16 @@ void setup() {
   }
   analogReadAveraging(200);
   //analogReadResolution(12);
-u8g2.begin();
-delay (2000);
-u8g2.clearBuffer();
-draw();
-u8g2.sendBuffer();
-sendAll();
+
+  //setup display
+  
+  u8g2.begin();
+  delay (2000);
+  u8g2.clearBuffer();
+  u8g2_prepare();
+  
+  // read and send all values to ctl unit
+  sendAll();
 }
 
 void loop() {

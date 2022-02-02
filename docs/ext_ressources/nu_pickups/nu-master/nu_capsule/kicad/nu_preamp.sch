@@ -1,0 +1,733 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr User 12095 8333
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+Wire Wire Line
+	3000 3575 3000 3075
+Wire Wire Line
+	3000 3075 3000 2650
+Wire Wire Line
+	6075 3075 3000 3075
+Connection ~ 3000 3075
+Wire Wire Line
+	3500 3575 3500 3400
+Wire Wire Line
+	3500 3400 3500 2625
+Wire Wire Line
+	6075 3625 4925 3625
+Wire Wire Line
+	4925 3625 4925 3400
+Wire Wire Line
+	4925 3400 3500 3400
+Connection ~ 3500 3400
+Wire Wire Line
+	3000 3975 3000 4225
+Wire Wire Line
+	3500 3975 3500 4225
+Wire Wire Line
+	2450 4225 2450 3775
+Wire Wire Line
+	2450 3775 2450 2650
+Wire Wire Line
+	2800 3775 2450 3775
+Wire Wire Line
+	1825 3775 2450 3775
+Connection ~ 2450 3775
+Text Label 2450 4225 0    10   ~ 0
+IN+
+Wire Wire Line
+	2000 800  2100 800 
+Text Label 2100 800  0    70   ~ 0
+IN+
+Wire Wire Line
+	4100 2650 4100 3775
+Wire Wire Line
+	4100 3775 4100 4225
+Wire Wire Line
+	3700 3775 4100 3775
+Wire Wire Line
+	1825 3975 2100 3975
+Wire Wire Line
+	2100 3975 2100 5725
+Wire Wire Line
+	2100 5725 4475 5725
+Wire Wire Line
+	4475 5725 4475 3775
+Wire Wire Line
+	4475 3775 4100 3775
+Connection ~ 4100 3775
+Text Label 4100 2650 0    10   ~ 0
+IN-
+Wire Wire Line
+	2000 1100 2100 1100
+Text Label 2100 1100 0    70   ~ 0
+IN-
+Wire Wire Line
+	3000 4625 3000 4750
+Wire Wire Line
+	3000 4750 3225 4750
+Wire Wire Line
+	3225 4750 3500 4750
+Wire Wire Line
+	3500 4750 3500 4625
+Wire Wire Line
+	3225 4850 3225 4750
+Connection ~ 3225 4750
+Wire Wire Line
+	3225 5325 3225 5250
+Text Label 3225 5325 0    10   ~ 0
+GND
+Wire Wire Line
+	2450 4625 2450 5325
+Text Label 2450 4625 0    10   ~ 0
+GND
+Wire Wire Line
+	4100 4625 4100 5325
+Text Label 4100 4625 0    10   ~ 0
+GND
+Wire Wire Line
+	7675 4225 7675 3825
+Text Label 7675 4225 0    10   ~ 0
+GND
+Wire Wire Line
+	7375 2625 7375 2325
+Wire Wire Line
+	7375 2325 7275 2325
+Text Label 7375 2625 0    10   ~ 0
+GND
+Wire Wire Line
+	5575 2550 5575 2400
+Text Label 5575 2550 0    10   ~ 0
+GND
+Wire Wire Line
+	9100 4325 9100 4125
+Text Label 9100 4325 0    10   ~ 0
+GND
+Wire Wire Line
+	10325 2100 9600 2100
+Wire Wire Line
+	9600 2425 9600 2200
+Wire Wire Line
+	9600 2200 9600 2100
+Wire Wire Line
+	10325 2200 9600 2200
+Connection ~ 9600 2200
+Text Label 10325 2100 0    10   ~ 0
+GND
+Wire Wire Line
+	10225 3800 10225 3625
+Wire Wire Line
+	10225 3625 10325 3625
+Text Label 10225 3800 0    10   ~ 0
+GND
+Wire Wire Line
+	4950 2550 4950 2400
+Text Label 4950 2550 0    10   ~ 0
+GND
+Wire Wire Line
+	2000 1400 2100 1400
+Text Label 2100 1400 0    70   ~ 0
+GND
+Wire Wire Line
+	7350 3425 6675 3425
+Wire Wire Line
+	6475 2325 6675 2325
+Wire Wire Line
+	6675 2325 6875 2325
+Wire Wire Line
+	6675 3425 6675 3075
+Wire Wire Line
+	6675 3075 6675 2325
+Wire Wire Line
+	6475 3075 6675 3075
+Connection ~ 6675 2325
+Connection ~ 6675 3075
+Wire Wire Line
+	7175 3925 7175 3625
+Wire Wire Line
+	7350 3625 7175 3625
+Wire Wire Line
+	7175 3625 6475 3625
+Connection ~ 7175 3625
+Wire Wire Line
+	7175 4325 7175 4525
+Wire Wire Line
+	7175 4525 8375 4525
+Wire Wire Line
+	8375 4525 8375 3525
+Wire Wire Line
+	7950 3525 8375 3525
+Wire Wire Line
+	8625 3525 8375 3525
+Connection ~ 8375 3525
+Wire Wire Line
+	6075 2325 6000 2325
+Wire Wire Line
+	6000 2325 6000 2000
+Wire Wire Line
+	7675 3225 7675 2000
+Wire Wire Line
+	7675 2000 6000 2000
+Wire Wire Line
+	5575 2000 6000 2000
+Wire Wire Line
+	5575 2100 5575 2000
+Wire Wire Line
+	8500 2000 7675 2000
+Wire Wire Line
+	4100 2250 4100 2000
+Wire Wire Line
+	4100 2000 4950 2000
+Wire Wire Line
+	4950 2000 5575 2000
+Wire Wire Line
+	3500 2225 3500 2000
+Wire Wire Line
+	3500 2000 4100 2000
+Wire Wire Line
+	3000 2250 3000 2000
+Wire Wire Line
+	3000 2000 3500 2000
+Wire Wire Line
+	2450 2250 2450 2000
+Wire Wire Line
+	2450 2000 3000 2000
+Wire Wire Line
+	4950 2100 4950 2000
+Connection ~ 6000 2000
+Connection ~ 5575 2000
+Connection ~ 7675 2000
+Connection ~ 4100 2000
+Connection ~ 3500 2000
+Connection ~ 3000 2000
+Connection ~ 4950 2000
+Wire Wire Line
+	8900 2000 9600 2000
+Wire Wire Line
+	9600 2000 10325 2000
+Wire Wire Line
+	9600 1850 9600 2000
+Connection ~ 9600 2000
+Wire Wire Line
+	9100 3725 9100 3525
+Wire Wire Line
+	8925 3525 9100 3525
+Connection ~ 9100 3525
+$Comp
+L nu_preamp-eagle-import:DINA4_L #FRAME1
+U 1 1 73DA64CA
+P 900 7500
+F 0 "#FRAME1" H 900 7500 50  0001 C CNN
+F 1 "DINA4_L" H 900 7500 50  0001 C CNN
+F 2 "" H 900 7500 50  0001 C CNN
+F 3 "" H 900 7500 50  0001 C CNN
+	1    900  7500
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:DINA4_L #FRAME1
+U 2 1 73DA64C6
+P 7300 7500
+F 0 "#FRAME1" H 7300 7500 50  0001 C CNN
+F 1 "DINA4_L" H 7300 7500 50  0001 C CNN
+F 2 "" H 7300 7500 50  0001 C CNN
+F 3 "" H 7300 7500 50  0001 C CNN
+	2    7300 7500
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:GND #SUPPLY014
+U 1 1 847A6B8B
+P 3225 5425
+F 0 "#SUPPLY014" H 3225 5425 50  0001 C CNN
+F 1 "GND" H 3150 5300 59  0001 L BNN
+F 2 "" H 3225 5425 50  0001 C CNN
+F 3 "" H 3225 5425 50  0001 C CNN
+	1    3225 5425
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:2SC3324 Q1
+U 1 1 7A211019
+P 2900 3775
+F 0 "Q1" H 2475 4000 59  0000 L BNN
+F 1 "2SC3324" H 2475 3900 59  0000 L BNN
+F 2 "nu_preamp:SOT23" H 2900 3775 50  0001 C CNN
+F 3 "" H 2900 3775 50  0001 C CNN
+	1    2900 3775
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:2SC3324 Q2
+U 1 1 DA191B3C
+P 3600 3775
+F 0 "Q2" H 3433 3982 59  0000 L BNN
+F 1 "2SC3324" H 3118 3885 59  0000 L BNN
+F 2 "nu_preamp:SOT23" H 3600 3775 50  0001 C CNN
+F 3 "" H 3600 3775 50  0001 C CNN
+	1    3600 3775
+	-1   0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:R-EU_R0402 R8
+U 1 1 967FEF4C
+P 3000 2450
+F 0 "R8" V 3166 2525 59  0000 L BNN
+F 1 "33k" V 2905 2525 59  0000 L BNN
+F 2 "nu_preamp:R0402" H 3000 2450 50  0001 C CNN
+F 3 "" H 3000 2450 50  0001 C CNN
+	1    3000 2450
+	0    -1   -1   0   
+$EndComp
+$Comp
+L nu_preamp-eagle-import:R-EU_R0402 R9
+U 1 1 8A4DF451
+P 3500 2425
+F 0 "R9" V 3641 2500 59  0000 L BNN
+F 1 "33k" V 3380 2500 59  0000 L BNN
+F 2 "nu_preamp:R0402" H 3500 2425 50  0001 C CNN
+F 3 "" H 3500 2425 50  0001 C CNN
+	1    3500 2425
+	0    -1   -1   0   
+$EndComp
+$Comp
+L nu_preamp-eagle-import:R-EU_R0402 R10
+U 1 1 AB07C5BB
+P 3000 4425
+F 0 "R10" V 3241 4525 59  0000 L BNN
+F 1 "1.2k" V 2880 4525 59  0000 L BNN
+F 2 "nu_preamp:R0402" H 3000 4425 50  0001 C CNN
+F 3 "" H 3000 4425 50  0001 C CNN
+	1    3000 4425
+	0    -1   -1   0   
+$EndComp
+$Comp
+L nu_preamp-eagle-import:R-EU_R0402 R11
+U 1 1 1D2585D8
+P 3500 4425
+F 0 "R11" V 3741 4150 59  0000 L BNN
+F 1 "1.2k" V 3380 4125 59  0000 L BNN
+F 2 "nu_preamp:R0402" H 3500 4425 50  0001 C CNN
+F 3 "" H 3500 4425 50  0001 C CNN
+	1    3500 4425
+	0    -1   -1   0   
+$EndComp
+$Comp
+L nu_preamp-eagle-import:R-EU_R0402 R12
+U 1 1 4A119110
+P 3225 5050
+F 0 "R12" V 3416 5175 59  0000 L BNN
+F 1 "12k" V 3155 5200 59  0000 L BNN
+F 2 "nu_preamp:R0402" H 3225 5050 50  0001 C CNN
+F 3 "" H 3225 5050 50  0001 C CNN
+	1    3225 5050
+	0    -1   -1   0   
+$EndComp
+$Comp
+L nu_preamp-eagle-import:R-EU_R0402 R13
+U 1 1 4B0D6C7A
+P 2450 2450
+F 0 "R13" V 2616 2550 59  0000 L BNN
+F 1 "100k" V 2355 2500 59  0000 L BNN
+F 2 "nu_preamp:R0402" H 2450 2450 50  0001 C CNN
+F 3 "" H 2450 2450 50  0001 C CNN
+	1    2450 2450
+	0    -1   -1   0   
+$EndComp
+$Comp
+L nu_preamp-eagle-import:R-EU_R0402 R14
+U 1 1 6923371A
+P 2450 4425
+F 0 "R14" V 2691 4500 59  0000 L BNN
+F 1 "51k" V 2305 4525 59  0000 L BNN
+F 2 "nu_preamp:R0402" H 2450 4425 50  0001 C CNN
+F 3 "" H 2450 4425 50  0001 C CNN
+	1    2450 4425
+	0    -1   -1   0   
+$EndComp
+$Comp
+L nu_preamp-eagle-import:R-EU_R0402 R15
+U 1 1 14EAF52B
+P 4100 2450
+F 0 "R15" V 4266 2525 59  0000 L BNN
+F 1 "100k" V 4030 2500 59  0000 L BNN
+F 2 "nu_preamp:R0402" H 4100 2450 50  0001 C CNN
+F 3 "" H 4100 2450 50  0001 C CNN
+	1    4100 2450
+	0    -1   -1   0   
+$EndComp
+$Comp
+L nu_preamp-eagle-import:R-EU_R0402 R16
+U 1 1 992A8468
+P 4100 4425
+F 0 "R16" V 4341 4150 59  0000 L BNN
+F 1 "51k" V 3980 4175 59  0000 L BNN
+F 2 "nu_preamp:R0402" H 4100 4425 50  0001 C CNN
+F 3 "" H 4100 4425 50  0001 C CNN
+	1    4100 4425
+	0    -1   -1   0   
+$EndComp
+$Comp
+L nu_preamp-eagle-import:GND #SUPPLY07
+U 1 1 70B0FDB1
+P 2450 5425
+F 0 "#SUPPLY07" H 2450 5425 50  0001 C CNN
+F 1 "GND" H 2375 5300 59  0001 L BNN
+F 2 "" H 2450 5425 50  0001 C CNN
+F 3 "" H 2450 5425 50  0001 C CNN
+	1    2450 5425
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:GND #SUPPLY08
+U 1 1 CC52D7E0
+P 4100 5425
+F 0 "#SUPPLY08" H 4100 5425 50  0001 C CNN
+F 1 "GND" H 4025 5300 59  0001 L BNN
+F 2 "" H 4100 5425 50  0001 C CNN
+F 3 "" H 4100 5425 50  0001 C CNN
+	1    4100 5425
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:R-EU_R0402 R5
+U 1 1 D0CB74CC
+P 6275 3075
+F 0 "R5" H 6125 3134 59  0000 L BNN
+F 1 "33k" H 6125 2945 59  0000 L BNN
+F 2 "nu_preamp:R0402" H 6275 3075 50  0001 C CNN
+F 3 "" H 6275 3075 50  0001 C CNN
+	1    6275 3075
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:R-EU_R0402 R4
+U 1 1 4F739D54
+P 6275 3625
+F 0 "R4" H 6125 3684 59  0000 L BNN
+F 1 "33k" H 6125 3495 59  0000 L BNN
+F 2 "nu_preamp:R0402" H 6275 3625 50  0001 C CNN
+F 3 "" H 6275 3625 50  0001 C CNN
+	1    6275 3625
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:R-EU_R0402 R3
+U 1 1 6C3D6F1D
+P 7175 4125
+F 0 "R3" V 7316 4225 59  0000 L BNN
+F 1 "75k" V 7130 4250 59  0000 L BNN
+F 2 "nu_preamp:R0402" H 7175 4125 50  0001 C CNN
+F 3 "" H 7175 4125 50  0001 C CNN
+	1    7175 4125
+	0    -1   -1   0   
+$EndComp
+$Comp
+L nu_preamp-eagle-import:R-EU_R0402 R7
+U 1 1 62BF7720
+P 6275 2325
+F 0 "R7" H 6125 2384 59  0000 L BNN
+F 1 "150k" H 6125 2195 59  0000 L BNN
+F 2 "nu_preamp:R0402" H 6275 2325 50  0001 C CNN
+F 3 "" H 6275 2325 50  0001 C CNN
+	1    6275 2325
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:R-EU_R0402 R6
+U 1 1 9859B9A5
+P 7075 2325
+F 0 "R6" H 6925 2384 59  0000 L BNN
+F 1 "150k" H 6925 2195 59  0000 L BNN
+F 2 "nu_preamp:R0402" H 7075 2325 50  0001 C CNN
+F 3 "" H 7075 2325 50  0001 C CNN
+	1    7075 2325
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:GND #SUPPLY09
+U 1 1 7F737C64
+P 7375 2725
+F 0 "#SUPPLY09" H 7375 2725 50  0001 C CNN
+F 1 "GND" H 7300 2600 59  0001 L BNN
+F 2 "" H 7375 2725 50  0001 C CNN
+F 3 "" H 7375 2725 50  0001 C CNN
+	1    7375 2725
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:GND #SUPPLY010
+U 1 1 AC3081B0
+P 7675 4325
+F 0 "#SUPPLY010" H 7675 4325 50  0001 C CNN
+F 1 "GND" H 7600 4200 59  0001 L BNN
+F 2 "" H 7675 4325 50  0001 C CNN
+F 3 "" H 7675 4325 50  0001 C CNN
+	1    7675 4325
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:D_SCHOTTKYL D1
+U 1 1 8D141E84
+P 8700 2000
+F 0 "D1" H 8835 1805 59  0000 L BNN
+F 1 "D_SCHOTTKYL" H 8610 1825 59  0000 L BNN
+F 2 "nu_preamp:SOD-323" H 8700 2000 50  0001 C CNN
+F 3 "" H 8700 2000 50  0001 C CNN
+	1    8700 2000
+	-1   0    0    1   
+$EndComp
+$Comp
+L nu_preamp-eagle-import:C-EUC0402 C1
+U 1 1 F1C90C04
+P 5575 2200
+F 0 "C1" H 5340 2275 59  0000 L BNN
+F 1 "0.1uF" H 5265 1990 59  0000 L BNN
+F 2 "nu_preamp:C0402" H 5575 2200 50  0001 C CNN
+F 3 "" H 5575 2200 50  0001 C CNN
+	1    5575 2200
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:GND #SUPPLY011
+U 1 1 EFE06A32
+P 4950 2650
+F 0 "#SUPPLY011" H 4950 2650 50  0001 C CNN
+F 1 "GND" H 4875 2525 59  0001 L BNN
+F 2 "" H 4950 2650 50  0001 C CNN
+F 3 "" H 4950 2650 50  0001 C CNN
+	1    4950 2650
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:GND #SUPPLY012
+U 1 1 A9A8C894
+P 5575 2650
+F 0 "#SUPPLY012" H 5575 2650 50  0001 C CNN
+F 1 "GND" H 5500 2525 59  0001 L BNN
+F 2 "" H 5575 2650 50  0001 C CNN
+F 3 "" H 5575 2650 50  0001 C CNN
+	1    5575 2650
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:R-EU_R0402 R2
+U 1 1 81BCC900
+P 9100 3925
+F 0 "R2" V 9200 4034 59  0000 L BNN
+F 1 "10k" V 8950 4020 59  0000 L BNN
+F 2 "nu_preamp:R0402" H 9100 3925 50  0001 C CNN
+F 3 "" H 9100 3925 50  0001 C CNN
+	1    9100 3925
+	0    -1   -1   0   
+$EndComp
+$Comp
+L nu_preamp-eagle-import:GND #SUPPLY013
+U 1 1 0BDF3AC2
+P 9100 4425
+F 0 "#SUPPLY013" H 9100 4425 50  0001 C CNN
+F 1 "GND" H 9025 4300 59  0001 L BNN
+F 2 "" H 9100 4425 50  0001 C CNN
+F 3 "" H 9100 4425 50  0001 C CNN
+	1    9100 4425
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:GND #SUPPLY015
+U 1 1 6EC63A1B
+P 9600 2525
+F 0 "#SUPPLY015" H 9600 2525 50  0001 C CNN
+F 1 "GND" H 9525 2400 59  0001 L BNN
+F 2 "" H 9600 2525 50  0001 C CNN
+F 3 "" H 9600 2525 50  0001 C CNN
+	1    9600 2525
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:TLV170 U1
+U 1 1 0DAE1CDC
+P 7550 3525
+F 0 "U1" H 7600 3675 59  0001 L BNN
+F 1 "TLV170" H 7750 3700 59  0000 L BNN
+F 2 "nu_preamp:SOT23-5" H 7550 3525 50  0001 C CNN
+F 3 "" H 7550 3525 50  0001 C CNN
+	1    7550 3525
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:TLV170 U1
+U 2 1 0DAE1CD0
+P 7675 3525
+F 0 "U1" H 7725 3675 59  0001 L BNN
+F 1 "TLV170" H 7725 3325 59  0001 L BNN
+F 2 "nu_preamp:SOT23-5" H 7675 3525 50  0001 C CNN
+F 3 "" H 7675 3525 50  0001 C CNN
+	2    7675 3525
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:C0603_NK C3
+U 1 1 FA3B87C3
+P 8725 3525
+F 0 "C3" V 8910 3585 59  0000 L BNN
+F 1 "10uF" V 8910 3125 59  0000 L BNN
+F 2 "nu_preamp:C0603_NK" H 8725 3525 50  0001 C CNN
+F 3 "" H 8725 3525 50  0001 C CNN
+	1    8725 3525
+	0    -1   -1   0   
+$EndComp
+$Comp
+L nu_preamp-eagle-import:3P-2MM-TH-MALE H2
+U 1 1 FFEB2954
+P 10625 2100
+F 0 "H2" H 10725 1875 59  0000 R TNN
+F 1 "3P-2MM-TH-MALE" H 10575 1800 59  0001 L BNN
+F 2 "nu_preamp:3P-2MM-TH" H 10625 2100 50  0001 C CNN
+F 3 "" H 10625 2100 50  0001 C CNN
+	1    10625 2100
+	-1   0    0    1   
+$EndComp
+$Comp
+L nu_preamp-eagle-import:2P-2MM-TH-MALE H1
+U 1 1 54E7B095
+P 10575 3575
+F 0 "H1" H 10625 3400 59  0000 R TNN
+F 1 "2P-2MM-TH-MALE" H 10475 3325 59  0001 L BNN
+F 2 "nu_preamp:2P-2MM-TH" H 10575 3575 50  0001 C CNN
+F 3 "" H 10575 3575 50  0001 C CNN
+	1    10575 3575
+	-1   0    0    1   
+$EndComp
+$Comp
+L nu_preamp-eagle-import:GND #SUPPLY01
+U 1 1 E46721A6
+P 10225 3900
+F 0 "#SUPPLY01" H 10225 3900 50  0001 C CNN
+F 1 "GND" H 10150 3775 59  0001 L BNN
+F 2 "" H 10225 3900 50  0001 C CNN
+F 3 "" H 10225 3900 50  0001 C CNN
+	1    10225 3900
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:C0603_NK C2
+U 1 1 6F944AC5
+P 4950 2300
+F 0 "C2" H 5135 2110 59  0000 R TNN
+F 1 "4.7uF" H 5260 2400 59  0000 R TNN
+F 2 "nu_preamp:C0603_NK" H 4950 2300 50  0001 C CNN
+F 3 "" H 4950 2300 50  0001 C CNN
+	1    4950 2300
+	-1   0    0    1   
+$EndComp
+$Comp
+L nu_preamp-eagle-import:SMD2 IN+1
+U 1 1 E9CE97E5
+P 1900 800
+F 0 "IN+1" H 1655 773 59  0000 L BNN
+F 1 "SMD2" H 1855 670 59  0000 L BNN
+F 2 "nu_preamp:SMD1,27-2,54" H 1900 800 50  0001 C CNN
+F 3 "" H 1900 800 50  0001 C CNN
+	1    1900 800 
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:SMD2 IN-1
+U 1 1 F63D14EF
+P 1900 1100
+F 0 "IN-1" H 1655 1073 59  0000 L BNN
+F 1 "SMD2" H 1855 970 59  0000 L BNN
+F 2 "nu_preamp:SMD1,27-2,54" H 1900 1100 50  0001 C CNN
+F 3 "" H 1900 1100 50  0001 C CNN
+	1    1900 1100
+	1    0    0    -1  
+$EndComp
+$Comp
+L nu_preamp-eagle-import:SMD2 GND1
+U 1 1 8E097FD0
+P 1900 1400
+F 0 "GND1" H 1645 1363 59  0000 L BNN
+F 1 "SMD2" H 1855 1270 59  0000 L BNN
+F 2 "nu_preamp:SMD1,27-2,54" H 1900 1400 50  0001 C CNN
+F 3 "" H 1900 1400 50  0001 C CNN
+	1    1900 1400
+	1    0    0    -1  
+$EndComp
+Text Notes 7900 6750 0    85   ~ 0
+Nu Preamp
+Text Notes 10875 7225 0    73   ~ 0
+v2.1
+Text Notes 1375 7025 0    73   ~ 0
+Nu Project by Cycfi Research is licensed under a Creative \nCommons Attribution-ShareAlike 4.0 International License. \nhttp://creativecommons.org/licenses/by-nc/4.0/\n\nCopyright CYCFI Research Inc. 2013-2019
+Wire Notes Line
+	9600 1850 9600 1763
+Text Notes 9550 1725 0    59   ~ 0
+VCC
+Wire Notes Line
+	1625 3600 1200 3600
+Wire Notes Line
+	1200 3600 1200 3650
+Wire Notes Line
+	1200 3650 1150 3700
+Wire Notes Line
+	1150 3700 1200 3750
+Wire Notes Line
+	1200 3750 1150 3800
+Wire Notes Line
+	1150 3800 1200 3850
+Wire Notes Line
+	1200 3850 1150 3900
+Wire Notes Line
+	1150 3900 1200 3950
+Wire Notes Line
+	1200 3950 1150 4000
+Wire Notes Line
+	1150 4000 1200 4050
+Wire Notes Line
+	1625 4100 1200 4100
+Wire Notes Line
+	1200 4100 1200 4050
+Text Notes 1300 3575 0    59   ~ 0
+COIL
+Wire Notes Line
+	1625 3600 1625 3775
+Wire Notes Line
+	1625 4100 1625 3975
+Text Notes 10750 1988 0    59   ~ 0
+VCC(V+)
+Text Notes 10750 2113 0    59   ~ 0
+GND(V-)
+Text Notes 10750 2238 0    59   ~ 0
+GND(V-)
+Text Notes 10725 3663 0    59   ~ 0
+GND(V-)
+Text Notes 10725 3525 0    59   ~ 0
+OUT(O)
+Text Notes 1800 3700 0    59   ~ 0
+IN+
+Text Notes 1800 4100 0    59   ~ 0
+IN-
+Wire Notes Line
+	1625 3775 1825 3775
+Wire Notes Line
+	1625 3975 1825 3975
+Text Notes 8775 7050 0    85   ~ 0
+2018005
+Text Notes 7750 3200 0    59   ~ 0
+U1
+Wire Wire Line
+	9100 3525 10325 3525
+Wire Notes Line
+	9550 1763 9650 1763
+$EndSCHEMATC

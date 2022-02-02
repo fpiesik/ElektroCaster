@@ -30,7 +30,12 @@ envPF[para]=val;
     if(para==5)fEnvs[i]->release(val);
     if(para==6){
       fBiasM[i]->gain(0,val);
-      fBiasM[i]->gain(1,1.0-val);  
+//      delay(10);
+      fBiasM[i]->gain(1,1.0-val);
+//      delay(10);  
+      //fBiasM[i]->gain(3,1);
+//      aBiasM[i]->gain(0,val);
+//      aBiasM[i]->gain(1,1.0-val);
        }
   }
 }
