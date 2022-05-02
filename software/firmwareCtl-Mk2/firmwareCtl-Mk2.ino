@@ -4,6 +4,17 @@
 #include <Wire.h>
 #include <EEPROM.h>
 #include <AsciiMassagePacker.h>
+#include <SD.h>
+#include <SPI.h>
+#include <MIDI.h>;
+
+
+//midi
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial6, MIDI); 
+
+//sdCard
+File myFile;
+const int chipSelect = BUILTIN_SDCARD;
 
 //string defintions variables
   const int nStrings=6; //how many Strings
@@ -22,8 +33,10 @@
   #define LED_PIN     33   //led pin
   #define NUMPIXELS    150  //total number of leds
   const int nLedFrets=25; //how many led frets
+  //long sndLedTimer;
+  //int sndLedInt=1000;
   float tnClrs[12][3];
-  float fled_bright = 0.6; //brightness
+  float fled_bright = 0.8; //brightness
   float fled_redC = 150;  //compensate the "filament filter"
   float fled_greenC= 255; //compensate the "filament filter"
   float fled_blueC = 255; //compensate the "filament filter"
@@ -58,7 +71,7 @@
 
 //fretboard
   byte frtb_sensMode=0;
-  byte frtPins[] = {14,13,2,3,4,5,6,7,8,9,10,11,12,24,25,26,27,28,29,30,16,15};
+  byte frtPins[] = {14,13,2,3,4,5,6,7,8,9,10,11,12,24,25,26,27,28,29,30,15,16};
   byte strPins[] = {18,19,20,21,22,23};
   bool frtState[nFrets][nStrings];
   bool lastFrtState[nFrets][nStrings];
@@ -66,9 +79,10 @@
   byte lastStrPrs[nStrings]={0,0,0,0,0,0};
   byte lastLastStrPrs[nStrings]={0,0,0,0,0,0};
   int strBnc[nStrings];
+  bool fbrdMode=0;
 
 //kickup
-  const byte kickupPins[6]={39,38,37,36,35,34};
+  const byte kickupPins[6]={39,38,37,36,35,34};//34
   unsigned int kickDur[nStrings]={5,5,5,5,4,4};
   bool kickCue[nStrings]={0,0,0,0,0,0};
   bool kickState[nStrings];
@@ -85,14 +99,16 @@
   byte lastBowMode=0;
 
 // Scales
-  const int nScales=8;
-  const char* sclNm[nScales]={"off", "root","major","pentatonic", "mixob9b13","whole tone","wholeHalf","altered"};
+  const int nScales=9;
+  const char* sclNm[nScales]={"off", "root","major","pentatonic", "mixob9b13","whole tone","wholeHalf","altered","chromatic"};
   float scls_sclPix[nStrings][nLedFrets][3];
   float scls_midiPix[nStrings][nLedFrets][3];
-  int scls_sclClr=1;
-  int scls_numSclStp[nScales]= {0, 1, 7, 5, 7, 6, 8, 7};
+  int scls_sclClr=0;
+  int scls_numSclStp[nScales]= {0, 1, 7, 5, 7, 6, 8, 7, 12};
   byte scls_sclSel=2;
   byte scls_sclStp=0;
+  int scls_opMode=2;
+  //int scls_nDispEncFnc=4; 
   
 //string arpeggiator/sequencer
   byte strArp_opMode=2;
@@ -128,48 +144,99 @@
   const byte strArp_nStrBtnFnc=2;
   byte strArp_strBtnFnc=0;
 
+//generic Sequenzer
+  //globals
+  float pttr_gridPix[nStrings][nLedFrets][3];
+  int genSq_opMode=3;
+  const int genSq_maxVisSteps = 16;
+  const int genSq_maxSteps = 16;
+  const int genSq_nPttn = 8;
+  const int genSq_nSngs = 12;
+  const int genSq_pttnMOff = genSq_maxVisSteps+3;
   
-//Drum Sequenzer
-  const int drmSq_maxVisSteps = 16;
-  const int drmSq_maxSteps = 64;
-  byte drmSq_nSteps[nStrings] = {16,16,16,16,16,16};
-  float drmSq_gridPix[nStrings][drmSq_maxVisSteps][3];
-  float drmSq_crsrPix[nStrings][drmSq_maxVisSteps][3];
-  float drmSq_stpPix[nStrings][drmSq_maxVisSteps][3];
-  byte drmSq_stp[nStrings][drmSq_maxSteps][1];
-  byte drmSq_velState[nStrings];
-  long drmSq_clk[nStrings];
-  byte drmSq_opMode=3;
-  byte drmSq_tmDv[nStrings]={6,6,6,6,6,6};
-  byte drmSq_tmDvs[12]={96,64,48,32,24,16,12,8,6,4,3,2};
-  const char* drmSq_tmDvNm[12]={"1","1.5","2","3","4","6","8","12","16","24","32","64"};
-  byte drmSq_tmDvSel[nStrings]={8,8,8,8,8,8};
-  byte drmSq_nxtClkFil[nStrings];
-  byte drmSq_nTmDvs=12;
-  byte drmSq_muteCh[nStrings];
-  //const byte drmSq_nStrEncFnc=2;
 
-  const char* drmSq_strPrsNm[]={"placeStp", "velocity", "prob", "stepJmp"}; 
-  const byte drmSq_nStrPrsFnc=4;
-  byte drmSq_strPrsFnc=0;
-  
-  const char* drmSq_strEncNm[]={"steps", "tmDv"}; 
-  const byte drmSq_nStrEncFnc=2;
-  byte drmSq_strEncFnc=1;
-  
-  const char* drmSq_strBtnNm[]={"mute", "randomise"};
-  const byte drmSq_nStrBtnFnc=2;
-  byte drmSq_strBtnFnc=0;
+  const int genSq_nInst = 3;
+  int genSq_actInst = 0;
+  int genSq_actSng = 0;
+  const char* genSq_SongNm[12]={"Song01","Song02","Song03","Song04","Song05","Song06","Song07","Song08","Song09","Song10","Song11","Song12"};
+  const int genSq_nActPttns=12;
+  int genSq_actPttns[genSq_nActPttns][genSq_nInst];
+  int genSq_actPttnsIdx;
 
-//Pattern settings
+  float genSq_gridPix[nStrings][genSq_maxVisSteps][3];
+  float genSq_crsrPix[nStrings][genSq_maxVisSteps][3];
+  float genSq_stpPix[nStrings][genSq_maxVisSteps][3];
+  
+  float genSq_pttnGridPix[nStrings][genSq_nPttn/2][3];
+  float genSq_pttnPttnPix[nStrings][genSq_nPttn/2][3];
+
+  const int genSq_nTmDvs=12; //global
+  int genSq_tmDvs[genSq_nTmDvs]={96,64,48,32,24,16,12,8,6,4,3,2};
+  const char* genSq_tmDvNm[12]={"1","1.5","2","3","4","6","8","12","16","24","32","64"};
+
+  const char* genSq_strPrsNm[]={"pStp","oct","vel","cc1","cc2","cc3"}; 
+  const int genSq_strPrsFnc_sStp=0;
+  const int genSq_strPrsFnc_oct=1;
+  const int genSq_strPrsFnc_vel=2;
+  const int genSq_strPrsFnc_cc1=3;
+  const int genSq_strPrsFnc_cc2=4;
+  const int genSq_strPrsFnc_cc3=5;
+  const int genSq_nStrPrsFnc=6;
+  const int genSq_nCc=3;
+  const int genSq_maxStpV[genSq_nStrPrsFnc]={12,9,50,127,127,127};
+  int genSq_strPrsFnc=0;
+  int genSq_ccMp[genSq_nCc]={50,48,41};
+
+  const char* genSq_strEncNm[]={"stps", "tmDv"}; 
+  const int genSq_strEncFnc_stps=0;
+  const int genSq_strEncFnc_tmDv=1;
+  //const int genSq_strEncFnc_trns=2;
+  const int genSq_nStrEncFnc=2;
+  const int genSeq_maxEncV[genSq_nStrPrsFnc]={16,genSq_nTmDvs};
+  int genSq_strEncFnc=0;
+  int genSq_strEncChAStps=0;
+  
+  const char* genSq_strBtnNm[]={"mute", "rnd"};
+  const int genSq_strBtnFnc_mute=0;
+  const int genSq_strBtnFnc_rnd=1;
+  const int genSq_nStrBtnFnc=2;
+  int genSq_strBtnFnc=0;
+
+  int genSq_stpEdtStr;
+  bool genSq_stpEdtStrs[nStrings];
+  int genSq_stpEdtFrt;
+
+  float genSq_actPttnColor[3]={0.0,0.1,0.0};
+  float genSq_edtPttnColor[3]={0.0,0.0,0.1};
+
+  //per instance 
+  int genSq_actNotes[genSq_nInst][nStrings][128];
+  int genSq_velState[genSq_nInst][nStrings];
+  int genSq_lastNote[genSq_nInst][nStrings];
+  int genSq_clk[genSq_nInst][nStrings];
+  int genSq_nxtClkFil[genSq_nInst][nStrings];
+  int genSq_muteCh[genSq_nInst][nStrings];
+  int genSq_actPttn[genSq_nInst];
+  int genSq_edtPttn[genSq_nInst];
+  int genSq_sndCh[genSq_nInst][nStrings]={{6,7,8,9,10,11},{1,2,3,4,5,6},{11,12,13,14,15}};
+  float genSq_gridColor[genSq_nInst][3]={{0.0,0.01,0.01},{0.015,0.0,0.01},{0.015,0.01,0.0}};
+
+  // per pattern
+  int genSq_tmDv[genSq_nInst][genSq_nPttn][nStrings];
+  bool genSq_stpOnOff[genSq_nInst][genSq_nPttn][nStrings][genSq_maxSteps];
+  int genSq_stp[genSq_nInst][genSq_nPttn][nStrings][genSq_maxSteps][genSq_nStrPrsFnc];
+  int genSq_chn[genSq_nInst][genSq_nPttn][nStrings][genSq_nStrEncFnc]; 
+ 
+  
+
+//Scale settings
   byte rootNote=0;
-  int actScale=0;
 
 //sequence settings
   unsigned int bpm=90;
 
 //string setup
-  char* toneNm[12]={"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
+ const char* toneNm[12]={"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
 
 //display
   AsciiMassagePacker msg_disp;  //to drive the display
@@ -178,15 +245,17 @@
 
 //global parameters
   const byte maxOpMds=12;
-  byte opMode=1;
+  byte opMode=2;
   byte opMdMap[12] = {0,1,2,3,4,5,6,7,8,9,10,11};
   byte opStrMode=1;
   byte fledMode=opMode;
   bool shift=0;
   bool extClk=0;
-  byte dispEncMode;
-  const byte nDispEncFnc[maxOpMds]={2,4,3,3,2,2,2,2,2,2,2,2}; //number of functions selectable with the disp encoder in each opMode
-  const byte nStrEncFnc[maxOpMds]={2,2,2,2,2,2,2,2,2,2,2,2}; //number of functions selectable with the disp encoder in each opMode
+  int dispEncMode;
+  int strEncMode;
+  int lastStrEnc;
+  const byte nDispEncFnc[maxOpMds]={2,3,5,3,3,3,3,3,3,3,3,3}; //number of functions selectable with the disp encoder in each opMode
+  const byte nStrEncFnc[maxOpMds]={2,2,2,2,2,2,2,2,2,2,2,2}; //number of functions selectable with the string encoders in each opMode
   int dispEncFnc[maxOpMds];
   byte strEncFnc[maxOpMds];
   float vol;
@@ -200,19 +269,30 @@
   bool schdSync;
   unsigned int intClockInt; //inerval between clock ticks
   unsigned int intClockTimer; //to measure interval between clock ticks
+  bool clckOn=0;
 
 // midi 
   int midiCh=15;
-  int extNotes[127];
+  int extNotes[17][128];
 
 void setup() {
-  for(int i=0; i<127; i++){
-    extNotes[i]=0;
-  }
+  midiStop();
   Serial.begin(115200); //debug
   Serial1.begin(250000); //audio Server
   Serial4.begin(115200); // hid
-  
+  //Serial5.begin(250000); // LED
+  MIDI.begin(MIDI_CHANNEL_OMNI); 
+
+  //init sdCard
+  Serial.print("Initializing SD card...");
+
+  if (!SD.begin(chipSelect)) {
+    Serial.println("initialization failed!");
+    return;
+  }
+  Serial.println("initialization done.");
+
+  // init LEDs  
   LEDS.addLeds<WS2812SERIAL,LED_PIN,RGB>(frtPix,NUMPIXELS);
   LEDS.setBrightness(byte(fled_bright*255));
 
@@ -230,9 +310,31 @@ void setup() {
     pinMode(frtPins[f], OUTPUT);
     digitalWrite(frtPins[f], LOW);
   }
-  
+
+//set default genSq-parameter
+  for (int i=0; i < genSq_nInst; i++) {
+    genSq_actPttn[i]=0;
+    genSq_edtPttn[i]=0;
+    for (int p=0; p < genSq_nPttn; p++) {
+      for (int s=0; s < nStrings; s++) {
+        genSq_chn[i][p][s][genSq_strEncFnc_tmDv]=8; 
+        genSq_chn[i][p][s][genSq_strEncFnc_stps]=16;
+        genSq_clk[i][s]=-1;
+        for (int f=0; f < genSq_maxSteps; f++) {
+          genSq_stpOnOff[i][p][s][f]=0;
+          genSq_stp[i][p][s][f][genSq_strPrsFnc_sStp]=0;
+          genSq_stp[i][p][s][f][genSq_strPrsFnc_oct]=4;
+          genSq_stp[i][p][s][f][genSq_strPrsFnc_vel]=40; 
+          genSq_stp[i][p][s][f][genSq_strPrsFnc_cc1]=0; 
+          genSq_stp[i][p][s][f][genSq_strPrsFnc_cc2]=0; 
+          genSq_stp[i][p][s][f][genSq_strPrsFnc_cc3]=0;     
+          genSq_tmDv[i][p][s]=6;
+        }
+      }
+    }
+  }
+  loadSong();
   chngBpm(bpm);
-  drmSq_drwGrid();
   strArp_drwGrid();
   mkColors();
 
@@ -240,14 +342,16 @@ void setup() {
 }
 
 void loop() {
-  usbMIDI.read();
+  //while (usbMIDI.read()){};
+  MIDI.read();    
+  
   updIntClock();
-  if (opStrMode == 3 )readFretboard(0);
-  if (opStrMode == 1 || opStrMode == 2){
-    if(shift==0)readFretboard(frtb_sensMode);
-  }
+  
+  if (fbrdMode==1)readFretboard(0);
+  if (fbrdMode == 0)readFretboard(frtb_sensMode);
+  
   cueKicks();
   updLedFrets();
-  updDisplay();
-
+  //updDisplay();
+ 
 }

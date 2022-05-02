@@ -1,18 +1,23 @@
 void setMidiHandles(){
-  usbMIDI.setHandleClock(midiClock);
-  usbMIDI.setHandleStart(midiStart);
-  usbMIDI.setHandleStop(midiStop);
-  usbMIDI.setHandleNoteOn(rcvNoteOn);
-  usbMIDI.setHandleNoteOff(rcvNoteOff);
+    MIDI.setHandleClock(midiClock);
+    MIDI.setHandleStart(midiStart);
+    MIDI.setHandleStop(midiStop);
+//  usbMIDI.setHandleNoteOn(rcvNoteOn);
+//  usbMIDI.setHandleNoteOff(rcvNoteOff);
 //  usbMIDI.setHandleControlChange(rcvCC);
+  MIDI.setHandleNoteOn(rcvNoteOn);  // Put only the name of the function
+  MIDI.setHandleNoteOff(rcvNoteOff);
+
 }
 
 void sndMidiNote(byte note,byte velocity, byte channel){
   if(velocity>0){
-    usbMIDI.sendNoteOn(note, velocity, channel, 0);
+    //usbMIDI.sendNoteOn(note, velocity, channel, 0);
+    MIDI.sendNoteOn(note, velocity, channel);
   }
   if(velocity==0){
-    usbMIDI.sendNoteOff(note, 0, channel, 0);
+    //usbMIDI.sendNoteOff(note, 0, channel, 0);
+    MIDI.sendNoteOff(note, velocity, channel);
   }
 //    Serial.print("note: ");
 //    Serial.print(note);
@@ -21,22 +26,44 @@ void sndMidiNote(byte note,byte velocity, byte channel){
 }
 
 void sndMidiCC(byte cc, byte val,byte ch){
-  usbMIDI.sendControlChange(cc, val, ch);
+  //usbMIDI.sendControlChange(cc, val, ch);
+  MIDI.sendControlChange(cc, val, ch);
+}
+
+void sndMidiClck(int state){
+  if(state==0)MIDI.sendRealTime(midi::Start);
+  if(state==1)MIDI.sendRealTime(midi::Clock);
+  if(state==2)MIDI.sendRealTime(midi::Stop);
 }
 
 
 void rcvNoteOn(byte channel, byte note, byte velocity) {
-  if(channel==midiCh){
-    extNotes[note]=velocity;
-  }
+  extNotes[channel][note]=velocity;
 }
 
 void rcvNoteOff(byte channel, byte note, byte velocity) {
-  if(channel==midiCh){
-    extNotes[note]=0;
-  }
+  extNotes[channel][note]=0;
 }
 
+void midiClock() { 
+  mClock++;
+  cmpClck(mClock);
+  updDisplay();
+  }
+void midiStart() {
+  mClock=-1;
+  extClk=1;
+  cmpClck(mClock);
+}
+void midiStop() {
+  mClock=-1 ;
+  cmpClck(mClock);
+  for(int ch=0;ch<=16;ch++){
+    for(int n=0;n<=127;n++){
+      extNotes[ch][n]=0;
+    }
+  }
+}
 
 //void rcvCC(byte ch, byte cc, byte data) {
 //  ccState[cc]=data;

@@ -67,9 +67,4 @@ void sndStrPrs(byte str, byte fret){
   //delayMicroseconds(waitS);
   Serial1.write(fret);
   //delayMicroseconds(waitS);
-
-  Serial.print("str:");
-  Serial.print(str);
-  Serial.print(" fret:");
-  Serial.println(fret);
 }

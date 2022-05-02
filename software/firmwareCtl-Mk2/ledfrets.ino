@@ -2,22 +2,66 @@
 void updLedFrets(){
   if (millis()-fled_frameTimer > fled_frameInt){
     ledsTrgOff();
-    switch (fledMode){
-      case 0:
-        strSetup_updFleds();
-        break;
-      case 1:
-        scls_updFleds();
-        break;
-      case 2:
-        strArp_updFleds();
-        break;
-      case 3:
-        drmSq_updFleds();
-        break;
+    if(fbrdMode==0){
+      switch (fledMode){
+        case 0:
+          strSetup_updFleds();
+          break;
+        case 1:
+          scls_updFleds();
+          genSq_updPttnFleds();
+          break;
+        case 2:
+          scls_updFleds();
+          genSq_updPttnFleds();
+          break;
+        case 3:
+          scls_updFleds();
+          genSq_updPttnFleds();
+          break;
+        case 4:
+          scls_updFleds();
+          genSq_updPttnFleds();
+          break;
+        case 5:
+          scls_updFleds();    
+          genSq_updPttnFleds();
+          break;
+      }
     }
+    if(fbrdMode==1){
+      switch (fledMode){
+        case 0:
+          strSetup_updFleds();
+          break;
+        case 1:
+          strArp_updFleds();
+          break;
+        case 2:
+          scls_updFleds();
+          genSq_updPttnFleds();
+          break;
+        case 3:
+          genSq_updFleds();
+          genSq_updPttnFleds();
+          break;
+        case 4:
+          genSq_updFleds();
+          genSq_updPttnFleds();
+          break;
+        case 5:
+          genSq_updFleds();
+          genSq_updPttnFleds();
+          break;
+      }
+    }
+
+    
     lightSlew();
-    if(ledsChngd()==1)FastLED.show();
+    pixels();
+    if(ledsChngd()==1){
+      FastLED.show();
+    }
     fled_frameTimer=millis();
   }
 }
@@ -39,7 +83,7 @@ void lightSlew(){
       if(actC[s][f][2]<=thrsh)actC[s][f][2]=0;
       if(trgtC[s][f][2]>=actC[s][f][2])actC[s][f][2]=trgtC[s][f][2];
 
-      pixel(s,f,actC[s][f]);
+      //pixel(s,f,actC[s][f]);
     }
   }
 }
@@ -50,6 +94,39 @@ void pixel(byte s, byte f, float c[3]){
   }
   frtPix[led_pixPos[s][f]]=CRGB(c[2]*fled_blueC, c[0]*fled_redC, c[1]*fled_greenC);
 }
+
+void pixels(){
+  for(int s=0;s<nStrings;s++){  
+    for(int f=0;f<nLedFrets;f++){
+      pixel(s,f,actC[s][f]);
+    }
+  }
+}
+
+//void sndPixel(byte s, byte f, float c[3]){
+//  int sC[3];
+//  sC[0]=c[0]*fled_redC;
+//  sC[1]=c[1]*fled_greenC;
+//  sC[2]=c[2]*fled_blueC;
+//  for(int ch=0;ch<3;ch++){
+//    if(c[ch]>250)c[ch]=250;
+//  }
+//  Serial5.write(254);
+//  //delayMicroseconds(waitS);
+//  Serial5.write(s);
+//  Serial5.write(f);
+//  Serial5.write(sC[0]);
+//  Serial5.write(sC[1]);
+//  Serial5.write(sC[2]);
+//}
+//void sndPixels(){
+//  for(int s=0;s<nStrings;s++){  
+//    for(int f=0;f<nLedFrets;f++){
+//      sndPixel(s,f,actC[s][f]);
+//    }
+//  }
+//  Serial5.write(255);
+//}
 
 bool ledsChngd(){
   bool chngd=0;
@@ -67,6 +144,7 @@ void fled_dispPixel(byte str,byte fret,float rgb[3],float bright){
   trgtC[str][fret][1]=rgb[1]*bright;
   trgtC[str][fret][2]=rgb[2]*bright;
 }
+
 
 void mkColors(){
   for(int i=0;i<12;i++){
@@ -108,7 +186,7 @@ void HSBtoRGB(float hue) {
 void fled_clr(){
   for(int s=0;s<nStrings;s++){  
     for(int f=0;f<nLedFrets;f++){
-      frtPix[led_pixPos[s][f]]=CRGB(0,0,0);
+      //frtPix[led_pixPos[s][f]]=CRGB(0,0,0);
     }
   }
 }

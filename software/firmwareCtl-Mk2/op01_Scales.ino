@@ -6,13 +6,14 @@ int scls_scls[nScales][12]={
 {0,1,4,5,7,8,10}, // mixo b9 b13
 {0,2,4,6,8,10}, // whole tone
 {0,2,3,5,6,8,9,11}, // whole tone half tone
-{0,1,3,4,6,8,10} // altered
+{0,1,3,4,6,8,10}, // altered
+{0,1,2,3,4,5,6,7,8,9,10,11} //chromatic
 }; 
 
 void scls_chDispEnc(int val){
   switch(dispEncMode){
     case 0:
-      switch(dispEncFnc[opMode]){
+      switch(dispEncFnc[scls_opMode]){
         case 0:  
           if(rootNote + val < 0)rootNote = 12;
           rootNote=(rootNote + val)%12;
@@ -29,21 +30,29 @@ void scls_chDispEnc(int val){
           if(scls_sclClr + val < 0)scls_sclClr = 1;
           scls_sclClr=(scls_sclClr + val)%2;
           break;
+        case 4:
+          saveSong();
+          if(genSq_actSng + val < 0)genSq_actSng = genSq_nSngs-1;
+          genSq_actSng=(genSq_actSng + val)%genSq_nSngs;
+          loadSong();
+          break;
       }
       break;
     case 1:
-      if(dispEncFnc[opMode] + val < 0)dispEncFnc[opMode] = nDispEncFnc[opMode];
-      dispEncFnc[opMode]=(dispEncFnc[opMode] + val)%nDispEncFnc[opMode];
-      Serial.print("dispEncFnc[opMode] ");
-      Serial.println(dispEncFnc[opMode]);
+      if(dispEncFnc[scls_opMode] + val < 0)dispEncFnc[scls_opMode] = nDispEncFnc[scls_opMode];
+      dispEncFnc[scls_opMode]=(dispEncFnc[scls_opMode] + val)%nDispEncFnc[scls_opMode];
+//      Serial.print("dispEncFnc[opMode] ");
+//      Serial.println(dispEncFnc[opMode]);
       break;
   }
 }
 
 void scls_updDisp(){
-  disp_Str(3, 8, "scales");
+  disp_Str(65, 10, "sclClr");
+  disp_Str(3, 10, "song: ");
+  disp_Int(40, 10, genSq_actSng);
 
-  switch (dispEncFnc[opMode]){
+  switch (dispEncFnc[scls_opMode]){
     case 0:
       disp_RFrm(0, 23, 21, 19, 3);
       break;
@@ -55,6 +64,9 @@ void scls_updDisp(){
       break;
     case 3:
       disp_RFrm(111, 0, 17, 19, 3);
+      break;
+    case 4:
+      disp_RFrm(35, 0, 17, 19, 3);
       break;
   }
 
@@ -69,7 +81,7 @@ void scls_updDisp(){
   disp_Str(3, 34, toneNm[rootNote % 12]);
   disp_Str(24, 34, sclNm[scls_sclSel]);
   disp_Int(115, 34, scls_sclStp+1);
-  disp_Int(115, 8, scls_sclClr);
+  disp_Int(115, 10, scls_sclClr);
   //dispStr(20,40,"helleo");
   //dispInt(100, 40, 6);
 }
@@ -77,9 +89,10 @@ void scls_updDisp(){
 void scls_updFleds(){
   float sumPix;
   scls_dispScale();
-  scls_dispMidi();
+  if(opMode==2)scls_dispMidi();
+  if(opMode!=2)scls_dispSq();
   for(int s=0;s<nStrings;s++){
-    for(int f=0;f<nLedFrets;f++){
+    for(int f=0;f<genSq_pttnMOff-1;f++){
       for(int ch=0; ch < 3; ch++){
         trgtC[s][f][ch]=scls_sclPix[s][f][ch];
         sumPix = sumPix + scls_midiPix[s][f][ch];
@@ -94,8 +107,8 @@ void scls_updFleds(){
 
 void scls_dispScale(){
   bool color=scls_sclClr;
-  float brightS=0.3; //brighness off the colored scale
-  float brightM=0.3; //brightness of the monocrome scale
+  float brightS=0.15; //brighness off the colored scale
+  float brightM=0.15; //brightness of the monocrome scale
 
   for(int s=0;s<nStrings;s++){ 
       for(int f=0;f<nLedFrets;f++){
@@ -130,22 +143,80 @@ void scls_dispScale(){
 void scls_dispMidi(){
   float bright=1;
   int midiTones[12];
+  int midiNotes[127];
+  int dispM=0;
   for(int n=0;n<12;n++){
     midiTones[n]=0;
   }
   for(int n=0;n<127;n++){
-    if(extNotes[n]>0)midiTones[n%12]=extNotes[n];
+    midiNotes[n]=0;
+  }
+  for(int ch=15;ch<=16;ch++){
+    for(int n=0;n<=127;n++){
+      if(extNotes[ch][n]>0){
+        if(ch == 15)midiTones[n%12]=extNotes[ch][n];
+        if(ch == 16)midiNotes[n]=extNotes[ch][n];
+      }
+    }
   }
   for(int fret=0;fret<nLedFrets;fret++){
     for(int i=0;i<nStrings;i++){  
       byte note=tuning[i]+fret;
       //int idx=(note-rootNote)%12;
       int idx=note%12;
-      if(midiTones[note%12]==0){
-        scls_midiPix[i][fret][0]=0;
-        scls_midiPix[i][fret][1]=0;
-        scls_midiPix[i][fret][2]=0;
+      scls_midiPix[i][fret][0]=0;
+      scls_midiPix[i][fret][1]=0;
+      scls_midiPix[i][fret][2]=0;
+      if(midiNotes[note]>0){
+        bright=midiNotes[note]/127.0;
+        scls_midiPix[i][fret][0]=tnClrs[idx][0]*bright;
+        scls_midiPix[i][fret][1]=tnClrs[idx][1]*bright;
+        scls_midiPix[i][fret][2]=tnClrs[idx][2]*bright;
+      }      
+      if(midiTones[note%12]>0){
+        bright=midiTones[note%12]/127.0;
+        scls_midiPix[i][fret][0]=tnClrs[idx][0]*bright;
+        scls_midiPix[i][fret][1]=tnClrs[idx][1]*bright;
+        scls_midiPix[i][fret][2]=tnClrs[idx][2]*bright;
       }
+    }
+  }
+}
+
+void scls_dispSq(){
+  float bright=1;
+  int midiTones[12];
+  int midiNotes[127];
+  int dispM=0;
+  for(int n=0;n<12;n++){
+    midiTones[n]=0;
+  }
+  for(int n=0;n<127;n++){
+    midiNotes[n]=0;
+  }
+  for(int s=0;s<nStrings;s++){
+    for(int n=0;n<=127;n++){
+      if(genSq_actNotes[genSq_actInst][s][n]>0){ //todo: which sequencer to display?
+        midiTones[n%12]=genSq_actNotes[genSq_actInst][s][n];
+        //if(ch == 16)midiNotes[n]=extNotes[ch][n];
+      }
+    }
+  }
+  
+  for(int fret=0;fret<nLedFrets;fret++){
+    for(int i=0;i<nStrings;i++){  
+      byte note=tuning[i]+fret;
+      //int idx=(note-rootNote)%12;
+      int idx=note%12;
+      scls_midiPix[i][fret][0]=0;
+      scls_midiPix[i][fret][1]=0;
+      scls_midiPix[i][fret][2]=0;
+      if(midiNotes[note]>0){
+        bright=midiNotes[note]/127.0;
+        scls_midiPix[i][fret][0]=tnClrs[idx][0]*bright;
+        scls_midiPix[i][fret][1]=tnClrs[idx][1]*bright;
+        scls_midiPix[i][fret][2]=tnClrs[idx][2]*bright;
+      }      
       if(midiTones[note%12]>0){
         bright=midiTones[note%12]/127.0;
         scls_midiPix[i][fret][0]=tnClrs[idx][0]*bright;

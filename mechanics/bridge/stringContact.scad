@@ -1,4 +1,4 @@
-include <parameter.scad>
+include <../parameter.scad>
 strContact();
 module strContact(){
 strings=nStrings;
@@ -6,17 +6,17 @@ strToStr=strSpanB;
 z=4;
 
 spacing=strToStr/(strings-1);
-strDia=2.5;
+strDia=3;
 strSpD=4.5;
 strSpZ=5;
 oeseDia=7;
 oeseShft=4.5;
-x=strToStr+oeseDia;
+x=strToStr+oeseDia+1;
 y=oeseDia*2;
 
 
 difference(){
-translate([0,y/2-oeseDia/2,z/2])cube([x,y,z],center=true);
+translate([0,y/2-oeseDia/2-0.5,z/2])cube([x,y,z],center=true);
 
 for(x=[0:strings-1]){
 translate([x*(spacing)-spacing*strings/2+spacing/2,0,0]){

@@ -19,8 +19,8 @@ void strArp_chDispEnc(int val){
     case 1:
       if(dispEncFnc[opMode] + val < 0)dispEncFnc[opMode] = nDispEncFnc[opMode];
       dispEncFnc[opMode]=(dispEncFnc[opMode] + val)%nDispEncFnc[opMode];
-      Serial.print("dispEncFnc[opMode] ");
-      Serial.println(dispEncFnc[opMode]);
+//      Serial.print("dispEncFnc[opMode] ");
+//      Serial.println(dispEncFnc[opMode]);
       break;
   }
 }
@@ -72,12 +72,6 @@ void strArp_updDisp(){
     if(strArp_strEncFnc==0)disp_Int(108-s*21, 55, strArp_nRpt[s]);
     if(strArp_strEncFnc==1)disp_Str(108-s*21, 55, strArp_tmDvNm[strArp_tmDvSel[s]]);
   }
-//  disp_Str(3, 55, drmSq_tmDvNm[drmSq_tmDvSel[5]]);
-//  disp_Str(24, 55, drmSq_tmDvNm[drmSq_tmDvSel[4]]);
-//  disp_Str(45, 55, drmSq_tmDvNm[drmSq_tmDvSel[3]]);
-//  disp_Str(66, 55, drmSq_tmDvNm[drmSq_tmDvSel[2]]);
-//  disp_Str(87, 55, drmSq_tmDvNm[drmSq_tmDvSel[1]]);
-//  disp_Str(108, 55, drmSq_tmDvNm[drmSq_tmDvSel[0]]);
   
   disp_Color(1);
 }
@@ -102,7 +96,7 @@ void strArp_ersStps(){
 }
 
 void strArp_updClck(){
-  if(opStrMode != drmSq_opMode && strArp_act==1 ){
+  if(fbrdMode==0){  
     strArp_mkArp();
 
     for(int s=0;s<nStrings;s++){
