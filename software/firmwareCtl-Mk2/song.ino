@@ -100,3 +100,66 @@ void loadSong(){
     //Serial.println("error opening test.txt");
   }
 }
+
+void defaultSong(){
+  for (int i=0; i < genSq_nInst; i++) {
+    genSq_actPttn[i]=0;
+    genSq_edtPttn[i]=0;
+    for (int p=0; p < genSq_nPttn; p++) {
+      for (int s=0; s < nStrings; s++) {
+        genSq_chn[i][p][s][genSq_strEncFnc_tmDv]=8; 
+        genSq_chn[i][p][s][genSq_strEncFnc_stps]=16;
+        genSq_clk[i][s]=-1;
+        for (int f=0; f < genSq_maxSteps; f++) {
+          genSq_stpOnOff[i][p][s][f]=0;
+          genSq_stp[i][p][s][f][genSq_strPrsFnc_sStp]=0;
+          genSq_stp[i][p][s][f][genSq_strPrsFnc_oct]=4;
+          genSq_stp[i][p][s][f][genSq_strPrsFnc_vel]=40; 
+          genSq_stp[i][p][s][f][genSq_strPrsFnc_cc1]=0; 
+          genSq_stp[i][p][s][f][genSq_strPrsFnc_cc2]=0; 
+          genSq_stp[i][p][s][f][genSq_strPrsFnc_cc3]=0;     
+          genSq_tmDv[i][p][s]=6;
+        }
+      }
+    }
+  }
+  rootNote=0;
+  scls_sclSel=2;
+  scls_sclStp=0;
+  bpm=90;
+  genSq_actPttnsCh();
+  for(int inst = 0; inst<genSq_nInst; inst++){
+    for(int pttn = 0; pttn<genSq_nPttn; pttn++){
+      for(int str = 0; str<nStrings; str++){
+        genSq_tmDv[inst][pttn][str]=genSq_tmDvs[genSq_chn[inst][pttn][str][genSq_strEncFnc_tmDv]];
+      }
+    }
+  }
+}
+
+void scanPttns(){
+  static int inter=3000;
+  if (millis()-scanPttnTimer > inter){
+    scanPttnTimer+=inter;
+    inter=500;
+    static int pttn = 0;
+    if(pttn<=genSq_nPttn){
+      genSq_actPttn[0]=pttn;
+      genSq_edtPttn[0]=pttn;
+      genSq_actPttn[1]=pttn;
+      genSq_edtPttn[1]=pttn;
+      genSq_actPttn[2]=pttn;
+      genSq_edtPttn[2]=pttn;
+      pttn++;
+    }
+    if(pttn==genSq_nPttn+1){
+      genSq_actPttn[0]=0;
+      genSq_edtPttn[0]=0;
+      genSq_actPttn[1]=0;
+      genSq_edtPttn[1]=0;
+      genSq_actPttn[2]=0;
+      genSq_edtPttn[2]=0;
+      pttn++;
+    }
+  }
+}

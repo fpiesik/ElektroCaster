@@ -36,7 +36,13 @@ void genSq_updClck(){
           genSq_nxtClkFil[inst][s]=0;
         }
       }
+     for(int s=0;s<nStrings;s++){
+        if(genSq_nxtClkFil[inst][s] >= tmDv[inst][pttn][s]){
+          genSq_nxtClkFil[inst][s]=0;
+        }
+      }
     }
+    
 
   
 //            if(inst==0 && s==5){

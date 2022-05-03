@@ -212,8 +212,8 @@ void genSq_updDisp(){
   int pitch=(scls_scls[scls_sclSel][(genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_sStp]+scls_sclStp)%scls_numSclStp[scls_sclSel]]+rootNote-stpOff+12)%12;
   disp_Int(73, 24, genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_vel]);
   disp_Int(73, 39, genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_cc1]);
-  disp_Int(90, 39, genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_cc2]);
-  disp_Int(107, 39, genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_cc3]);
+  disp_Int(93, 39, genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_cc2]);
+  disp_Int(113, 39, genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_cc3]);
   disp_Str(73, 9, toneNm[pitch%12]);
   disp_Int(90, 9, genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_oct]);
 }

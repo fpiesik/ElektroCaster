@@ -174,7 +174,7 @@ const int chipSelect = BUILTIN_SDCARD;
   int genSq_tmDvs[genSq_nTmDvs]={96,64,48,32,24,16,12,8,6,4,3,2};
   const char* genSq_tmDvNm[12]={"1","1.5","2","3","4","6","8","12","16","24","32","64"};
 
-  const char* genSq_strPrsNm[]={"pStp","oct","vel","cc1","cc2","cc3"}; 
+  const char* genSq_strPrsNm[]={"pStp","oct","vel","dec","len","smp"}; 
   const int genSq_strPrsFnc_sStp=0;
   const int genSq_strPrsFnc_oct=1;
   const int genSq_strPrsFnc_vel=2;
@@ -183,9 +183,9 @@ const int chipSelect = BUILTIN_SDCARD;
   const int genSq_strPrsFnc_cc3=5;
   const int genSq_nStrPrsFnc=6;
   const int genSq_nCc=3;
-  const int genSq_maxStpV[genSq_nStrPrsFnc]={12,9,50,127,127,127};
+  const int genSq_maxStpV[genSq_nStrPrsFnc]={12,9,50,99,99,99};
   int genSq_strPrsFnc=0;
-  int genSq_ccMp[genSq_nCc]={50,48,41};
+  int genSq_ccMp[genSq_nCc]={48,41,50};
 
   const char* genSq_strEncNm[]={"stps", "tmDv"}; 
   const int genSq_strEncFnc_stps=0;
@@ -275,6 +275,9 @@ const int chipSelect = BUILTIN_SDCARD;
   int midiCh=15;
   int extNotes[17][128];
 
+//other
+long scanPttnTimer;
+
 void setup() {
   midiStop();
   Serial.begin(115200); //debug
@@ -337,8 +340,8 @@ void setup() {
   chngBpm(bpm);
   strArp_drwGrid();
   mkColors();
-
   setMidiHandles();
+  clck_strt();
 }
 
 void loop() {
@@ -352,6 +355,6 @@ void loop() {
   
   cueKicks();
   updLedFrets();
+  scanPttns();
   //updDisplay();
- 
 }

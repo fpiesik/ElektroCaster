@@ -119,6 +119,8 @@ void procHidDChng(byte idx, bool val) {
       break;
 
     case 9:
+      //embedden button near pots 
+      if (val == 1)defaultSong();
       break;
 
     case 10:
