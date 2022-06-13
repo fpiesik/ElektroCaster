@@ -14,6 +14,7 @@ int clck_stp(){
 //  cmpClck(mClock);  
   clckOn=0;
   sndMidiClck(2);
+  genSq_allNOff();
 }
 
 

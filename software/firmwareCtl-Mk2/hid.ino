@@ -43,11 +43,11 @@ void readFretboard(int sensMode) {
   for (int s = 0; s < nStrings; s++) {
     unsigned int sB = strBnc[s];
     if (sB >= strBncs && millis() - lastChng[s] > fretMaskT && lastExStrPr[s] != strPrs[s]) {
-      if (opStrMode == 1 && strArp_act == 0) {
-        if (fbrdMode == 0)sndTrigEnv(s, strPrs[s]);
-        if (strPrs[s] > 0) kick(s);
+      if (fbrdMode == 0 && strArp_act == 0) {
+        sndTrigEnv(s, strPrs[s]);
+        if (strPrs[s] > 0)kick(s);
+        if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s]);
       }
-
       if (fbrdMode == 0)sndStrPrs(s, strPrs[s]);
       genSq_editSteps(s);
       //lastStrPrs[s]=strPrs[s];
@@ -120,7 +120,8 @@ void procHidDChng(byte idx, bool val) {
 
     case 9:
       //embedden button near pots 
-      if (val == 1)defaultSong();
+      if (val == 0 && shift == 1)defaultSong();
+      if (val == 0 && shift == 0)loadSong(0);
       break;
 
     case 10:
@@ -202,13 +203,15 @@ void procHidAChng(byte idx, float val) {
       break;
 
     case 10:
+      sndMidiCC(mInst_anaXyCc[0], val*127,mInst_chn);
       break;
 
     case 11:
+      sndMidiCC(mInst_anaXyCc[1], val*127,mInst_chn);
       break;
 
     case 12:
-      //sndFX(1,hidAVal[12]);
+      sndMidiCC(mInst_potCc[1], val*127,mInst_chn);
       break;
 
     case 13:
@@ -226,14 +229,17 @@ void procHidAChng(byte idx, float val) {
 
     case 16:
       //sndFX(0,val);
+      sndMidiCC(mInst_potCc[0], val*127,mInst_chn);
       break;
 
     case 17:
       //sndFX(3,val)
+      sndMidiCC(mInst_potCc[3], val*127,mInst_chn);
       break;
 
     case 18:
       //sndFX(2,val);
+      sndMidiCC(mInst_potCc[2], val*127,mInst_chn);
       break;
   }
   lastHidAVal[idx] = hidAVal[idx];

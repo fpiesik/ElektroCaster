@@ -1,12 +1,14 @@
 int scls_scls[nScales][12]={
 {}, //off
 {0}, //Root
-{0,2,4,5,7,9,11}, //ionian
 {0,3,5,7,10}, //pentatonic
-{0,1,4,5,7,8,10}, // mixo b9 b13
+{0,2,4,5,7,9,11}, //dur
+{0,2,3,5,7,8,10}, // moll
+{0,2,3,5,7,8,11}, // hrm moll
+{0,2,3,5,7,9,11}, // mel moll
+{0,1,3,4,6,8,10}, // altered
 {0,2,4,6,8,10}, // whole tone
 {0,2,3,5,6,8,9,11}, // whole tone half tone
-{0,1,3,4,6,8,10}, // altered
 {0,1,2,3,4,5,6,7,8,9,10,11} //chromatic
 }; 
 
@@ -31,10 +33,11 @@ void scls_chDispEnc(int val){
           scls_sclClr=(scls_sclClr + val)%2;
           break;
         case 4:
-          saveSong();
+          if (shift==0)saveSong(genSq_actSng);
+          if (shift==1)saveSong(0);
           if(genSq_actSng + val < 0)genSq_actSng = genSq_nSngs-1;
           genSq_actSng=(genSq_actSng + val)%genSq_nSngs;
-          loadSong();
+          loadSong(genSq_actSng);
           break;
       }
       break;

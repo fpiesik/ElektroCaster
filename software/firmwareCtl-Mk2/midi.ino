@@ -25,15 +25,31 @@ void sndMidiNote(byte note,byte velocity, byte channel){
 //    Serial.println(velocity);
 }
 
+void sndMidiNotePress(int str, int frt){
+  static int lastNote[nStrings];
+  if (frt > 0){ 
+    int note=tuning[str]+frt;
+    sndMidiNote(lastNote[str],0, mInst_chn);
+    sndMidiNote(note,120, mInst_chn);
+    lastNote[str]=note;
+  }    
+  if (frt == 0){ 
+    if(lastNote>0)sndMidiNote(lastNote[str],0, mInst_chn);
+    lastNote[str]=0;
+  }
+}
+
 void sndMidiCC(byte cc, byte val,byte ch){
   //usbMIDI.sendControlChange(cc, val, ch);
   MIDI.sendControlChange(cc, val, ch);
 }
 
 void sndMidiClck(int state){
-  if(state==0)MIDI.sendRealTime(midi::Start);
-  if(state==1)MIDI.sendRealTime(midi::Clock);
-  if(state==2)MIDI.sendRealTime(midi::Stop);
+  if(extClk==0){
+    if(state==0)MIDI.sendRealTime(midi::Start);
+    if(state==1)MIDI.sendRealTime(midi::Clock);
+    if(state==2)MIDI.sendRealTime(midi::Stop);
+  }
 }
 
 

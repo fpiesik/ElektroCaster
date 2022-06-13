@@ -22,8 +22,8 @@ const int chipSelect = BUILTIN_SDCARD;
   byte tuning[nStrings]={64,59,55,50,45,40};
   const byte strSnsPins[nStrings]={2,3,4,5,6,7};
   unsigned long lastFretRead[nStrings];
-  unsigned int fretMaskT=70; //time until a next strPres on he same string is detected
-  unsigned int strBncs=100; //number of same samples to trigger strPres
+  unsigned int fretMaskT=35; //time until a next strPres on he same string is detected
+  unsigned int strBncs=150; //number of same samples to trigger strPres
   float strP[nStrings];
   float lastStrP[nStrings];
   float strA[nStrings];
@@ -36,7 +36,7 @@ const int chipSelect = BUILTIN_SDCARD;
   //long sndLedTimer;
   //int sndLedInt=1000;
   float tnClrs[12][3];
-  float fled_bright = 0.8; //brightness
+  float fled_bright = 1; //brightness
   float fled_redC = 150;  //compensate the "filament filter"
   float fled_greenC= 255; //compensate the "filament filter"
   float fled_blueC = 255; //compensate the "filament filter"
@@ -99,12 +99,12 @@ const int chipSelect = BUILTIN_SDCARD;
   byte lastBowMode=0;
 
 // Scales
-  const int nScales=9;
-  const char* sclNm[nScales]={"off", "root","major","pentatonic", "mixob9b13","whole tone","wholeHalf","altered","chromatic"};
+  const int nScales=11;
+  const char* sclNm[nScales]={"off", "root", "pentatonic", "major", "minor", "hrm minor", "mel minor", "altered", "whole", "wholeHalf","chromatic"};
   float scls_sclPix[nStrings][nLedFrets][3];
   float scls_midiPix[nStrings][nLedFrets][3];
   int scls_sclClr=0;
-  int scls_numSclStp[nScales]= {0, 1, 7, 5, 7, 6, 8, 7, 12};
+  int scls_numSclStp[nScales]= {0, 1, 5, 7, 7, 7, 7, 7, 6, 8, 12};
   byte scls_sclSel=2;
   byte scls_sclStp=0;
   int scls_opMode=2;
@@ -170,9 +170,9 @@ const int chipSelect = BUILTIN_SDCARD;
   float genSq_pttnGridPix[nStrings][genSq_nPttn/2][3];
   float genSq_pttnPttnPix[nStrings][genSq_nPttn/2][3];
 
-  const int genSq_nTmDvs=12; //global
-  int genSq_tmDvs[genSq_nTmDvs]={96,64,48,32,24,16,12,8,6,4,3,2};
-  const char* genSq_tmDvNm[12]={"1","1.5","2","3","4","6","8","12","16","24","32","64"};
+  const int genSq_nTmDvs=13; //global
+  int genSq_tmDvs[genSq_nTmDvs]={384,192,96,64,48,32,24,16,12,8,6,4,3};
+  const char* genSq_tmDvNm[genSq_nTmDvs]={"4","2","1",".75","/2","/3","/4","/6","/8","/12","/16","/24","/32"};
 
   const char* genSq_strPrsNm[]={"pStp","oct","vel","dec","len","smp"}; 
   const int genSq_strPrsFnc_sStp=0;
@@ -183,23 +183,25 @@ const int chipSelect = BUILTIN_SDCARD;
   const int genSq_strPrsFnc_cc3=5;
   const int genSq_nStrPrsFnc=6;
   const int genSq_nCc=3;
+  const int genSq_SelChnCC=54;
   const int genSq_maxStpV[genSq_nStrPrsFnc]={12,9,50,99,99,99};
   int genSq_strPrsFnc=0;
   int genSq_ccMp[genSq_nCc]={48,41,50};
 
-  const char* genSq_strEncNm[]={"stps", "tmDv"}; 
+  const char* genSq_strEncNm[]={"stps", "tmDv", "chn"}; 
   const int genSq_strEncFnc_stps=0;
   const int genSq_strEncFnc_tmDv=1;
-  //const int genSq_strEncFnc_trns=2;
-  const int genSq_nStrEncFnc=2;
-  const int genSeq_maxEncV[genSq_nStrPrsFnc]={16,genSq_nTmDvs};
+  const int genSq_strEncFnc_chn=2;
+  const int genSq_nStrEncFnc=3;
+  const int genSeq_maxEncV[genSq_nStrPrsFnc]={genSq_maxVisSteps,genSq_nTmDvs,16};
   int genSq_strEncFnc=0;
   int genSq_strEncChAStps=0;
   
-  const char* genSq_strBtnNm[]={"mute", "rnd"};
+  const char* genSq_strBtnNm[]={"mute", "rnd", "sclQ"};
   const int genSq_strBtnFnc_mute=0;
   const int genSq_strBtnFnc_rnd=1;
-  const int genSq_nStrBtnFnc=2;
+  const int genSq_strBtnFnc_sclQ=2;
+  const int genSq_nStrBtnFnc=3;
   int genSq_strBtnFnc=0;
 
   int genSq_stpEdtStr;
@@ -218,7 +220,9 @@ const int chipSelect = BUILTIN_SDCARD;
   int genSq_muteCh[genSq_nInst][nStrings];
   int genSq_actPttn[genSq_nInst];
   int genSq_edtPttn[genSq_nInst];
-  int genSq_sndCh[genSq_nInst][nStrings]={{6,7,8,9,10,11},{1,2,3,4,5,6},{11,12,13,14,15}};
+  //bool genSq_attSng[genSq_nInst]={1,0,0}; //depreceated
+  bool genSq_sclQ[genSq_nInst][nStrings];
+  //int genSq_sndCh[genSq_nInst][nStrings]={{1,1,1,1,1,1},{2,2,2,2,2,2},{3,3,3,3,3,3}};
   float genSq_gridColor[genSq_nInst][3]={{0.0,0.01,0.01},{0.015,0.0,0.01},{0.015,0.01,0.0}};
 
   // per pattern
@@ -227,7 +231,10 @@ const int chipSelect = BUILTIN_SDCARD;
   int genSq_stp[genSq_nInst][genSq_nPttn][nStrings][genSq_maxSteps][genSq_nStrPrsFnc];
   int genSq_chn[genSq_nInst][genSq_nPttn][nStrings][genSq_nStrEncFnc]; 
  
-  
+// midi Instrument
+  int mInst_chn=11;
+  int mInst_anaXyCc[2]={1,2};
+  int mInst_potCc[4]={3,4,5,6};
 
 //Scale settings
   byte rootNote=0;
@@ -336,7 +343,7 @@ void setup() {
       }
     }
   }
-  loadSong();
+  loadSong(0);
   chngBpm(bpm);
   strArp_drwGrid();
   mkColors();

@@ -96,7 +96,7 @@ void strArp_ersStps(){
 }
 
 void strArp_updClck(){
-  if(fbrdMode==0){  
+  if(strArp_act == 1){  
     strArp_mkArp();
 
     for(int s=0;s<nStrings;s++){
@@ -113,13 +113,15 @@ void strArp_updClck(){
           
           //if(strPrs[s]==0)strArp_clk[s]=-1;
         if(strArp_stp[s][strArp_clk[s]]==1){
+          if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s]);
           sndTrigEnv(s, strPrs[s]);
           if(strPrs[s] > 0) kick(s);
         }
         strArp_clk[s]++;
         if(strArp_clk[s]>=strArp_nStps[s])strArp_clk[s]=0;
       }
-    //if(strPrs[s] == 0)strArp_clk[s]=-1;
+      //if(strPrs[s] == 0)strArp_clk[s]=-1;
+      if(frtb_sensMode==0 && strPrs[s]==0)sndMidiNotePress(s,strPrs[s]);
     }
     strArp_drwCursor();
     strArp_drwStep();
