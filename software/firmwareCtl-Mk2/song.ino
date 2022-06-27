@@ -37,6 +37,7 @@ void saveSong(int sng){
     myFile.write(scls_sclSel);
     myFile.write(scls_sclStp); 
     myFile.write(bpm);
+    myFile.write(scls_fledSrc);
 //    
 //    Serial.print("Writing to test.txt...");
 //    myFile.println("testing 1, 2, 3.");
@@ -86,6 +87,7 @@ void loadSong(int sng){
     scls_sclStp=myFile.read();
     bpm=myFile.read();
     chngBpm(bpm);
+    scls_fledSrc=myFile.read();
     // close the file:
     myFile.close();
     genSq_actPttnsCh();
@@ -115,6 +117,7 @@ void defaultSong(){
         genSq_chn[i][p][s][genSq_strEncFnc_tmDv]=10; 
         genSq_chn[i][p][s][genSq_strEncFnc_stps]=16;
         genSq_chn[i][p][s][genSq_strEncFnc_chn]=i+1;
+        genSq_chn[i][p][s][genSq_strEncFnc_sync]=0;
         genSq_clk[i][s]=-1;
         for (int f=0; f < genSq_maxSteps; f++) {
           genSq_stpOnOff[i][p][s][f]=0;
@@ -134,6 +137,7 @@ void defaultSong(){
   scls_sclStp=0;
   bpm=90;
   chngBpm(bpm);
+  scls_fledSrc=2;
   genSq_actPttnsCh();
   for(int inst = 0; inst<genSq_nInst; inst++){
     for(int pttn = 0; pttn<genSq_nPttn; pttn++){
@@ -168,5 +172,12 @@ void scanPttns(){
       genSq_edtPttn[2]=0;
       pttn++;
     }
+  }
+}
+
+void rstAllSngs(){
+  defaultSong();
+  for(int i=0;i<genSq_nSngs;i++){
+    saveSong(i);
   }
 }

@@ -64,7 +64,7 @@ void genSq_drwGrid(){
 
 void genSq_drwCursor(byte s){
   int inst=genSq_actInst;
-  float color[3] = {0.2,0.2,0.2};
+  float color[3] = {0.25,0.25,0.25};
   if(genSq_clk[inst][s]>=0){
     for(int c=0;c<3;c++){
       for(int f=0;f<genSq_maxVisSteps;f++){
@@ -80,6 +80,7 @@ void genSq_drwStep(byte s){
   int pttn=genSq_edtPttn[genSq_actInst];
   
   for(int f=0;f<genSq_maxVisSteps;f++){   
+    int chnl = genSq_chn[inst][pttn][s][genSq_strEncFnc_chn];
     int stpV=genSq_stp[inst][pttn][s][f][genSq_strPrsFnc_sStp];
     float brght=genSq_stp[inst][pttn][s][f][genSq_strPrsFnc_vel]/float(genSq_maxStpV[genSq_strPrsFnc_vel]);
     //int pitch=(scls_scls[scls_sclSel][stpV]+rootNote)%12;
@@ -92,7 +93,8 @@ void genSq_drwStep(byte s){
     for(int c=0;c<3;c++){
       genSq_stpPix[s][f][c]=0;    
       if(genSq_stpOnOff[inst][pttn][s][f]>0 && f<genSq_chn[inst][pttn][s][genSq_strEncFnc_stps]){
-        genSq_stpPix[s][f][c]=tnClrs[pitch][c]*brght;
+        if(chnl>0)genSq_stpPix[s][f][c]=tnClrs[pitch][c]*brght;
+        if(chnl==0)genSq_stpPix[s][f][c]=brght/2;
       }
       if(genSq_stpOnOff[inst][pttn][s][f]==0){
         genSq_stpPix[s][f][c]=0;
@@ -201,14 +203,17 @@ void genSq_updDisp(){
   disp_Str(35, 39, genSq_strEncNm[genSq_strEncFnc]);
 
   disp_Color(1);
-  if(genSq_strEncFnc==0){
+  if(genSq_strEncFnc==genSq_strEncFnc_stps){
     for(int s =0; s < nStrings;s++)disp_Int(105-s*21, 55, genSq_chn[inst][pttn][s][genSq_strEncFnc_stps]);
   } 
-  if(genSq_strEncFnc==1){
+  if(genSq_strEncFnc==genSq_strEncFnc_tmDv){
     for(int s =0; s < nStrings;s++)disp_Str(105-s*21, 55, genSq_tmDvNm[genSq_chn[inst][pttn][s][genSq_strEncFnc_tmDv]]);
   }
-    if(genSq_strEncFnc==2){
+    if(genSq_strEncFnc==genSq_strEncFnc_chn){
     for(int s =0; s < nStrings;s++)disp_Int(105-s*21, 55, genSq_chn[inst][pttn][s][genSq_strEncFnc_chn]);
+  }
+  if(genSq_strEncFnc==genSq_strEncFnc_sync){
+    for(int s =0; s < nStrings;s++)disp_Int(105-s*21, 55, genSq_chn[inst][pttn][s][genSq_strEncFnc_sync]);
   }
 
   

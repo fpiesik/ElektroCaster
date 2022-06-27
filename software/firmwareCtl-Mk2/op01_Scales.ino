@@ -39,6 +39,10 @@ void scls_chDispEnc(int val){
           genSq_actSng=(genSq_actSng + val)%genSq_nSngs;
           loadSong(genSq_actSng);
           break;
+        case 5:
+          if(scls_fledSrc + val < 0)scls_fledSrc = 0;
+          scls_fledSrc=(scls_fledSrc + val)%4;
+          break;
       }
       break;
     case 1:
@@ -51,9 +55,13 @@ void scls_chDispEnc(int val){
 }
 
 void scls_updDisp(){
-  disp_Str(65, 10, "sclClr");
-  disp_Str(3, 10, "song: ");
-  disp_Int(40, 10, genSq_actSng);
+  disp_Str(3, 10, "src:");
+  disp_Int(31, 10, scls_fledSrc);
+  disp_Str(45, 10, "sng:");
+  disp_Int(73, 10, genSq_actSng);
+  disp_Str(93, 10, "clr:");
+  disp_Int(115, 10, scls_sclClr);
+
 
   switch (dispEncFnc[scls_opMode]){
     case 0:
@@ -69,7 +77,10 @@ void scls_updDisp(){
       disp_RFrm(111, 0, 17, 19, 3);
       break;
     case 4:
-      disp_RFrm(35, 0, 17, 19, 3);
+      disp_RFrm(69, 0, 17, 19, 3);
+      break;
+    case 5:
+      disp_RFrm(26, 0, 17, 19, 3);
       break;
   }
 
@@ -84,18 +95,23 @@ void scls_updDisp(){
   disp_Str(3, 34, toneNm[rootNote % 12]);
   disp_Str(24, 34, sclNm[scls_sclSel]);
   disp_Int(115, 34, scls_sclStp+1);
-  disp_Int(115, 10, scls_sclClr);
+  
   //dispStr(20,40,"helleo");
   //dispInt(100, 40, 6);
 }
 
 void scls_updFleds(){
   float sumPix;
+  int nDispFrts;
+  
+  if(opMode==scls_opMode)nDispFrts=nFrets+1;
+  if(opMode!=scls_opMode)nDispFrts=genSq_pttnMOff-1;
+  
   scls_dispScale();
-  if(opMode==2)scls_dispMidi();
-  if(opMode!=2)scls_dispSq();
+  if(scls_fledSrc==0)scls_dispMidi();
+  if(scls_fledSrc>0)scls_dispSq(scls_fledSrc-1);
   for(int s=0;s<nStrings;s++){
-    for(int f=0;f<genSq_pttnMOff-1;f++){
+    for(int f=0;f<nDispFrts;f++){
       for(int ch=0; ch < 3; ch++){
         trgtC[s][f][ch]=scls_sclPix[s][f][ch];
         sumPix = sumPix + scls_midiPix[s][f][ch];
@@ -111,7 +127,7 @@ void scls_updFleds(){
 void scls_dispScale(){
   bool color=scls_sclClr;
   float brightS=0.15; //brighness off the colored scale
-  float brightM=0.15; //brightness of the monocrome scale
+  float brightM=0.3; //brightness of the monocrome scale
 
   for(int s=0;s<nStrings;s++){ 
       for(int f=0;f<nLedFrets;f++){
@@ -186,7 +202,7 @@ void scls_dispMidi(){
   }
 }
 
-void scls_dispSq(){
+void scls_dispSq(int inst){
   float bright=1;
   int midiTones[12];
   int midiNotes[127];
@@ -199,8 +215,8 @@ void scls_dispSq(){
   }
   for(int s=0;s<nStrings;s++){
     for(int n=0;n<=127;n++){
-      if(genSq_actNotes[genSq_actInst][s][n]>0){ //todo: which sequencer to display?
-        midiTones[n%12]=genSq_actNotes[genSq_actInst][s][n];
+      if(genSq_actNotes[inst][s][n]>0){
+        midiTones[n%12]=genSq_actNotes[inst][s][n];
         //if(ch == 16)midiNotes[n]=extNotes[ch][n];
       }
     }

@@ -13,22 +13,23 @@ void genSq_updClck(){
       if(genSq_nxtClkFil[inst][s] >= tmDv[inst][pttn][s]){
         genSq_clk[inst][s]++;
         if(genSq_clk[inst][s]>=genSq_chn[inst][pttn][s][genSq_strEncFnc_stps])genSq_clk[inst][s]=0;
-        if(s==0 && genSq_muteCh[inst][s] == 0)genSq_mstStr(inst,pttn);
+        //if(s==0 && genSq_muteCh[inst][s] == 0 && genSq_chn[inst][pttn][s][genSq_strEncFnc_chn]>0)genSq_mstStr(inst,pttn);
+        genSq_mstStr(inst,pttn,s);
       }
     }
       for(int s=0;s<nStrings;s++){
         if(genSq_nxtClkFil[inst][s] >= tmDv[inst][pttn][s]){
-          if(s != 0)genSq_sndCC(inst,pttn, s);
+          genSq_sndCC(inst,pttn, s);
         }
       }
       for(int s=0;s<nStrings;s++){
         if(genSq_nxtClkFil[inst][s] >= tmDv[inst][pttn][s]){
-          if(s != 0)genSq_sndStpOff(inst,pttn, s);
+          genSq_sndStpOff(inst,pttn, s);
         }
       }
       for(int s=0;s<nStrings;s++){
         if(genSq_nxtClkFil[inst][s] >= tmDv[inst][pttn][s]){
-          if(genSq_muteCh[inst][s] == 0 && s != 0)genSq_sndStpOn(inst,pttn, s);
+          if(genSq_muteCh[inst][s] == 0)genSq_sndStpOn(inst,pttn, s);
         }
       }
       for(int s=0;s<nStrings;s++){
@@ -67,13 +68,18 @@ void genSq_sync(int inst){
   }
 }
 
-void genSq_mstStr(int inst,int pttn){
-  if(genSq_stpOnOff[inst][pttn][0][genSq_clk[inst][0]] > 0){
-    for(int s = 1; s<nStrings; s++){
-      genSq_nxtClkFil[inst][s]=genSq_tmDv[inst][pttn][s];
-      genSq_clk[inst][s]=-1;
-    }
-  } 
+void genSq_mstStr(int inst, int pttn, int s){
+  int sync = genSq_chn[inst][pttn][s][genSq_strEncFnc_sync];
+  if (sync > 0){
+    int str = nStrings-sync;
+    if (str != s){
+      if(genSq_stpOnOff[inst][pttn][str][genSq_clk[inst][str]] > 0){
+        genSq_nxtClkFil[inst][s]=genSq_tmDv[inst][pttn][s];
+        if (s>str)genSq_clk[inst][s]=0;
+        if (s<str)genSq_clk[inst][s]=1;
+      }
+    } 
+  }
 }
 
 
@@ -119,20 +125,20 @@ void genSq_sndCC(int inst,int pttn, byte s){
   if(genSq_stpOnOff[inst][pttn][s][genSq_clk[inst][s]] > 0){
     int stpV=genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_cc1];
     if(stpV>0){
-      if(s==5)rootNote=stpV-1;
-      sndMidiCC(genSq_ccMp[0],genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_cc1],chnl);
+      if(chnl==0)rootNote=stpV-1;
+      if(chnl>0)sndMidiCC(genSq_ccMp[0],genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_cc1],chnl);
     }
 
     stpV=genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_cc2];
     if(stpV>0){
-      if(s==5)scls_sclSel=stpV-1;
-      sndMidiCC(genSq_ccMp[1],genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_cc2],chnl);
+      if(chnl==0)scls_sclSel=stpV-1;
+      if(chnl>0)sndMidiCC(genSq_ccMp[1],genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_cc2],chnl);
     }
 
     stpV=genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_cc3];
     if(stpV>0){
-      if(s==5)scls_sclStp=stpV-1;
-      sndMidiCC(genSq_ccMp[2],genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_cc3],chnl);
+      if(chnl==0)scls_sclStp=stpV-1;
+      if(chnl>0)sndMidiCC(genSq_ccMp[2],genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_cc3],chnl);
     }
   }
 }
@@ -140,7 +146,7 @@ void genSq_sndCC(int inst,int pttn, byte s){
 void genSq_sndStpOn(int inst,int pttn, byte s){
   //int chnl = genSq_sndCh[inst][nStrings-s-1];
   int chnl = genSq_chn[inst][pttn][s][genSq_strEncFnc_chn];
-  if(genSq_stpOnOff[inst][pttn][s][genSq_clk[inst][s]] > 0){
+  if(genSq_stpOnOff[inst][pttn][s][genSq_clk[inst][s]] > 0 && chnl > 0){
     int stpV=genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_sStp];
     //int pitch=(scls_scls[scls_sclSel][(stpV+scls_sclStp)%scls_numSclStp[scls_sclSel]]+rootNote)%12;
     int actSStp=(stpV+scls_sclStp)%scls_numSclStp[scls_sclSel];

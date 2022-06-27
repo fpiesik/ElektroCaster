@@ -46,7 +46,13 @@ void readFretboard(int sensMode) {
       if (fbrdMode == 0 && strArp_act == 0) {
         sndTrigEnv(s, strPrs[s]);
         if (strPrs[s] > 0)kick(s);
-        if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s]);
+
+        if(opMode>=genSq_opMode && opMode<genSq_opMode+genSq_nInst){
+          if(frtb_sensMode==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1)sndMidiNotePress(s,strPrs[s]);
+        }
+        else{
+          if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s]);
+        }
       }
       if (fbrdMode == 0)sndStrPrs(s, strPrs[s]);
       genSq_editSteps(s);
@@ -165,81 +171,100 @@ void rcvHidA(byte idx, int dVal) {
 void procHidAChng(byte idx, float val) {
   switch (idx) {
     case 0:
-      sndLfo1(4, val); //if(hidAVal[0]!=lastHidAVal[0])sndEnv2(4,hidAVal[0]),lastHidAVal[0] = hidAVal[0];
+      // fader 1
+      sndMidiCC(midi_faderCc[0], val*127,mInst_chn);
       break;
     case 1:
-      sndLfo1(3, val);
+      // fader 2
+      sndMidiCC(midi_faderCc[1], val*127,mInst_chn);
       break;
 
     case 2:
-      sndLfo1(2, val);
+      // fader 3
+      sndMidiCC(midi_faderCc[2], val*127,mInst_chn);
+      
       break;
 
     case 3:
-      sndLfo1(1, val);
+      //fader 4
+      sndMidiCC(midi_faderCc[3], val*127,mInst_chn);
       break;
 
     case 4:
+      // fader 5
       sndEnv2(3, val);
       break;
 
     case 5:
+      // fader 6
       sndEnv1(3, val);
       break;
 
     case 6:
+      //fader 7
       sndEnv2(1, val);
       break;
     case 7:
+      // fader 8
       sndEnv1(1, val);
       break;
 
     case 8:
+      //fader 9
       sndEnv2(6, val);
       break;
 
     case 9:
+      //fader 10
       sndEnv1(6, val);
       break;
 
     case 10:
+      //joystick X
       sndMidiCC(mInst_anaXyCc[0], val*127,mInst_chn);
       break;
 
     case 11:
+      //joystick Y
       sndMidiCC(mInst_anaXyCc[1], val*127,mInst_chn);
       break;
 
     case 12:
-      sndMidiCC(mInst_potCc[1], val*127,mInst_chn);
+      //pot 7
+      //sndMidiCC(mInst_potCc[0], val*127,mInst_chn);
+      sndLfo1(2, val);
       break;
 
     case 13:
+      //pot 1
       vol = val;
       if (fbrdMode == 0)sndVol(vol);
       break;
 
     case 14:
+      //pot 2
       sndFilter(1, val);
       break;
 
     case 15:
+      //pot 3
       sndFilter(3, val);
       break;
 
     case 16:
-      //sndFX(0,val);
-      sndMidiCC(mInst_potCc[0], val*127,mInst_chn);
+      sndLfo1(3, val);
       break;
 
     case 17:
+      //pot 5
       //sndFX(3,val)
-      sndMidiCC(mInst_potCc[3], val*127,mInst_chn);
+      sndMidiCC(mInst_potCc[0], val*127,mInst_chn);
       break;
 
     case 18:
+      //pot 6
       //sndFX(2,val);
-      sndMidiCC(mInst_potCc[2], val*127,mInst_chn);
+      sndLfo1(1, val);
       break;
   }
   lastHidAVal[idx] = hidAVal[idx];
@@ -268,21 +293,7 @@ void procHidRChng(byte idx, byte val) {
       break;
 
     case 2:
-      fledMode = opMdMap[val];
-      opStrMode = opMdMap[val];
-      //if(opStrMode==0||opStrMode==3)sndVol(0);
-      //if(opStrMode==1||opStrMode==2)sndVol(vol);
-      opMode = opMdMap[val];
-
-      if (opMdMap[val] >= genSq_opMode && opMdMap[val] < genSq_opMode + genSq_nInst) {
-        genSq_actInst = opMdMap[val] - genSq_opMode;
-      }
-
-      //opStrMode=opMdMap[val];
-      //if(opStrMode==0||opStrMode==3)sndVol(0);
-      //if(opStrMode==1||opStrMode==2)sndVol(vol);
-//      Serial.print("genSq_actInst: ");
-//      Serial.println(genSq_actInst);
+      chOpMode(val);
       break;
   }
   lastHidRVal[idx] = hidRVal[idx];
@@ -305,82 +316,48 @@ void rcvHidE(byte idx, long val) {
 void procHidEChng(byte idx, long val) {
   switch (idx) {
     case 0:
-      if (fbrdMode == 0) {
-        switch (opMode) {
-          case 0:
-            bpm=bpm+val;
-            if(bpm<1)bpm=1;
-            if(bpm>250)bpm=250;
-            chngBpm(bpm);
-            break;
-          case 1:
-            strArp_chDispEnc(val);
-            break;
-          case 2:
-            scls_chDispEnc(val);
-            break;
-          case 3:
-            scls_chDispEnc(val);
-            //genSq_chDispEnc(val);
-            break;
-          case 4:
-            scls_chDispEnc(val);
-            //genSq_chDispEnc(val);
-            break;
-          case 5:
-            scls_chDispEnc(val);
-            //genSq_chDispEnc(val);
-            break;
-        }
+      switch (opMode) {
+        case strSetup_opMode:
+          bpm=bpm+val;
+          if(bpm<1)bpm=1;
+          if(bpm>250)bpm=250;
+          chngBpm(bpm);
+          break;
+        case strArp_opMode:
+          if (fbrdMode == 0)scls_chDispEnc(val);
+          if (fbrdMode == 1)strArp_chDispEnc(val);
+          break;
+        case genSq_opMode:
+          if (fbrdMode == 0)scls_chDispEnc(val);
+          if (fbrdMode == 1)genSq_chDispEnc(val);
+          break;
+        case genSq_opMode+1:
+          if (fbrdMode == 0)scls_chDispEnc(val);
+          if (fbrdMode == 1)genSq_chDispEnc(val);
+          break;
+        case genSq_opMode+2:
+          if (fbrdMode == 0)scls_chDispEnc(val);
+          if (fbrdMode == 1)genSq_chDispEnc(val);
+          break;
       }
-      if (fbrdMode == 1) {
-        switch (opMode) {
-          case 0:
-            bpm=bpm+val;
-            if(bpm<1)bpm=1;
-            if(bpm>250)bpm=250;
-            chngBpm(bpm);
-            break;
-          case 1:
-            strArp_chDispEnc(val);
-            break;
-          case 2:
-            scls_chDispEnc(val);
-            break;
-          case 3:
-            //scls_chDispEnc(val);
-            genSq_chDispEnc(val);
-            break;
-          case 4:
-            //scls_chDispEnc(val);
-            genSq_chDispEnc(val);
-            break;
-          case 5:
-            //scls_chDispEnc(val);
-            genSq_chDispEnc(val);
-            break;
-        }
-      }
-      break;
+    break;
     case 7:
       if (strEncMode == 0) {
         for (int s = 0; s < nStrings; s++) {
           switch (opMode) {
-            case 0:
+            case strSetup_opMode:
               tuning[s] = tuning[s] + val;
               break;
-            case 1:
+            case strArp_opMode:
               strArp_chStrEnc(s, val);
               break;
-            case 2:
-              break;
-            case 3:
+            case genSq_opMode:
               genSq_chStrEnc(s, val);
               break;
-            case 4:
+            case genSq_opMode+1:
               genSq_chStrEnc(s, val);
               break;
-            case 5:
+            case genSq_opMode+2:
               genSq_chStrEnc(s, val);
               break;
           }
@@ -399,24 +376,27 @@ void procHidEChng(byte idx, long val) {
       genSq_strEncChAStps = 0;
       lastStrEnc = s;
       switch (opMode) {
-        case 0:
+        case strSetup_opMode:
           tuning[s] = tuning[s] + val;
           break;
-        case 1:
+        case strArp_opMode:
           strArp_chStrEnc(s, val);
           break;
-        case 2:
-          break;
-        case 3:
+        case genSq_opMode:
           genSq_chStrEnc(s, val);
           break;
-        case 4:
+        case genSq_opMode+1:
           genSq_chStrEnc(s, val);
           break;
-        case 5:
+        case genSq_opMode+2:
           genSq_chStrEnc(s, val);
           break;
       }
     }
   }
+}
+
+void chOpMode(int val){
+  opMode = val;
+  if (opMode >= genSq_opMode && opMode < genSq_opMode + genSq_nInst) genSq_actInst = opMode - genSq_opMode;
 }

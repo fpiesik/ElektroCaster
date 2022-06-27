@@ -2,61 +2,32 @@
 void updLedFrets(){
   if (millis()-fled_frameTimer > fled_frameInt){
     ledsTrgOff();
-    if(fbrdMode==0){
-      switch (fledMode){
-        case 0:
-          strSetup_updFleds();
-          break;
-        case 1:
-          scls_updFleds();
-          genSq_updPttnFleds();
-          break;
-        case 2:
-          scls_updFleds();
-          genSq_updPttnFleds();
-          break;
-        case 3:
-          scls_updFleds();
-          genSq_updPttnFleds();
-          break;
-        case 4:
-          scls_updFleds();
-          genSq_updPttnFleds();
-          break;
-        case 5:
-          scls_updFleds();    
-          genSq_updPttnFleds();
-          break;
-      }
+    switch (opMode){
+      case strSetup_opMode:
+        strSetup_updFleds();
+        break;
+      case strArp_opMode:
+        if(fbrdMode==0)scls_updFleds();
+        if(fbrdMode==1)strArp_updFleds();
+        break;
+      case genSq_opMode:
+        if(fbrdMode==0)scls_updFleds();
+        if(fbrdMode==1)genSq_updFleds();
+        genSq_updPttnFleds();
+        break;
+      case genSq_opMode+1:
+        if(fbrdMode==0)scls_updFleds();
+        if(fbrdMode==1)genSq_updFleds();
+        genSq_updPttnFleds();
+        break;
+      case genSq_opMode+2:
+        if(fbrdMode==0)scls_updFleds();
+        if(fbrdMode==1)genSq_updFleds();
+        genSq_updPttnFleds();
+        break;
     }
-    if(fbrdMode==1){
-      switch (fledMode){
-        case 0:
-          strSetup_updFleds();
-          break;
-        case 1:
-          strArp_updFleds();
-          break;
-        case 2:
-          scls_updFleds();
-          genSq_updPttnFleds();
-          break;
-        case 3:
-          genSq_updFleds();
-          genSq_updPttnFleds();
-          break;
-        case 4:
-          genSq_updFleds();
-          genSq_updPttnFleds();
-          break;
-        case 5:
-          genSq_updFleds();
-          genSq_updPttnFleds();
-          break;
-      }
-    }
-
     
+  
     lightSlew();
     pixels();
     if(ledsChngd()==1){

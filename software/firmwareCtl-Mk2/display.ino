@@ -1,54 +1,27 @@
 void updDisplay(){
   if (millis()-disp_frameTimer > disp_frameInt){
     disp_Clr();
-    if(fbrdMode==0){
-      switch (opMode){
-        case 0:
-          strSetup_updDisp();
-          break;
-        case 1:
-          strArp_updDisp();
-          break;
-        case 2:
-          scls_updDisp();
-          break;
-        case 3:
-          scls_updDisp();
-          //genSq_updDisp();
-          break;
-        case 4:
-          scls_updDisp();
-          //genSq_updDisp();
-          break;
-        case 5:
-          scls_updDisp();
-          //genSq_updDisp();
-          break;
-  
-      }
-    }
-    if(fbrdMode==1){
-      switch (opMode){
-        case 0:
-          strSetup_updDisp();
-          break;
-        case 1:
-          strArp_updDisp();
-          break;
-        case 2:
-          scls_updDisp();
-          break;
-        case 3:
-          genSq_updDisp();
-          break;
-        case 4:
-          genSq_updDisp();
-          break;
-        case 5:
-          genSq_updDisp();
-          break;
-  
-      }
+    switch (opMode){
+      case strSetup_opMode:
+        strSetup_updDisp();
+        break;
+      case strArp_opMode:
+        if(fbrdMode==0)scls_updDisp();
+        if(fbrdMode==1)strArp_updDisp();
+        
+        break;
+      case genSq_opMode:
+        if(fbrdMode==0)scls_updDisp();
+        if(fbrdMode==1)genSq_updDisp();
+        break;
+      case genSq_opMode+1:
+        if(fbrdMode==0)scls_updDisp();
+        if(fbrdMode==1)genSq_updDisp();
+        break;
+      case genSq_opMode+2:
+        if(fbrdMode==0)scls_updDisp();
+        if(fbrdMode==1)genSq_updDisp();
+        break;
     }
     disp_Buf();
     disp_frameTimer=millis();

@@ -101,9 +101,17 @@ void genSq_chStrEnc(int str, int val){
       if(genSq_strEncFnc_chn==genSq_strEncFnc){
           int chn=genSq_chn[inst][pttn][str][genSq_strEncFnc_chn];
           chn = chn + val;
-          if(chn < 1) chn=1;
+          if(chn < 0) chn=0;
           if(chn > genSeq_maxEncV[genSq_strEncFnc_chn]) chn=genSeq_maxEncV[genSq_strEncFnc_chn];
           genSq_chn[inst][pttn][str][genSq_strEncFnc_chn]=chn;
+        //}
+      }
+      if(genSq_strEncFnc_sync==genSq_strEncFnc){
+          int sync=genSq_chn[inst][pttn][str][genSq_strEncFnc_sync];
+          sync = sync + val;
+          if(sync < 0) sync=0;
+          if(sync > genSeq_maxEncV[genSq_strEncFnc_sync]) sync=genSeq_maxEncV[genSq_strEncFnc_sync];
+          genSq_chn[inst][pttn][str][genSq_strEncFnc_sync]=sync;
         //}
       }
   }
@@ -179,36 +187,38 @@ void genSq_editSteps(byte s){
   int inst=genSq_actInst;
   int pttn=genSq_edtPttn[genSq_actInst];
   
-  if(opMode>=genSq_opMode && opMode<genSq_opMode+genSq_nInst && fbrdMode==1){   
-    if(strPrs[s]<=genSq_maxVisSteps){ 
-      if(strPrs[s]==0){
-        strEncMode=0;
-        dispEncMode=0;
-        genSq_stpEdtStrs[s]=0;
-      }
-      if(strPrs[s]>0){
-        strEncMode=1;
-        dispEncMode=2;
-        genSq_stpEdtStr=s;
-        genSq_stpEdtStrs[s]=1;
-        genSq_stpEdtFrt=strPrs[s]-1;
-        genSq_stpOnOff[inst][pttn][s][strPrs[s]-1]=(genSq_stpOnOff[inst][pttn][s][strPrs[s]-1]+1)%2;
-        if(shift == 1)genSq_stpOnOff[inst][pttn][s][strPrs[s]-1]=0;
-        //sndMidiCC(genSq_SelChnCC, 20,3);
-        //sndMidiCC(genSq_SelChnCC, genSq_sndCh[inst][nStrings-s]*12-12,1);
+  if(opMode>=genSq_opMode && opMode<genSq_opMode+genSq_nInst){   
+    if(fbrdMode==1){
+      if(strPrs[s]<=genSq_maxVisSteps){ 
+        if(strPrs[s]==0){
+          strEncMode=0;
+          dispEncMode=0;
+          genSq_stpEdtStrs[s]=0;
+        }
+        if(strPrs[s]>0){
+          strEncMode=1;
+          dispEncMode=2;
+          genSq_stpEdtStr=s;
+          genSq_stpEdtStrs[s]=1;
+          genSq_stpEdtFrt=strPrs[s]-1;
+          genSq_stpOnOff[inst][pttn][s][strPrs[s]-1]=(genSq_stpOnOff[inst][pttn][s][strPrs[s]-1]+1)%2;
+          if(shift == 1)genSq_stpOnOff[inst][pttn][s][strPrs[s]-1]=0;
+          //sndMidiCC(genSq_SelChnCC, 20,3);
+          //sndMidiCC(genSq_SelChnCC, genSq_sndCh[inst][nStrings-s]*12-12,1);
+        }
       }
     }
-  }
     
-  if(strPrs[s]>genSq_pttnMOff-1 ){ 
-    int instSel=genSq_nInst-s/2-1;
-    int pttnSel=(strPrs[s]-(genSq_pttnMOff))+genSq_nPttn/2*((s+1)%2);
-    if(dispEncMode == 1)genSq_cpPttn(genSq_actInst,genSq_actPttn[genSq_actInst],instSel,pttnSel);
-    if(shift == 0)genSq_actPttn[instSel]=pttnSel;
-    if(shift == 0 || shift == 1)genSq_edtPttn[instSel]=pttnSel; 
-    genSq_actPttns[genSq_actPttnsIdx][instSel]=pttnSel;
-    //genSq_sync(instSel); 
-    genSq_actTmDv();
+    if(strPrs[s]>genSq_pttnMOff-1 ){ 
+      int instSel=genSq_nInst-s/2-1;
+      int pttnSel=(strPrs[s]-(genSq_pttnMOff))+genSq_nPttn/2*((s+1)%2);
+      if(dispEncMode == 1)genSq_cpPttn(genSq_actInst,genSq_actPttn[genSq_actInst],instSel,pttnSel);
+      if(shift == 0)genSq_actPttn[instSel]=pttnSel;
+      if(shift == 0 || shift == 1)genSq_edtPttn[instSel]=pttnSel; 
+      genSq_actPttns[genSq_actPttnsIdx][instSel]=pttnSel;
+      //genSq_sync(instSel); 
+      genSq_actTmDv();
+    }
   }
 }
 

@@ -10,7 +10,13 @@
 
 
 //midi
-MIDI_CREATE_INSTANCE(HardwareSerial, Serial6, MIDI); 
+  MIDI_CREATE_INSTANCE(HardwareSerial, Serial6, MIDI); 
+  int mInst_chn=16;
+  int mInst_anaXyCc[2]={1,2};
+  int mInst_potCc[2]={7,8};
+  int midi_faderCc[4]={3,4,5,6};
+  int midiCh=15;
+  int extNotes[17][128];
 
 //sdCard
 File myFile;
@@ -105,13 +111,15 @@ const int chipSelect = BUILTIN_SDCARD;
   float scls_midiPix[nStrings][nLedFrets][3];
   int scls_sclClr=0;
   int scls_numSclStp[nScales]= {0, 1, 5, 7, 7, 7, 7, 7, 6, 8, 12};
-  byte scls_sclSel=2;
-  byte scls_sclStp=0;
-  int scls_opMode=2;
+  int scls_sclSel=2;
+  int scls_sclStp=0;
+  int rootNote=0;
+  int scls_fledSrc=1;
+  
+
   //int scls_nDispEncFnc=4; 
   
 //string arpeggiator/sequencer
-  byte strArp_opMode=2;
   byte strArp_act=0;
   float sclArpMode=7;
   float sclArpClkMode=4;
@@ -147,12 +155,12 @@ const int chipSelect = BUILTIN_SDCARD;
 //generic Sequenzer
   //globals
   float pttr_gridPix[nStrings][nLedFrets][3];
-  int genSq_opMode=3;
   const int genSq_maxVisSteps = 16;
   const int genSq_maxSteps = 16;
   const int genSq_nPttn = 8;
   const int genSq_nSngs = 12;
   const int genSq_pttnMOff = genSq_maxVisSteps+3;
+  int genSq_hrmInst=1;
   
 
   const int genSq_nInst = 3;
@@ -174,7 +182,7 @@ const int chipSelect = BUILTIN_SDCARD;
   int genSq_tmDvs[genSq_nTmDvs]={384,192,96,64,48,32,24,16,12,8,6,4,3};
   const char* genSq_tmDvNm[genSq_nTmDvs]={"4","2","1",".75","/2","/3","/4","/6","/8","/12","/16","/24","/32"};
 
-  const char* genSq_strPrsNm[]={"pStp","oct","vel","dec","len","smp"}; 
+  const char* genSq_strPrsNm[]={"pStp","oct","vel","c10","c11","c12"}; 
   const int genSq_strPrsFnc_sStp=0;
   const int genSq_strPrsFnc_oct=1;
   const int genSq_strPrsFnc_vel=2;
@@ -182,18 +190,20 @@ const int chipSelect = BUILTIN_SDCARD;
   const int genSq_strPrsFnc_cc2=4;
   const int genSq_strPrsFnc_cc3=5;
   const int genSq_nStrPrsFnc=6;
-  const int genSq_nCc=3;
   const int genSq_SelChnCC=54;
   const int genSq_maxStpV[genSq_nStrPrsFnc]={12,9,50,99,99,99};
   int genSq_strPrsFnc=0;
-  int genSq_ccMp[genSq_nCc]={48,41,50};
+  
+  const int genSq_nCc=3;
+  int genSq_ccMp[genSq_nCc]={10,11,12};
 
-  const char* genSq_strEncNm[]={"stps", "tmDv", "chn"}; 
+  const char* genSq_strEncNm[]={"stps", "tmDv", "chn","sync"}; 
   const int genSq_strEncFnc_stps=0;
   const int genSq_strEncFnc_tmDv=1;
   const int genSq_strEncFnc_chn=2;
-  const int genSq_nStrEncFnc=3;
-  const int genSeq_maxEncV[genSq_nStrPrsFnc]={genSq_maxVisSteps,genSq_nTmDvs,16};
+  const int genSq_strEncFnc_sync=3;
+  const int genSq_nStrEncFnc=4;
+  const int genSeq_maxEncV[genSq_nStrPrsFnc]={genSq_maxVisSteps,genSq_nTmDvs,16,6};
   int genSq_strEncFnc=0;
   int genSq_strEncChAStps=0;
   
@@ -230,14 +240,7 @@ const int chipSelect = BUILTIN_SDCARD;
   bool genSq_stpOnOff[genSq_nInst][genSq_nPttn][nStrings][genSq_maxSteps];
   int genSq_stp[genSq_nInst][genSq_nPttn][nStrings][genSq_maxSteps][genSq_nStrPrsFnc];
   int genSq_chn[genSq_nInst][genSq_nPttn][nStrings][genSq_nStrEncFnc]; 
- 
-// midi Instrument
-  int mInst_chn=11;
-  int mInst_anaXyCc[2]={1,2};
-  int mInst_potCc[4]={3,4,5,6};
-
-//Scale settings
-  byte rootNote=0;
+   
 
 //sequence settings
   unsigned int bpm=90;
@@ -250,21 +253,25 @@ const int chipSelect = BUILTIN_SDCARD;
   unsigned long disp_frameTimer; //timer for the led update
   unsigned int disp_frameInt=200;
 
-//global parameters
+// instance modes
+  const int strSetup_opMode=0;
+  const int strArp_opMode=1;
+  const int genSq_opMode=2;
+  const int scls_opMode=strArp_opMode;
+  
   const byte maxOpMds=12;
   byte opMode=2;
-  byte opMdMap[12] = {0,1,2,3,4,5,6,7,8,9,10,11};
-  byte opStrMode=1;
-  byte fledMode=opMode;
-  bool shift=0;
-  bool extClk=0;
   int dispEncMode;
   int strEncMode;
   int lastStrEnc;
-  const byte nDispEncFnc[maxOpMds]={2,3,5,3,3,3,3,3,3,3,3,3}; //number of functions selectable with the disp encoder in each opMode
-  const byte nStrEncFnc[maxOpMds]={2,2,2,2,2,2,2,2,2,2,2,2}; //number of functions selectable with the string encoders in each opMode
+  const byte nDispEncFnc[maxOpMds]={2,6,3,3,3,3,3,3,3,3,3,3}; //number of functions selectable with the disp encoder in each opMode
+  //const byte nStrEncFnc[maxOpMds]={2,2,2,2,2,2,2,2,2,2,2,2}; //number of functions selectable with the string encoders in each opMode
   int dispEncFnc[maxOpMds];
   byte strEncFnc[maxOpMds];
+  
+//global parameters
+  bool shift=0;
+  bool extClk=0;
   float vol;
   
 
@@ -277,10 +284,6 @@ const int chipSelect = BUILTIN_SDCARD;
   unsigned int intClockInt; //inerval between clock ticks
   unsigned int intClockTimer; //to measure interval between clock ticks
   bool clckOn=0;
-
-// midi 
-  int midiCh=15;
-  int extNotes[17][128];
 
 //other
 long scanPttnTimer;
@@ -322,27 +325,29 @@ void setup() {
   }
 
 //set default genSq-parameter
-  for (int i=0; i < genSq_nInst; i++) {
-    genSq_actPttn[i]=0;
-    genSq_edtPttn[i]=0;
-    for (int p=0; p < genSq_nPttn; p++) {
-      for (int s=0; s < nStrings; s++) {
-        genSq_chn[i][p][s][genSq_strEncFnc_tmDv]=8; 
-        genSq_chn[i][p][s][genSq_strEncFnc_stps]=16;
-        genSq_clk[i][s]=-1;
-        for (int f=0; f < genSq_maxSteps; f++) {
-          genSq_stpOnOff[i][p][s][f]=0;
-          genSq_stp[i][p][s][f][genSq_strPrsFnc_sStp]=0;
-          genSq_stp[i][p][s][f][genSq_strPrsFnc_oct]=4;
-          genSq_stp[i][p][s][f][genSq_strPrsFnc_vel]=40; 
-          genSq_stp[i][p][s][f][genSq_strPrsFnc_cc1]=0; 
-          genSq_stp[i][p][s][f][genSq_strPrsFnc_cc2]=0; 
-          genSq_stp[i][p][s][f][genSq_strPrsFnc_cc3]=0;     
-          genSq_tmDv[i][p][s]=6;
-        }
-      }
-    }
-  }
+//  for (int i=0; i < genSq_nInst; i++) {
+//    genSq_actPttn[i]=0;
+//    genSq_edtPttn[i]=0;
+//    for (int p=0; p < genSq_nPttn; p++) {
+//      for (int s=0; s < nStrings; s++) {
+//        genSq_chn[i][p][s][genSq_strEncFnc_tmDv]=8; 
+//        genSq_chn[i][p][s][genSq_strEncFnc_stps]=16;
+//        genSq_clk[i][s]=-1;
+//        for (int f=0; f < genSq_maxSteps; f++) {
+//          genSq_stpOnOff[i][p][s][f]=0;
+//          genSq_stp[i][p][s][f][genSq_strPrsFnc_sStp]=0;
+//          genSq_stp[i][p][s][f][genSq_strPrsFnc_oct]=4;
+//          genSq_stp[i][p][s][f][genSq_strPrsFnc_vel]=40; 
+//          genSq_stp[i][p][s][f][genSq_strPrsFnc_cc1]=0; 
+//          genSq_stp[i][p][s][f][genSq_strPrsFnc_cc2]=0; 
+//          genSq_stp[i][p][s][f][genSq_strPrsFnc_cc3]=0;     
+//          genSq_tmDv[i][p][s]=6;
+//        }
+//      }
+//    }
+//  }
+
+  //rstAllSngs(); uncomment if the song structure has changed. Resets all songs
   loadSong(0);
   chngBpm(bpm);
   strArp_drwGrid();
