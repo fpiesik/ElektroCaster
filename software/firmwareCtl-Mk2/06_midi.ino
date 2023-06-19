@@ -27,14 +27,18 @@ void sndMidiNote(byte note,byte velocity, byte channel){
 
 void sndMidiNotePress(int str, int frt){
   static int lastNote[nStrings];
+  static int lastChn[nStrings];
+  int chn = mInst_chn;
+  //int chn=genSq_chn[genSq_actInst][genSq_actPttns[genSq_actPttnsIdx][genSq_actInst]][str][genSq_strEncFnc_chn];
   if (frt > 0){ 
     int note=tuning[str]+frt;
-    sndMidiNote(lastNote[str],0, mInst_chn);
-    sndMidiNote(note,120, mInst_chn);
+    sndMidiNote(lastNote[str],0, chn);
+    sndMidiNote(note,120, chn);
     lastNote[str]=note;
+    lastChn[str]=chn;
   }    
   if (frt == 0){ 
-    if(lastNote>0)sndMidiNote(lastNote[str],0, mInst_chn);
+    if(lastNote>0)sndMidiNote(lastNote[str],0, lastChn[str]);
     lastNote[str]=0;
   }
 }
@@ -55,30 +59,63 @@ void sndMidiClck(int state){
 
 void rcvNoteOn(byte channel, byte note, byte velocity) {
   extNotes[channel][note]=velocity;
+  //midiKick(channel,velocity);
+  
 }
 
 void rcvNoteOff(byte channel, byte note, byte velocity) {
   extNotes[channel][note]=0;
 }
 
-void midiClock() { 
-  mClock++;
-  cmpClck(mClock);
-  updDisplay();
+void midiClock(){ 
+  if(extClk==1){
+    mClock++;
+    cmpClck(mClock);
+    updDisplay();
   }
+}
+
 void midiStart() {
   mClock=-1;
   extClk=1;
   cmpClck(mClock);
 }
 void midiStop() {
-  mClock=-1 ;
+  mClock = -1;
+  extClk = 0;
   cmpClck(mClock);
   for(int ch=0;ch<=16;ch++){
     for(int n=0;n<=127;n++){
       extNotes[ch][n]=0;
     }
   }
+  genSq_allNOff();
+}
+
+void genSq_allNOff(){
+  for(int inst = 0; inst<genSq_nInst; inst++){
+    for(int str = 0; str<nStrings; str++){
+      for(int pttn = 0; pttn<genSq_nPttn; pttn++){
+        genSq_sndStpOffNMW(inst, pttn, str);
+      }
+    }
+  }
+}
+
+void midiKick(int chn, int v){
+  if(chn<=nStrings){
+    int s = nStrings-chn;
+    sndTrigEnv(s,v/127.0);
+    kick(s);
+  }
+  
+//  for(int s=0;s<nStrings;s++){
+//    if(n == tuning[s]){
+//    sndTrigEnv(s,v/127.0);
+//    kick(s);
+//    }
+//  }
+  
 }
 
 //void rcvCC(byte ch, byte cc, byte data) {

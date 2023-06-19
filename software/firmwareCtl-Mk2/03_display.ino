@@ -6,7 +6,7 @@ void updDisplay(){
         strSetup_updDisp();
         break;
       case strArp_opMode:
-        if(fbrdMode==0)scls_updDisp();
+        if(fbrdMode==0)strArp_updDisp();
         if(fbrdMode==1)strArp_updDisp();
         
         break;
@@ -34,7 +34,7 @@ void disp_Str(int x, int y, const char* str) {
   msg_disp.addByte(x);
   msg_disp.addByte(y);
   msg_disp.addString(str);
-  msg_disp.streamPacket(&Serial4);
+  msg_disp.streamPacket(&Serial7);
 }
 
 void disp_Int(int x, int y, int val) {
@@ -42,7 +42,7 @@ void disp_Int(int x, int y, int val) {
   msg_disp.addByte(x);
   msg_disp.addByte(y);
   msg_disp.addInt(val);
-  msg_disp.streamPacket(&Serial4);
+  msg_disp.streamPacket(&Serial7);
 }
 
 void disp_Lng(int x, int y, long val) {
@@ -50,7 +50,7 @@ void disp_Lng(int x, int y, long val) {
   msg_disp.addByte(x);
   msg_disp.addByte(y);
   msg_disp.addLong(val);
-  msg_disp.streamPacket(&Serial4);
+  msg_disp.streamPacket(&Serial7);
 }
 
 void disp_Frm(int xp, int yp, int xs, int ys) {
@@ -59,7 +59,7 @@ void disp_Frm(int xp, int yp, int xs, int ys) {
   msg_disp.addByte(yp);
   msg_disp.addByte(xs);
   msg_disp.addByte(ys);
-  msg_disp.streamPacket(&Serial4);
+  msg_disp.streamPacket(&Serial7);
 }
 
 void disp_Box(int xp, int yp, int xs, int ys) {
@@ -68,7 +68,7 @@ void disp_Box(int xp, int yp, int xs, int ys) {
   msg_disp.addByte(yp);
   msg_disp.addByte(xs);
   msg_disp.addByte(ys);
-  msg_disp.streamPacket(&Serial4);
+  msg_disp.streamPacket(&Serial7);
 }
 
 void disp_RFrm(int xp, int yp, int xs, int ys, int r) {
@@ -78,7 +78,7 @@ void disp_RFrm(int xp, int yp, int xs, int ys, int r) {
   msg_disp.addByte(xs);
   msg_disp.addByte(ys);
   msg_disp.addByte(r);
-  msg_disp.streamPacket(&Serial4);
+  msg_disp.streamPacket(&Serial7);
 }
 
 void disp_RBox(int xp, int yp, int xs, int ys, int r) {
@@ -88,7 +88,7 @@ void disp_RBox(int xp, int yp, int xs, int ys, int r) {
   msg_disp.addByte(xs);
   msg_disp.addByte(ys);
   msg_disp.addByte(r);
-  msg_disp.streamPacket(&Serial4);
+  msg_disp.streamPacket(&Serial7);
 }
 
 void disp_Line(int x0, int y0, int x1, int y1) {
@@ -97,7 +97,7 @@ void disp_Line(int x0, int y0, int x1, int y1) {
   msg_disp.addByte(y0);
   msg_disp.addByte(x1);
   msg_disp.addByte(y1);
-  msg_disp.streamPacket(&Serial4);
+  msg_disp.streamPacket(&Serial7);
 }
 
 void disp_Circle(int x, int y, int r) {
@@ -105,7 +105,7 @@ void disp_Circle(int x, int y, int r) {
   msg_disp.addByte(x);
   msg_disp.addByte(y);
   msg_disp.addByte(r);
-  msg_disp.streamPacket(&Serial4);
+  msg_disp.streamPacket(&Serial7);
 }
 
 void disp_Disk(int x, int y, int r) {
@@ -113,30 +113,30 @@ void disp_Disk(int x, int y, int r) {
   msg_disp.addByte(x);
   msg_disp.addByte(y);
   msg_disp.addByte(r);
-  msg_disp.streamPacket(&Serial4);
+  msg_disp.streamPacket(&Serial7);
 }
 
 void disp_Pix(int x, int y) {
   msg_disp.beginPacket("pix");
   msg_disp.addByte(x);
   msg_disp.addByte(y);
-  msg_disp.streamPacket(&Serial4);
+  msg_disp.streamPacket(&Serial7);
 }
 
 void disp_Color(int c) {
   msg_disp.beginPacket("col");
   msg_disp.addByte(c);
-  msg_disp.streamPacket(&Serial4);
+  msg_disp.streamPacket(&Serial7);
 }
 
 void disp_Clr() {
   msg_disp.beginPacket("clr");
-  msg_disp.streamPacket(&Serial4);
+  msg_disp.streamPacket(&Serial7);
 }
 
 void disp_Buf() {
   msg_disp.beginPacket("buf");
-  msg_disp.streamPacket(&Serial4);
+  msg_disp.streamPacket(&Serial7);
 }
 
 void disp_debug(){

@@ -2,12 +2,15 @@ void chEnvA(byte para, float val){
  //if (msg.isFloat(0)){
   
 //envPA[para]=val;
-  
   for (int i=0; i<nStrings; i++) {
     if(para==0)aEnv[i].delay(val);
     if(para==1)aEnv[i].attack(val);
     if(para==2)aEnv[i].hold(val);
-    if(para==3)aEnv[i].decay(val);
+    if(para==3){
+      aEnv[i].decay(val);
+      if (val>=(sclEnvA[para]/20.0*19))aEnv[i].sustain(1);
+      else aEnv[i].sustain(0);
+    }
     if(para==4)aEnv[i].sustain(val);
     if(para==5)aEnv[i].release(val);
     if(para==6){
@@ -25,7 +28,11 @@ void chEnvF(byte para, float val){
     if(para==0)fEnv[i].delay(val);
     if(para==1)fEnv[i].attack(val);
     if(para==2)fEnv[i].hold(val);
-    if(para==3)fEnv[i].decay(val);
+    if(para==3){
+      fEnv[i].decay(val);
+      if (val>=(sclEnvF[para]/20.0*19))fEnv[i].sustain(1);
+      else fEnv[i].sustain(0);   
+    }
     if(para==4)fEnv[i].sustain(val);
     if(para==5)fEnv[i].release(val);
     if(para==6){

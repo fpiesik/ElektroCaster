@@ -68,6 +68,17 @@ void serialEvent1(){
           incoming = -1;
         }
 
+        if (incoming == 12){
+           byte a;
+           float b;
+           while(Serial1.available() == 0);
+           a=Serial1.read();
+           while(Serial1.available() == 0);
+           b=Serial1.read();         
+           chngStrOutGain(a, b/99.0);
+           incoming = -1;
+          }
+
         if (incoming == 15){
           byte a;
           byte b;
@@ -117,7 +128,7 @@ void serialEvent1(){
 
         if (incoming == 11){
           float val=sbyte/199.0;
-          val=val*val;
+          val=val*val*2;
           ampOut.gain(val+0.0001);
           Serial.println("gain: ");
           Serial.println(val);

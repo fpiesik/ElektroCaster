@@ -1,4 +1,33 @@
 //displays for the different opModes
+
+void strSetup_chDispEnc(int val){
+  if(dispEncFnc[strSetup_opMode] + val < 0)dispEncFnc[strSetup_opMode] = nDispEncFnc[strSetup_opMode];
+  dispEncFnc[strSetup_opMode]=(dispEncFnc[strSetup_opMode] + val)%nDispEncFnc[strSetup_opMode];
+//Serial.print("dispEncFnc[opMode] ");
+//Serial.println(dispEncFnc[opMode]);
+}
+
+void strSetup_chStrEnc(byte s, int val){
+  switch(dispEncFnc[strSetup_opMode]){
+    case 0:
+      tuning[s] = tuning[s] + val;
+      break;
+    case 1:
+      strGain[s] = strGain[s] + val;
+      if(strGain[s]<0)strGain[s]=0;
+      if(strGain[s]>strGainMx)strGain[s]=strGainMx;
+      sndStrGain(s,strGain[s]);
+      break;
+    case 2:
+      bpm=bpm+val;
+        if(bpm<1)bpm=1;
+        if(bpm>250)bpm=250;
+        chngBpm(bpm);
+      break;
+  }
+}
+
+
 void strSetup_updDisp(){
   disp_Str(3, 8, "strSetup");
   disp_Str(75, 8, "bpm:");
@@ -23,10 +52,29 @@ void strSetup_updDisp(){
   disp_Str(87, 55, toneNm[tuning[1] % 12]);
   disp_Str(108, 55, toneNm[tuning[0] % 12]);
 
+  disp_Int(3, 34, strGain[5]);
+  disp_Int(24, 34, strGain[4]);
+  disp_Int(45, 34, strGain[3]);
+  disp_Int(66, 34, strGain[2]);
+  disp_Int(87, 34, strGain[1]);
+  disp_Int(108, 34, strGain[0]);
+
+  switch (dispEncFnc[strSetup_opMode]){
+    case 0:
+      disp_RFrm(0, 46, 125, 15, 3);
+      break;
+    case 1:
+      disp_RFrm(0, 25, 125, 15, 3);
+      break;
+    case 2:
+    disp_RFrm(0, 0, 125, 15, 3);
+      break;
+  }
+  
   //dispStr(3, 34, "Rt:");
-  disp_Str(3, 34, toneNm[rootNote % 12]);
-  disp_Str(24, 34, sclNm[scls_sclSel]);
-  disp_Int(115, 34, scls_sclStp+1);
+  //disp_Str(3, 34, toneNm[rootNote % 12]);
+  //disp_Str(24, 34, sclNm[scls_sclSel]);
+  //disp_Int(115, 34, scls_sclStp+1);
   //dispStr(20,40,"helleo");
   //dispInt(100, 40, 6);
 }
@@ -40,7 +88,6 @@ void strSetup_updFleds(){
     int cIdx=int(strP[s]+0.5)%12;
     float diver=abs(strP[s]-int(strP[s]+0.5))*3;
     float diverB=(strP[s]-int(strP[s]+0.5))*3;
-    float diff=strP[s]-tuning[s];
     if(diver>1)diver=1;
 
 //    trgtC[s][12][0]=tnClrs[tuning[s]%12][0];

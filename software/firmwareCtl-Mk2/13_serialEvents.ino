@@ -25,16 +25,16 @@ void serialEvent1(){
   }  
 }
 
-void serialEvent4(){   
+void serialEvent7(){   
    
   int incoming=-1;
-  byte serbyte = Serial4.read();
+  byte serbyte = Serial7.read();
   if (serbyte > 200 && serbyte < 255) incoming = serbyte - 201;
   //if (serbyte == 255)sndGetMidi();
 
   if(incoming>=0){
-    while(Serial4.available() == 0);
-    byte val=Serial4.read();
+    while(Serial7.available() == 0);
+    byte val=Serial7.read();
     if (incoming <19) rcvHidD(incoming,val),incoming=-1;
     if (incoming >=19 && incoming < 38) rcvHidA(incoming-19,val);
     if (incoming >=38 && incoming < 41) rcvHidR(incoming-38,val);

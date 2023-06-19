@@ -1,21 +1,27 @@
-#include <WS2812Serial.h>
+#include "WS2812Serial.h"
 #define USE_WS2812SERIAL
 #include <FastLED.h>
 #include <Wire.h>
 #include <EEPROM.h>
-#include <AsciiMassagePacker.h>
+#include "AsciiMassagePacker.h"
+#include "AsciiMassageParser.h"
 #include <SD.h>
 #include <SPI.h>
-#include <MIDI.h>;
+#include "MIDI/MIDI.h"
+
+AsciiMassagePacker msg_disp;  //to drive the display
+AsciiMassagePacker msgOut_audio; //todo 
+AsciiMassageParser msgIn_audio; //todo
 
 
 //midi
-  MIDI_CREATE_INSTANCE(HardwareSerial, Serial6, MIDI); 
-  int mInst_chn=16;
+  MIDI_CREATE_INSTANCE(HardwareSerial, Serial8, MIDI); 
+  int mInst_chn=8;
+  int mM8Row_chn=11;
+  int mKick_chn=2;
   int mInst_anaXyCc[2]={1,2};
   int mInst_potCc[2]={7,8};
   int midi_faderCc[4]={3,4,5,6};
-  int midiCh=15;
   int extNotes[17][128];
 
 //sdCard
@@ -25,23 +31,28 @@ const int chipSelect = BUILTIN_SDCARD;
 //string defintions variables
   const int nStrings=6; //how many Strings
   const int nFrets=22;
-  byte tuning[nStrings]={64,59,55,50,45,40};
+  int tuning[nStrings]={64,59,55,50,45,40};
+  int defTuning[nStrings]={64,59,55,50,45,40};
+  int strGain[nStrings];
+  int defStrGain[nStrings]={40,40,40,40,40,40};
+  int strGainMx=50;
   const byte strSnsPins[nStrings]={2,3,4,5,6,7};
   unsigned long lastFretRead[nStrings];
-  unsigned int fretMaskT=35; //time until a next strPres on he same string is detected
-  unsigned int strBncs=150; //number of same samples to trigger strPres
+  unsigned int fretMaskT=25; //time until a next strPres on he same string is detected
+  unsigned int strBncs=500; //number of same samples to trigger strPres
+  unsigned int strBncsP=5000; //number of same samples to trigger strPres (Pattern section)
   float strP[nStrings];
   float lastStrP[nStrings];
   float strA[nStrings];
   float lastStrA[nStrings];
 
 //led defintions and variables
-  #define LED_PIN     33   //led pin
+  #define LED_PIN     14   //led pin
   #define NUMPIXELS    150  //total number of leds
   const int nLedFrets=25; //how many led frets
   //long sndLedTimer;
   //int sndLedInt=1000;
-  float tnClrs[12][3];
+  float tnClrs[13][3];
   float fled_bright = 1; //brightness
   float fled_redC = 150;  //compensate the "filament filter"
   float fled_greenC= 255; //compensate the "filament filter"
@@ -77,7 +88,7 @@ const int chipSelect = BUILTIN_SDCARD;
 
 //fretboard
   byte frtb_sensMode=0;
-  byte frtPins[] = {14,13,2,3,4,5,6,7,8,9,10,11,12,24,25,26,27,28,29,30,15,16};
+  byte frtPins[] = {13,33,2,3,4,5,6,7,8,9,10,11,12,24,25,26,27,30,31,32,17,16}; //{14,13,2,3,4,5,6,7,8,9,10,11,12,24,25,26,27,28,29,30,15,16};
   byte strPins[] = {18,19,20,21,22,23};
   bool frtState[nFrets][nStrings];
   bool lastFrtState[nFrets][nStrings];
@@ -88,8 +99,8 @@ const int chipSelect = BUILTIN_SDCARD;
   bool fbrdMode=0;
 
 //kickup
-  const byte kickupPins[6]={39,38,37,36,35,34};//34
-  unsigned int kickDur[nStrings]={5,5,5,5,4,4};
+  const byte kickupPins[6]={41,40,39,38,37,36};//34
+  unsigned int kickDur[nStrings]={5,5,5,5,5,5};
   bool kickCue[nStrings]={0,0,0,0,0,0};
   bool kickState[nStrings];
   unsigned long kickTimer[nStrings];
@@ -146,11 +157,14 @@ const int chipSelect = BUILTIN_SDCARD;
   
   const char* strArp_strEncNm[]={"steps", "tmDv"}; 
   const byte strArp_nStrEncFnc=2;
-  byte strArp_strEncFnc=1;
+  byte strArp_strEncFnc=0;
   
   const char* strArp_strBtnNm[]={"mute", "randomise"};
-  const byte strArp_nStrBtnFnc=2;
-  byte strArp_strBtnFnc=0;
+  const int strArp_strBtnFnc_mute=0;
+  const int strArp_strBtnFnc_rnd=1;
+  const int strArp_nStrBtnFnc=2;
+  int strArp_strBtnFnc=0;
+  bool strArp_muteCh[nStrings]={0,0,0,0,0,0};
 
 //generic Sequenzer
   //globals
@@ -197,13 +211,15 @@ const int chipSelect = BUILTIN_SDCARD;
   const int genSq_nCc=3;
   int genSq_ccMp[genSq_nCc]={10,11,12};
 
-  const char* genSq_strEncNm[]={"stps", "tmDv", "chn","sync"}; 
+  const char* genSq_strEncNm[]={"stps", "tmDv","offSt","sync", "chn"}; 
   const int genSq_strEncFnc_stps=0;
   const int genSq_strEncFnc_tmDv=1;
-  const int genSq_strEncFnc_chn=2;
+  const int genSq_strEncFnc_offSt=2;
   const int genSq_strEncFnc_sync=3;
-  const int genSq_nStrEncFnc=4;
-  const int genSeq_maxEncV[genSq_nStrPrsFnc]={genSq_maxVisSteps,genSq_nTmDvs,16,6};
+  const int genSq_strEncFnc_chn=4;
+  
+  const int genSq_nStrEncFnc=5;
+  const int genSeq_maxEncV[genSq_nStrPrsFnc]={genSq_maxVisSteps,genSq_nTmDvs,15,6,16};
   int genSq_strEncFnc=0;
   int genSq_strEncChAStps=0;
   
@@ -249,7 +265,6 @@ const int chipSelect = BUILTIN_SDCARD;
  const char* toneNm[12]={"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
 
 //display
-  AsciiMassagePacker msg_disp;  //to drive the display
   unsigned long disp_frameTimer; //timer for the led update
   unsigned int disp_frameInt=200;
 
@@ -264,15 +279,16 @@ const int chipSelect = BUILTIN_SDCARD;
   int dispEncMode;
   int strEncMode;
   int lastStrEnc;
-  const byte nDispEncFnc[maxOpMds]={2,6,3,3,3,3,3,3,3,3,3,3}; //number of functions selectable with the disp encoder in each opMode
+  const byte nDispEncFnc[maxOpMds]={3,6,3,3,3,3,3,3,3,3,3,3}; //number of functions selectable with the disp encoder in each opMode
   //const byte nStrEncFnc[maxOpMds]={2,2,2,2,2,2,2,2,2,2,2,2}; //number of functions selectable with the string encoders in each opMode
-  int dispEncFnc[maxOpMds];
+  int dispEncFnc[maxOpMds]={0,4,0,0,0,0,0,0,0,0,0,0};
   byte strEncFnc[maxOpMds];
   
 //global parameters
   bool shift=0;
   bool extClk=0;
   float vol;
+  bool mtOut = 0;
   
 
 // Clock
@@ -282,19 +298,19 @@ const int chipSelect = BUILTIN_SDCARD;
   long lastPulse;
   bool schdSync;
   unsigned int intClockInt; //inerval between clock ticks
-  unsigned int intClockTimer; //to measure interval between clock ticks
+  long intClockTimer; //to measure interval between clock ticks
   bool clckOn=0;
 
 //other
 long scanPttnTimer;
 
 void setup() {
-  midiStop();
   Serial.begin(115200); //debug
   Serial1.begin(250000); //audio Server
-  Serial4.begin(115200); // hid
+  Serial7.begin(115200); // hid
   //Serial5.begin(250000); // LED
   MIDI.begin(MIDI_CHANNEL_OMNI); 
+  MIDI.turnThruOff();
 
   //init sdCard
   Serial.print("Initializing SD card...");
@@ -347,26 +363,21 @@ void setup() {
 //    }
 //  }
 
-  //rstAllSngs(); uncomment if the song structure has changed. Resets all songs
+  //rstAllSngs(); //uncomment if the song structure has changed. Resets all songs
   loadSong(0);
   chngBpm(bpm);
   strArp_drwGrid();
   mkColors();
   setMidiHandles();
-  clck_strt();
+  //clck_strt();
 }
 
 void loop() {
-  //while (usbMIDI.read()){};
   MIDI.read();    
-  
   updIntClock();
-  
-  if (fbrdMode==1)readFretboard(0);
-  if (fbrdMode == 0)readFretboard(frtb_sensMode);
-  
+  if (fbrdMode == 1)readFretboard(0);
+  if (fbrdMode == 0)readFretboard(frtb_sensMode);  
   cueKicks();
   updLedFrets();
   scanPttns();
-  //updDisplay();
 }

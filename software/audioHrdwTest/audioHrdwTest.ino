@@ -31,12 +31,13 @@ void setup(void){
   AudioMemory(200);
   audioShield.enable();
   audioShield.volume(1);
-  audioShield.inputLevel(1,0.1);
-  audioShield.inputLevel(2,0.1);
-  audioShield.inputLevel(3,0.1);
-  audioShield.inputLevel(4,0.1);
-  audioShield.inputLevel(5,0.1);
-  audioShield.inputLevel(6,0.1);
+//  audioShield.inputLevel(1,0.1);
+//  audioShield.inputLevel(2,0.1);
+//  audioShield.inputLevel(3,0.1);
+//  audioShield.inputLevel(4,0.1);
+//  audioShield.inputLevel(5,0.1);
+//  audioShield.inputLevel(6,0.1);
+  audioShield.inputLevel(0.1);
   //audioShield.inputSelect(0);
 
 //  waveform1.frequency(440);

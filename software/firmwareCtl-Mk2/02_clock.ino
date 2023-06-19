@@ -1,17 +1,16 @@
 long bpm2Micros(int val){ //convert bpm to microseconds
 return(60000000/val/24);
   }
-int clck_strt(){
+void clck_strt(){
   mClock=-1 ;
   cmpClck(mClock);  
   clckOn=1;
   sndMidiClck(0);
-  intClockTimer=micros();
 }
 
-int clck_stp(){
-//  mClock=-1 ;
-//  cmpClck(mClock);  
+void clck_stp(){
+  mClock=-1 ;
+  cmpClck(mClock);  
   clckOn=0;
   sndMidiClck(2);
   genSq_allNOff();
@@ -28,14 +27,19 @@ void chngBpm(float bpm){
 }
 
 void updIntClock(){
+  //long micro=micros();
   if (micros()-intClockTimer >= intClockInt && extClk==0){
+    if(fbrdMode == 1 && opMode != strArp_opMode) mtOut = 1, sndVol(0);  
+    else mtOut = 0, sndVol(vol); 
     if(clckOn){
-      intClockTimer+=intClockInt;
+      //intClockTimer+=intClockInt;
+      //intClockTimer = micro;
       mClock++;
       sndMidiClck(1);
       cmpClck(mClock);        
     }
     updDisplay();
+    intClockTimer+=intClockInt;
   }
 }
 

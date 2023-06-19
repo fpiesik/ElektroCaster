@@ -10,12 +10,12 @@ void setup(void){
   audioShield.enable();
   audioShield.volume(1);
 
-  audioShield.inputLevel(1,0.5);
-  audioShield.inputLevel(2,0.5);
-  audioShield.inputLevel(3,0.5);
-  audioShield.inputLevel(4,0.5);
-  audioShield.inputLevel(5,0.5);
-  audioShield.inputLevel(6,0.5);
+  audioShield.inputLevel(0.5);
+//  audioShield.inputLevel(2,4); // specific channel gain doesnt work
+//  audioShield.inputLevel(3,4);
+//  audioShield.inputLevel(4,4);
+//  audioShield.inputLevel(5,4);
+//  audioShield.inputLevel(6,4);
 
   for (int s=0; s<nStrings; s++){
     //mPC001[i] = new AudioConnection(dcFEnv,0, aBiasM[i], 0);
@@ -74,9 +74,10 @@ void setup(void){
   }
 
   for (int i=0; i<nStrings; i++) {
-    coilAmp[i].gain(1);
+    bowOn=0;
+    coilAmp[i].gain(0.000);
   }
-
+  
   for (int i=0; i<nStrings; i++) {
     aBiasM[i].gain(0,0.5);
     aBiasM[i].gain(1,0.5 );
@@ -85,7 +86,7 @@ void setup(void){
   }
 
   for (int i=0; i<nStrings; i++) {
-    inGain[i].gain(strGain[i]);
+    inGain[i].gain(strInGain[i]);
   }
 
 
@@ -99,9 +100,6 @@ void setup(void){
   dcFEnv.amplitude(1);
   ampOut.gain(1);
 
-not0.begin(WAVEFORM_SINE);
-not0.frequency(1);
-not0.amplitude(0.0001);
 
 float shp[9]={-1,-0.95,-0.9,-0.85,0,0.85,0.9,0.95,1};
   for (int i=0; i<nStrings; i++) {

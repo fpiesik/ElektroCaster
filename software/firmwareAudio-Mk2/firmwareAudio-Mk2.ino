@@ -1,4 +1,4 @@
-#include <Audio.h>
+ #include <Audio.h>
 //#include "./libs/Audio/Audio.h"
 #include <Wire.h>
 //#include <SPI.h>
@@ -11,7 +11,7 @@
 //#include "effect_gate.h"
 #include "notefreq.h"
 //#include "libs/AudioEffectDynamics/effect_dynamics.h"
-#include "effect_tapedelay10tap.h"
+//#include "effect_tapedelay10tap.h"
 
 const byte nStrings=6;
 const int nCtlFrets=17; //how many led frets
@@ -29,7 +29,7 @@ byte lastDispMode=0;
 int waitS=100;
 byte strAIn[nStrings]={10,8,6,4,2,0}; //input audio channels of the strings
 byte strAOut[nStrings]={10,8,6,4,2,0}; //output audio channels of the string coils
-float strGain[nStrings]={0.65,0.65,0.65,0.65,0.65,0.65};
+float strInGain[nStrings]={0.65,0.65,0.65,0.65,0.65,0.65};
 float tuning[nStrings]={59,54,50,45,40,35}; //{35,40,45,50,54,59};
 //int inputHicut[nStrings]={5000,4500,4000,3500,3000,2500}; //{35,40,45,50,54,59};
 int inputHicut[nStrings]={10000,10000,10000,10000,10000,10000}; //{35,40,45,50,54,59};
@@ -118,8 +118,6 @@ AudioAmplifier           inGain[nStrings];
 AudioEffectEnvelope      aEnv[nStrings];
 
 AudioEffectEnvelope      fEnv[nStrings];
-
-AudioSynthWaveform       not0;
 
 AudioSynthWaveformModulated lfo[nStrings];
 
@@ -212,6 +210,7 @@ void chDispMode(byte data){
 
 void trigEnv(byte str, float val){
   if(val>0){
+    //chngStrOutGain(str,val);
     aEnv[str].noteOn();
     fEnv[str].noteOn();
     //usbMIDI.sendNoteOn(strState[str]+tuning[str], 127, 1);
@@ -219,6 +218,7 @@ void trigEnv(byte str, float val){
   if(val==0){
     aEnv[str].noteOff();
     fEnv[str].noteOff();
+    //chngStrOutGain(str,1);
     //usbMIDI.sendNoteOff(strState[str]+tuning[str], 0, 1);
   }
   
@@ -236,4 +236,12 @@ void strFret(byte str, byte fret){
   }
   //sndMidiNote(str,fret);
   //chLfo1(2,0,str);
+}
+void chngStrOutGain(int s, float g){
+  if(s==0)mixer1.gain(0,g);
+  if(s==1)mixer1.gain(1,g);
+  if(s==2)mixer1.gain(2,g);
+  if(s==3)mixer1.gain(3,g);
+  if(s==4)mixer2.gain(1,g);
+  if(s==5)mixer2.gain(2,g);
 }

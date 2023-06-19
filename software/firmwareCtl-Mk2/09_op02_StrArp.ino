@@ -39,6 +39,16 @@ void strArp_chStrEnc(byte s, int val){
   }
 }
 
+void strArp_chStrBtn(byte s, bool val){
+  switch(strArp_strBtnFnc){
+    case strArp_strBtnFnc_mute:
+      if(val==1)strArp_muteCh[s]=!strArp_muteCh[s];
+      break;
+    case strArp_strBtnFnc_rnd:
+      //if(val==1)strArp_rndCh(inst,pttn,s);
+      break;
+  }
+}
 
 void strArp_updDisp(){
   //disp_Str(3, 8, "strArp");
@@ -112,10 +122,10 @@ void strArp_updClck(){
         
           
           //if(strPrs[s]==0)strArp_clk[s]=-1;
-        if(strArp_stp[s][strArp_clk[s]]==1){
+        if(strArp_stp[s][strArp_clk[s]]==1 && strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0){
           if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s]);
           sndTrigEnv(s, strPrs[s]);
-          if(strPrs[s] > 0) kick(s);
+          kick(s);
         }
         strArp_clk[s]++;
         if(strArp_clk[s]>=strArp_nStps[s])strArp_clk[s]=0;
@@ -123,6 +133,7 @@ void strArp_updClck(){
       //if(strPrs[s] == 0)strArp_clk[s]=-1;
       if(frtb_sensMode==0 && strPrs[s]==0)sndMidiNotePress(s,strPrs[s]);
     }
+    //strArp_drwGrid();
     strArp_drwCursor();
     strArp_drwStep();
     //strArp_sndStp();
@@ -141,15 +152,19 @@ void strArp_sync(){
 void strArp_drwGrid(){
   float colorA[3]={0.5,0,0};
   float colorB[3]={0.05,0,0};
+  float colorMA[3]={0.1,0,0};
+  float colorMB[3]={0.02,0,0};
   
   for(int s=0;s<nStrings;s++){
     for(int f=0;f<strArp_maxVisSteps;f++){
       for(int c=0;c<3;c++){    
         if(f%4==0){
-          strArp_gridPix[s][f][c]=colorA[c];
+          if(strArp_muteCh[s]==0)strArp_gridPix[s][f][c]=colorA[c];
+          else strArp_gridPix[s][f][c]=colorMA[c];
         }
         if(f%4 != 0){
-          strArp_gridPix[s][f][c]=colorB[c];
+          if(strArp_muteCh[s]==0)strArp_gridPix[s][f][c]=colorB[c];
+          else strArp_gridPix[s][f][c]=colorMB[c];
         }
       }
     }
@@ -175,11 +190,13 @@ void strArp_drwCursor(){
 
 void strArp_drwStep(){
   float color[3] = {1,0,1};
+  float colorM[3] = {0.2,0.2,0.2};
   for(int s=0;s<nStrings;s++){
     for(int f=0;f<strArp_maxVisSteps;f++){
       for(int c=0;c<3;c++){    
         if(strArp_stp[s][f]==1){
-          strArp_stpPix[s][f][c]=color[c];
+          if(strArp_muteCh[s]==0)strArp_stpPix[s][f][c]=color[c];
+          if(strArp_muteCh[s]==1)strArp_stpPix[s][f][c]=colorM[c];
         }
         if(strArp_stp[s][f]==0){
           strArp_stpPix[s][f][c]=0;
@@ -191,9 +208,7 @@ void strArp_drwStep(){
 
 void strArp_mkArp(){
   byte flip=1;
-  byte orderSrc=0;
   byte mirror=0;
-  byte arpMode=2;
   byte arpSize=0;
   byte arpSeq[64];
 

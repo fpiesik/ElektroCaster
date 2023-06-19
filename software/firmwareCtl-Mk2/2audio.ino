@@ -1,3 +1,24 @@
+void sndLfo1(byte para, float val){
+  Serial1.write(216);
+  //delayMicroseconds(waitS);
+  Serial1.write(para);
+  //delayMicroseconds(waitS);
+  Serial1.write(byte(val*199));
+}
+
+void sndStrGain(int str, byte val) {
+  Serial1.write(212);
+  //delayMicroseconds(waitS);
+  Serial1.write(str);
+  //delayMicroseconds(waitS);
+  Serial1.write(val/2); //string gain an the audio server has a max value of 99
+  //delayMicroseconds(waitS);
+//  msgOut_audio.beginPacket("strG");
+//  msgOut_audio.addByte(str);
+//  msgOut_audio.addInt(val);
+//  msgOut_audio.streamPacket(&Serial1);
+}
+
 void sndVol(float val){
   Serial1.write(211);
   Serial1.write(byte(val*199));
@@ -5,14 +26,6 @@ void sndVol(float val){
 
 void sndFilter(byte para, float val){
   Serial1.write(209);
-  //delayMicroseconds(waitS);
-  Serial1.write(para);
-  //delayMicroseconds(waitS);
-  Serial1.write(byte(val*199));
-}
-
-void sndEnv1(byte para, float val){
-  Serial1.write(207);
   //delayMicroseconds(waitS);
   Serial1.write(para);
   //delayMicroseconds(waitS);
@@ -27,8 +40,8 @@ void sndEnv2(byte para, float val){
   Serial1.write(byte(val*199));
 }
 
-void sndLfo1(byte para, float val){
-  Serial1.write(216);
+void sndEnv1(byte para, float val){
+  Serial1.write(207);
   //delayMicroseconds(waitS);
   Serial1.write(para);
   //delayMicroseconds(waitS);

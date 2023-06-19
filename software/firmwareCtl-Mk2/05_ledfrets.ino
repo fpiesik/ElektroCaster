@@ -132,6 +132,7 @@ void HSBtoRGB(float hue) {
    float blue = 0;
    float thrRG =0.5;
    float thrGB =0.75;
+   if(hue>=1.0)hue=0.99;
     if (hue<thrRG){
       red = 1.0-hue/thrRG;
       green = hue/thrRG;

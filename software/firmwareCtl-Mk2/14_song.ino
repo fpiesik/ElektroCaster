@@ -1,8 +1,6 @@
 void saveSong(int sng){
-  char* fileName;
-  fileName=genSq_SongNm[sng];
-  SD.remove(fileName);
-  myFile = SD.open(fileName, FILE_WRITE);
+  SD.remove(genSq_SongNm[sng]);
+  myFile = SD.open(genSq_SongNm[sng], FILE_WRITE);
   
   // if the file opened okay, write to it:
   if (myFile) {
@@ -12,15 +10,11 @@ void saveSong(int sng){
         for(int pttn = 0; pttn<genSq_nPttn; pttn++){
           for(int chFnc = 0; chFnc<genSq_nStrEncFnc; chFnc++){
             myFile.write(genSq_chn[inst][pttn][str][chFnc]);
-            bool genSq_sclQ[genSq_nInst][nStrings];
-            //delay(1);
           }
           for(int stp = 0; stp<genSq_maxSteps; stp++){
             myFile.write(genSq_stpOnOff[inst][pttn][str][stp]);
-            //delay(1);
             for(int stpFnc = 0; stpFnc<genSq_nStrPrsFnc; stpFnc++){
               myFile.write(genSq_stp[inst][pttn][str][stp][stpFnc]);
-              //delay(1);
             }
           }
         }
@@ -38,6 +32,13 @@ void saveSong(int sng){
     myFile.write(scls_sclStp); 
     myFile.write(bpm);
     myFile.write(scls_fledSrc);
+    for(int str = 0; str<nStrings; str++){
+      myFile.write(tuning[str]);
+    }
+    for(int str = 0; str<nStrings; str++){
+      myFile.write(strGain[str]);
+    }
+    
 //    
 //    Serial.print("Writing to test.txt...");
 //    myFile.println("testing 1, 2, 3.");
@@ -52,10 +53,8 @@ void saveSong(int sng){
   
 }
 
-void loadSong(int sng){
-  char* fileName;
-  fileName=genSq_SongNm[sng]; 
-  myFile = SD.open(fileName);
+void loadSong(int sng){ 
+  myFile = SD.open(genSq_SongNm[sng]);
   if (myFile) {
     for(int inst = 0; inst<genSq_nInst; inst++){
       for(int str = 0; str<nStrings; str++){
@@ -88,6 +87,14 @@ void loadSong(int sng){
     bpm=myFile.read();
     chngBpm(bpm);
     scls_fledSrc=myFile.read();
+    for(int str = 0; str<nStrings; str++){
+      tuning[str] = myFile.read();
+    }
+    for(int s = 0; s<nStrings; s++){
+      strGain[s] = myFile.read();
+      sndStrGain(s,strGain[s]);
+    }
+    
     // close the file:
     myFile.close();
     genSq_actPttnsCh();
@@ -116,8 +123,9 @@ void defaultSong(){
       for (int p=0; p < genSq_nPttn; p++) {
         genSq_chn[i][p][s][genSq_strEncFnc_tmDv]=10; 
         genSq_chn[i][p][s][genSq_strEncFnc_stps]=16;
-        genSq_chn[i][p][s][genSq_strEncFnc_chn]=i+1;
+        genSq_chn[i][p][s][genSq_strEncFnc_offSt]=0;
         genSq_chn[i][p][s][genSq_strEncFnc_sync]=0;
+        genSq_chn[i][p][s][genSq_strEncFnc_chn]=i+1;        
         genSq_clk[i][s]=-1;
         for (int f=0; f < genSq_maxSteps; f++) {
           genSq_stpOnOff[i][p][s][f]=0;
@@ -133,11 +141,18 @@ void defaultSong(){
     }
   }
   rootNote=0;
-  scls_sclSel=2;
+  scls_sclSel=3;
   scls_sclStp=0;
   bpm=90;
   chngBpm(bpm);
   scls_fledSrc=2;
+  for(int str = 0; str<nStrings; str++){
+    tuning[str] = defTuning[str];
+  }
+  for(int s = 0; s<nStrings; s++){
+    strGain[s] = defStrGain[s];
+    sndStrGain(s, strGain[s]);
+  }
   genSq_actPttnsCh();
   for(int inst = 0; inst<genSq_nInst; inst++){
     for(int pttn = 0; pttn<genSq_nPttn; pttn++){
@@ -149,7 +164,7 @@ void defaultSong(){
 }
 
 void scanPttns(){
-  static int inter=3000;
+  static unsigned int inter=3000;
   if (millis()-scanPttnTimer > inter){
     scanPttnTimer+=inter;
     inter=500;

@@ -114,6 +114,14 @@ void genSq_chStrEnc(int str, int val){
           genSq_chn[inst][pttn][str][genSq_strEncFnc_sync]=sync;
         //}
       }
+      if(genSq_strEncFnc_offSt==genSq_strEncFnc){
+          int offSt=genSq_chn[inst][pttn][str][genSq_strEncFnc_offSt];
+          offSt = offSt + val;
+          if(offSt < 0) offSt=0;
+          if(offSt > genSeq_maxEncV[genSq_strEncFnc_offSt]) offSt=genSeq_maxEncV[genSq_strEncFnc_offSt];
+          genSq_chn[inst][pttn][str][genSq_strEncFnc_offSt]=offSt;
+        //}
+      }
   }
   if(strEncMode==1 && genSq_strEncChAStps==0 && nStrings-str-1<genSq_nStrPrsFnc){
     str=nStrings-str-1;
@@ -205,6 +213,7 @@ void genSq_editSteps(byte s){
           if(shift == 1)genSq_stpOnOff[inst][pttn][s][strPrs[s]-1]=0;
           //sndMidiCC(genSq_SelChnCC, 20,3);
           //sndMidiCC(genSq_SelChnCC, genSq_sndCh[inst][nStrings-s]*12-12,1);
+          sndMidiCC(genSq_SelChnCC, genSq_chn[inst][pttn][s][genSq_strEncFnc_chn]*12,1);
         }
       }
     }

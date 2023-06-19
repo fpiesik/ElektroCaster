@@ -40,18 +40,21 @@ void readFretboard(int sensMode) {
   //actions when string is pressed or released
   static long lastChng[nStrings];
   static long lastExStrPr[nStrings];
+  bool frtSplt=opMode>=genSq_opMode && opMode<genSq_opMode+genSq_nInst;
   for (int s = 0; s < nStrings; s++) {
     unsigned int sB = strBnc[s];
-    if (sB >= strBncs && millis() - lastChng[s] > fretMaskT && lastExStrPr[s] != strPrs[s]) {
+    unsigned int sBncs = strBncs;
+    if(frtSplt==1 && strPrs[s]>nFrets-genSq_nPttn/2-1) sBncs=strBncsP;
+    if (sB >= sBncs && millis() - lastChng[s] > fretMaskT && lastExStrPr[s] != strPrs[s]) {
       if (fbrdMode == 0 && strArp_act == 0) {
         sndTrigEnv(s, strPrs[s]);
-        if (strPrs[s] > 0)kick(s);
-
         if(opMode>=genSq_opMode && opMode<genSq_opMode+genSq_nInst){
           if(frtb_sensMode==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1)sndMidiNotePress(s,strPrs[s]);
+          if (strPrs[s] > 0 && strPrs[s]<=nFrets-genSq_nPttn/2-1)kick(s);
         }
         else{
           if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s]);
+          if (strPrs[s] > 0)kick(s);
         }
       }
       if (fbrdMode == 0)sndStrPrs(s, strPrs[s]);
@@ -140,8 +143,6 @@ void procHidDChng(byte idx, bool val) {
 
     case 11:
       fbrdMode = val; //switch next to display
-      if (val == 0)sndVol(vol);
-      if (val == 1)sndVol(0);
       break;
 
     case 12:
@@ -154,7 +155,8 @@ void procHidDChng(byte idx, bool val) {
   for (byte i = pO; i < (nStrings + pO); i++) {
     byte s = i - pO;
     if (hidDVal[pO + s] != lastHidDVal[pO + s]) {
-      genSq_chStrBtn(s, val);
+      if(opMode>=genSq_opMode)genSq_chStrBtn(s, val);
+      if(opMode==strArp_opMode)strArp_chStrBtn(s, val);
     }
   }
   lastHidDVal[idx] = hidDVal[idx];
@@ -238,7 +240,7 @@ void procHidAChng(byte idx, float val) {
     case 13:
       //pot 1
       vol = val;
-      if (fbrdMode == 0)sndVol(vol);
+      if (mtOut == 0)sndVol(vol);
       break;
 
     case 14:
@@ -287,6 +289,8 @@ void procHidRChng(byte idx, byte val) {
     case 1:
       genSq_actPttnsIdx=val;
       genSq_actPttnsCh();
+      MIDI.sendNoteOn(val*2, 100, mM8Row_chn);
+      MIDI.sendNoteOn(val, 0, mM8Row_chn);
 //      saveSong();
 //      genSq_actSng=val;
 //      loadSong();
@@ -318,13 +322,11 @@ void procHidEChng(byte idx, long val) {
     case 0:
       switch (opMode) {
         case strSetup_opMode:
-          bpm=bpm+val;
-          if(bpm<1)bpm=1;
-          if(bpm>250)bpm=250;
-          chngBpm(bpm);
+
+          strSetup_chDispEnc(val);
           break;
         case strArp_opMode:
-          if (fbrdMode == 0)scls_chDispEnc(val);
+          if (fbrdMode == 0)strArp_chDispEnc(val);
           if (fbrdMode == 1)strArp_chDispEnc(val);
           break;
         case genSq_opMode:
@@ -377,7 +379,7 @@ void procHidEChng(byte idx, long val) {
       lastStrEnc = s;
       switch (opMode) {
         case strSetup_opMode:
-          tuning[s] = tuning[s] + val;
+          strSetup_chStrEnc(s, val);
           break;
         case strArp_opMode:
           strArp_chStrEnc(s, val);
