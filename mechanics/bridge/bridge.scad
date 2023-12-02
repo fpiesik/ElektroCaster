@@ -4,7 +4,7 @@ include <parameter.scad>;
 
 //bockCut();
 //scrw(3);
-bock();
+//bock();
 
 //translate([0,0,0])difference(){
 //bridgeMount();

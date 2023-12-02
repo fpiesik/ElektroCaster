@@ -163,6 +163,16 @@ void genSq_sndStpOn(int inst,int pttn, byte s){
     //int note = genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_sStp];
     int vel = genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_vel]*1.0/genSq_maxStpV[genSq_strPrsFnc_vel]*127.0; 
     sndMidiNote(note,vel, chnl);
+    //play sequence on the strings
+    if(inst==0 && strSeq_act==1 && strPrs[s]>0 && fbrdMode == 0){          
+      sndTrigEnv(s, strPrs[s]);
+      kick(s);
+    }
+    //play if string hold is activated
+    if(inst==0 && strHold[s]==1 && fbrdMode == 0){          
+      sndTrigEnv(s, 1);
+      kick(s);
+    }
     genSq_actNotes[inst][s][note]=vel;
     genSq_velState[inst][s] = vel;
     genSq_lastNote[inst][s] = note;

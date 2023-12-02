@@ -130,7 +130,7 @@ void defaultSong(){
         for (int f=0; f < genSq_maxSteps; f++) {
           genSq_stpOnOff[i][p][s][f]=0;
           genSq_stp[i][p][s][f][genSq_strPrsFnc_sStp]=0;
-          genSq_stp[i][p][s][f][genSq_strPrsFnc_oct]=5;
+          genSq_stp[i][p][s][f][genSq_strPrsFnc_oct]=3;
           genSq_stp[i][p][s][f][genSq_strPrsFnc_vel]=40; 
           genSq_stp[i][p][s][f][genSq_strPrsFnc_cc1]=0; 
           genSq_stp[i][p][s][f][genSq_strPrsFnc_cc2]=0; 

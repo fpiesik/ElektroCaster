@@ -23,6 +23,7 @@ AsciiMassageParser msgIn_audio; //todo
   int mInst_potCc[2]={7,8};
   int midi_faderCc[4]={3,4,5,6};
   int extNotes[17][128];
+  int ccState[127];
 
 //sdCard
 File myFile;
@@ -30,7 +31,8 @@ const int chipSelect = BUILTIN_SDCARD;
 
 //string defintions variables
   const int nStrings=6; //how many Strings
-  const int nFrets=22;
+  const int nFrets=21;
+  const int frtSplit=17; //point where the frets become pattern chooser
   int tuning[nStrings]={64,59,55,50,45,40};
   int defTuning[nStrings]={64,59,55,50,45,40};
   int strGain[nStrings];
@@ -45,6 +47,7 @@ const int chipSelect = BUILTIN_SDCARD;
   float lastStrP[nStrings];
   float strA[nStrings];
   float lastStrA[nStrings];
+  bool strHold[nStrings]; //treat those strings as hold they were pressed
 
 //led defintions and variables
   #define LED_PIN     14   //led pin
@@ -116,12 +119,12 @@ const int chipSelect = BUILTIN_SDCARD;
   byte lastBowMode=0;
 
 // Scales
-  const int nScales=11;
-  const char* sclNm[nScales]={"off", "root", "pentatonic", "major", "minor", "hrm minor", "mel minor", "altered", "whole", "wholeHalf","chromatic"};
+  const int nScales=10;
+  const char* sclNm[nScales]={"off", "root", "pentatonic", "major", "minor", "hrm minor", "mel minor", "altered", "whole", "wholeHalf"}; //max 16!
   float scls_sclPix[nStrings][nLedFrets][3];
   float scls_midiPix[nStrings][nLedFrets][3];
   int scls_sclClr=0;
-  int scls_numSclStp[nScales]= {0, 1, 5, 7, 7, 7, 7, 7, 6, 8, 12};
+  int scls_numSclStp[nScales]= {0, 1, 5, 7, 7, 7, 7, 7, 6, 8};
   int scls_sclSel=2;
   int scls_sclStp=0;
   int rootNote=0;
@@ -256,7 +259,9 @@ const int chipSelect = BUILTIN_SDCARD;
   bool genSq_stpOnOff[genSq_nInst][genSq_nPttn][nStrings][genSq_maxSteps];
   int genSq_stp[genSq_nInst][genSq_nPttn][nStrings][genSq_maxSteps][genSq_nStrPrsFnc];
   int genSq_chn[genSq_nInst][genSq_nPttn][nStrings][genSq_nStrEncFnc]; 
-   
+
+// String Sequencer (from genSeq)
+  bool strSeq_act=1;
 
 //sequence settings
   unsigned int bpm=90;

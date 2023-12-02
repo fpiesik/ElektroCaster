@@ -222,7 +222,7 @@ void genSq_updDisp(){
   if(genSq_sclQ[inst][genSq_stpEdtStr]==0)pitch=genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_sStp]%12;
 
   disp_Str(73, 9, toneNm[pitch%12]);
-  disp_Int(90, 9, genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_oct]);
+  disp_Int(90, 9, genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_oct]+1);
 
   disp_Int(105, 9, genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_vel]);
 

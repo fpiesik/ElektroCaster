@@ -4,7 +4,7 @@ void setMidiHandles(){
     MIDI.setHandleStop(midiStop);
 //  usbMIDI.setHandleNoteOn(rcvNoteOn);
 //  usbMIDI.setHandleNoteOff(rcvNoteOff);
-//  usbMIDI.setHandleControlChange(rcvCC);
+  MIDI.setHandleControlChange(rcvCC);
   MIDI.setHandleNoteOn(rcvNoteOn);  // Put only the name of the function
   MIDI.setHandleNoteOff(rcvNoteOff);
 
@@ -59,7 +59,7 @@ void sndMidiClck(int state){
 
 void rcvNoteOn(byte channel, byte note, byte velocity) {
   extNotes[channel][note]=velocity;
-  //midiKick(channel,velocity);
+  midiKick(channel,velocity);
   
 }
 
@@ -118,11 +118,11 @@ void midiKick(int chn, int v){
   
 }
 
-//void rcvCC(byte ch, byte cc, byte data) {
-//  ccState[cc]=data;
-//  sndCC();
-//  float val=data/127.0; 
-//  
+void rcvCC(byte ch, byte cc, byte data) {
+  ccState[cc]=data;
+  //sndCC();
+  float val=data/127.0; 
+  
 //  for(int n=0;n<4;n++){
 //    if(cc==ccFilter[n]){
 //      valFilter[n]=scale(val,0,sclFilter[n]);
@@ -140,4 +140,16 @@ void midiKick(int chn, int v){
 //      chEnvF(n,sclVal);
 //    }
 //  }
-//}
+  if(cc==10){
+    rootNote=ccState[cc]%12;
+  }
+  if(cc==11){
+    if(ccState[cc]%16<nScales)scls_sclSel=ccState[cc]%16;
+    scls_sclStp=int(ccState[cc]/16);
+  }
+  if(cc==12){
+    scls_sclStp=ccState[cc]%scls_numSclStp[scls_sclSel];
+  }
+  
+  
+}

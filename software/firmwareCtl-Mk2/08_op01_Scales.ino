@@ -10,7 +10,6 @@ int scls_scls[nScales][12]={
 {0,1,3,4,6,8,10}, // altered
 {0,2,4,6,8,10}, // whole tone
 {0,2,3,5,6,8,9,11}, // whole tone half tone
-{0,1,2,3,4,5,6,7,8,9,10,11} //chromatic
 }; 
 
 void scls_chDispEnc(int val){

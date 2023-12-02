@@ -1,5 +1,12 @@
-include <parameter.scad>
-include <slotBody.scad>;
+
+//btmLck();
+//neck(0);
+//translate([0,0,pcbZ])boardOver();
+//boardOver();
+//neckEnd();
+
+use <../parameter.scad>
+include <../skeleton/slotBody.scad>
 
 L=scale; //scale 
 k=1.05946; //constant for the fret sizes
@@ -52,6 +59,7 @@ holeDia=1.5;
 holeRes=8;
 
 
+
 //projection(){
 //    translate([25.5,-cutY,0]){
 //        cutHalf(1,2);
@@ -61,23 +69,22 @@ holeRes=8;
 
 //cutHalf(1,3);
 //cutHalf(0,3);
-//cutHalf(0,3);
+
 
 //ledBoard(0);
 //fretConnect();
 
 //neckShp();
 
-//translate([0,0,slotXY/2+pcbZ])boardOver();
 
-//neckEnd();
+
+
 
 //frame(slotXY,3);
-//boardOver();
+
 //brdCore();
 //sideLck();
-btmLck();
-//neck(0);
+
 //mntSScrw(3.3,10,7,2.5,0);
 
 module led(part){
@@ -245,7 +252,7 @@ module ledBoard(part){
                 if(part==0||part==2){    
                     if(i<=22&&i!=0)color([1,1,0])translate([0,0,0])fret(fretPos(i));
                     //translate([0,0,0])pwrHoles(i,fretPos(i),2.5);
-                    pwrHoles(i,fretPos(i),holeDia);
+                    pwrHoles(i,fretPos(i),holeDia,z);
                     }          
             }
     }
@@ -439,7 +446,7 @@ translate([0,-0.1,0])union(){
 }
 }
 module neckEnd(){
-//neck(1);
+neck(1);
 slotBd_spacer();
 }
 module gnd(){

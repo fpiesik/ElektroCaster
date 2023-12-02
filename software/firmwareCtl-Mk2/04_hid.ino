@@ -44,24 +44,31 @@ void readFretboard(int sensMode) {
   for (int s = 0; s < nStrings; s++) {
     unsigned int sB = strBnc[s];
     unsigned int sBncs = strBncs;
-    if(frtSplt==1 && strPrs[s]>nFrets-genSq_nPttn/2-1) sBncs=strBncsP;
+    if (shift==1 && fbrdMode == 0 && strPrs[s]>0 )strHold[s]=1;
+    if (shift==1 && fbrdMode == 0 && strPrs[s]==0 )strHold[s]=0;
+    if(frtSplt==1 && strPrs[s]>=frtSplit) sBncs=strBncsP; //extended string bounces threshold for switching patterns
     if (sB >= sBncs && millis() - lastChng[s] > fretMaskT && lastExStrPr[s] != strPrs[s]) {
-      if (fbrdMode == 0 && strArp_act == 0) {
-        sndTrigEnv(s, strPrs[s]);
-        if(opMode>=genSq_opMode && opMode<genSq_opMode+genSq_nInst){
-          if(frtb_sensMode==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1)sndMidiNotePress(s,strPrs[s]);
-          if (strPrs[s] > 0 && strPrs[s]<=nFrets-genSq_nPttn/2-1)kick(s);
+      if (strHold[s]==0){
+        if (fbrdMode == 0 && strArp_act == 0 && strSeq_act==0) {
+          sndTrigEnv(s, strPrs[s]);
+          if(opMode>=genSq_opMode && opMode<genSq_opMode+genSq_nInst && strPrs[s]<=frtSplit){
+            if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s]);
+            if (strPrs[s] > 0)kick(s);
+          }
+          else{
+            if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s]);
+            if (strPrs[s] > 0)kick(s);
+          }
         }
-        else{
-          if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s]);
-          if (strPrs[s] > 0)kick(s);
-        }
-      }
-      if (fbrdMode == 0)sndStrPrs(s, strPrs[s]);
+        if (fbrdMode == 0)sndStrPrs(s, strPrs[s]);
+      
       genSq_editSteps(s);
       //lastStrPrs[s]=strPrs[s];
-      lastChng[s] = millis();
       lastExStrPr[s] = strPrs[s];
+    }
+      lastChng[s] = millis();
+      
+      
     }
   }
 }
@@ -93,7 +100,8 @@ void procHidDChng(byte idx, bool val) {
 
     case 2:
       //tripple switch left
-      strArp_act = val;
+      strArp_act = 0;
+      strSeq_act = val;
       break;
 
     case 3:

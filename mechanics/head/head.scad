@@ -1,5 +1,5 @@
-include <parameter.scad>;
-include <neck.scad>;
+include <../parameter.scad>;
+include <../neck/neck.scad>;
 
 zA=17;
 
@@ -27,20 +27,22 @@ scrwDia=3.3;
 scrwDist=fretLN-slotXY;
 slotSink=8;
 
+strsink=1;
+
 
 mountT=10; //mount thickness
 
 strHDia=[2,1.8,1.6,1.4,1.2,1];
 strSp=1.5;
 strEtoE=(nStrings-1)*strDistN;
-fret2Str=0.5; //distance between Strings and frets on the nut position
+fret2Str=0.6; //distance between Strings and frets on the nut position
 
 nutZA=fretboardZ+fretZ+strHDia[5];
 nutZB=6;
 nutY=12;
 nutZ=nutZA+nutZB;
 
-strZPos=fretboardZ+fret2Str+fretZ;
+strZPos=fretboardZ+fret2Str+fretZ+strsink;
 
 lockZ=zA/2.2;
 lockY=12;
@@ -59,7 +61,7 @@ printSp=0.3;
 //head();
 //scrw(lockScr,10);
 //strSpacer();
-//rotate([90,0,0])nut();
+rotate([90,0,0])nut();
 //translate([0,nutY,0])rotate([xAngle,0,0])tuners();
 
 module scrw(dia, h){
@@ -166,7 +168,7 @@ translate([-(scrwDist+slotXY)/2,-nutY-1,0])cube([scrwDist+slotXY,nut_slotSink+1,
 for(i=[0:nStrings-1]){
 translate([i*spacing,0,0]){
 hull(){
-translate([-(spacing*(nStrings-1))/2,0,slotXY+strZPos+strHDia[i]/2])rotate([90,0,0])cylinder(d=strHDia[i],h=20,$fn=16);
+translate([-(spacing*(nStrings-1))/2,0,slotXY+strZPos+strHDia[i]/2-strsink])rotate([90,0,0])cylinder(d=strHDia[i],h=20,$fn=16);
 translate([-(spacing*(nStrings-1))/2,0,slotXY+strZPos+strHDia[i]*2])rotate([90,0,0])cylinder(d=strHDia[i]+1.5,h=20,$fn=16);
 }
 }}

@@ -1,10 +1,8 @@
-include <parameter.scad>;
+include <../parameter.scad>;
 
-bridge(2);
+bridge(0);
 
-//bockCut();
-//scrw(3);
-//bock();
+
 
 //translate([0,0,0])difference(){
 //bridgeMount();
@@ -13,9 +11,9 @@ bridge(2);
 topZ=4;
 bottomZ=4;
 z=topZ+bottomZ+slotXY;
-sink=1.5;
+//sink=1.5;
 //bockSlotDia=8;//(x-slotXY)/2;
-bockSlotSpc=1.2;
+//bockSlotSpc=1.2;
 yA=36;
 x=bodySlotX-slotXY*2;
 //strStrt=5; //were the string starts to be free
@@ -32,7 +30,7 @@ strHolePos=16;
 cblHoleX=5;
 cblHoleY=3;
 cblHolePos=8;
-bockSink=2;
+bockSink=3;
 strScrwPos=2.75;
 strScrwDia=3;
 scrwBockPos=12;
@@ -120,15 +118,15 @@ translate([yA-StrMountT+2,0,topZ-bockSink+strScrwPos])rotate([0,90,0])translate(
 }}
 
 translate([scrwBockPos,0,0]){
-translate([0,x/2,-z+topZ+0.001-bockSink])scrw(scrwD); 
-translate([0,x/2+strSpanB/2-strDistB/2,-z+topZ+0.001-bockSink])scrw(scrwD); 
-translate([0,x/2-(strSpanB/2-strDistB/2),-z+topZ+0.001-bockSink])scrw(scrwD);
+//translate([0,x/2,-z+topZ+0.001-bockSink])scrw(scrwD); 
+//translate([0,x/2+strSpanB/2-strDistB/2,-z+topZ+0.001-bockSink])scrw(scrwD); 
+//translate([0,x/2-(strSpanB/2-strDistB/2),-z+topZ+0.001-bockSink])scrw(scrwD);
 }
 
 translate([mntY/2-StrMountT/2,0,zStrM-topZ]){
-translate([yA/2,x/2,-z+topZ+0.001])scrw(scrwD);
-translate([yA/2,x/2+strSpanB/2-strDistB/2,-z+topZ+0.001])scrw(scrwD); 
-translate([yA/2,x/2-(strSpanB/2-strDistB/2),-z+topZ+0.001])scrw(scrwD);
+//translate([yA/2,x/2,-z+topZ+0.001])scrw(scrwD);
+//translate([yA/2,x/2+strSpanB/2-strDistB/2,-z+topZ+0.001])scrw(scrwD); 
+//translate([yA/2,x/2-(strSpanB/2-strDistB/2),-z+topZ+0.001])scrw(scrwD);
 }
 
 translate([0,x/2,0])cblHole();
@@ -173,12 +171,12 @@ translate([-bodySlotX/2+slotXY/2,slotXY-scrwD*1.5,-bottomZ+z-0.001])rotate([180,
 translate([-bodySlotX/2+slotXY/2,-slotXY+scrwD*1.5,-bottomZ+z-0.001])rotate([180,0,0])scrw(scrwD);
 
 translate([0,yA/2-scrwBockPos,0]){
-translate([0,0,-bottomZ-0.001])scrw(scrwTD);
-translate([-(strSpanB/2-strDistB/2),0,-bottomZ-0.001])scrw(scrwTD);
+//translate([0,0,-bottomZ-0.001])scrw(scrwTD);
+//translate([-(strSpanB/2-strDistB/2),0,-bottomZ-0.001])scrw(scrwTD);
 }
 translate([0,-(mntY/2-StrMountT/2),0]){
-translate([0,0,-bottomZ-0.001])scrw(scrwTD);
-translate([-(strSpanB/2-strDistB/2),0,-bottomZ-0.001])scrw(scrwTD);
+//translate([0,0,-bottomZ-0.001])scrw(scrwTD);
+//translate([-(strSpanB/2-strDistB/2),0,-bottomZ-0.001])scrw(scrwTD);
 }
 
 if(part==1)translate([0,0,(z-topZ)/2-bottomZ])cube([300,300,z-topZ],center=true);
