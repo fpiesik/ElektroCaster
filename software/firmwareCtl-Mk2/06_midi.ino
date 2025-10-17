@@ -1,23 +1,22 @@
 void setMidiHandles(){
-    MIDI.setHandleClock(midiClock);
-    MIDI.setHandleStart(midiStart);
-    MIDI.setHandleStop(midiStop);
+  usbMIDI.setHandleClock(midiClock);
+  usbMIDI.setHandleStart(midiStart);
+  usbMIDI.setHandleStop(midiStop);
 //  usbMIDI.setHandleNoteOn(rcvNoteOn);
 //  usbMIDI.setHandleNoteOff(rcvNoteOff);
-  MIDI.setHandleControlChange(rcvCC);
-  MIDI.setHandleNoteOn(rcvNoteOn);  // Put only the name of the function
-  MIDI.setHandleNoteOff(rcvNoteOff);
-
+  usbMIDI.setHandleControlChange(rcvCC);
+  usbMIDI.setHandleNoteOn(rcvNoteOn);  // Put only the name of the function
+  usbMIDI.setHandleNoteOff(rcvNoteOff);
 }
 
 void sndMidiNote(byte note,byte velocity, byte channel){
   if(velocity>0){
     //usbMIDI.sendNoteOn(note, velocity, channel, 0);
-    MIDI.sendNoteOn(note, velocity, channel);
+    usbMIDI.sendNoteOn(note, velocity, channel);
   }
   if(velocity==0){
     //usbMIDI.sendNoteOff(note, 0, channel, 0);
-    MIDI.sendNoteOff(note, velocity, channel);
+    usbMIDI.sendNoteOff(note, velocity, channel);
   }
 //    Serial.print("note: ");
 //    Serial.print(note);
@@ -31,29 +30,30 @@ void sndMidiNotePress(int str, int frt){
   int chn = mInst_chn;
   //int chn=genSq_chn[genSq_actInst][genSq_actPttns[genSq_actPttnsIdx][genSq_actInst]][str][genSq_strEncFnc_chn];
   if (frt > 0){ 
+//    for (int s = 0;s<nStrings;s++){
+//      sndMidiNote(lastNote[s],0, lastChn[s]);
+//    }
+    sndMidiNote(lastNote[str],0, lastChn[str]);
     int note=tuning[str]+frt;
-    sndMidiNote(lastNote[str],0, chn);
-    sndMidiNote(note,120, chn);
     lastNote[str]=note;
     lastChn[str]=chn;
+    sndMidiNote(note,120, chn);
   }    
   if (frt == 0){ 
-    if(lastNote>0)sndMidiNote(lastNote[str],0, lastChn[str]);
+    sndMidiNote(lastNote[str],0, lastChn[str]);
     lastNote[str]=0;
   }
 }
 
 void sndMidiCC(byte cc, byte val,byte ch){
   //usbMIDI.sendControlChange(cc, val, ch);
-  MIDI.sendControlChange(cc, val, ch);
+  usbMIDI.sendControlChange(cc, val, ch);
 }
 
 void sndMidiClck(int state){
-  if(extClk==0){
-    if(state==0)MIDI.sendRealTime(midi::Start);
-    if(state==1)MIDI.sendRealTime(midi::Clock);
-    if(state==2)MIDI.sendRealTime(midi::Stop);
-  }
+    if(state==0)usbMIDI.sendRealTime(midi::Start);
+    if(state==1)usbMIDI.sendRealTime(midi::Clock);
+    if(state==2)usbMIDI.sendRealTime(midi::Stop);
 }
 
 
@@ -68,7 +68,7 @@ void rcvNoteOff(byte channel, byte note, byte velocity) {
 }
 
 void midiClock(){ 
-  if(extClk==1){
+  if(extClk==1 && clckOn==1){
     mClock++;
     cmpClck(mClock);
     updDisplay();
@@ -82,7 +82,7 @@ void midiStart() {
 }
 void midiStop() {
   mClock = -1;
-  extClk = 0;
+  extClk = 1;
   cmpClck(mClock);
   for(int ch=0;ch<=16;ch++){
     for(int n=0;n<=127;n++){

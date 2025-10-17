@@ -11,12 +11,14 @@ void serialEvent1(){
 
         if (incoming == 0){
           byte a;
-          byte b;
+          float b;
           while(Serial1.available() == 0);
           a=Serial1.read();
           while(Serial1.available() == 0);
           b=Serial1.read();
+          //Serial.println(b);
           trigEnv(a, b/199.0);
+          
           incoming = -1;
         }
          
@@ -41,6 +43,7 @@ void serialEvent1(){
           b=Serial1.read();
           float sclVal=scale(b/199.0,1,sclEnvA[a]);
           chEnvA(a,sclVal);
+          envPA[a]=sclVal;
           incoming = -1;
         }
 
@@ -53,6 +56,7 @@ void serialEvent1(){
           b=Serial1.read();
           float sclVal=scale(b/199.0,1,sclEnvF[a]);
           chEnvF(a,sclVal);
+          envPF[a]=sclVal;
           incoming = -1;
         }
 
@@ -70,12 +74,17 @@ void serialEvent1(){
 
         if (incoming == 12){
            byte a;
-           float b;
+           byte b;
+           float val;
            while(Serial1.available() == 0);
            a=Serial1.read();
            while(Serial1.available() == 0);
-           b=Serial1.read();         
-           chngStrOutGain(a, b/99.0);
+           b=Serial1.read();  
+           val=b/100.0;      
+           chngStrOutGain(a, val);
+            Serial.print(a);
+            Serial.print(": ");
+            Serial.println(val);
            incoming = -1;
           }
 
@@ -130,15 +139,15 @@ void serialEvent1(){
           float val=sbyte/199.0;
           val=val*val*2;
           ampOut.gain(val+0.0001);
-          Serial.println("gain: ");
-          Serial.println(val);
+          //Serial.println("gain: ");
+          //Serial.println(val);
           incoming = -1;
         }
         if (incoming == 17){
           float val=sbyte;
           bpm=val;
-          Serial.println("bpm: ");
-          Serial.println(val);
+          //Serial.println("bpm: ");
+          //Serial.println(val);
           incoming = -1;
         }   
         }
@@ -222,7 +231,7 @@ for (int i=0; i<nStrings; i++) {
   lastBowOn=bowOn;
 }
    
-if(1) {
+if(0) {
   if(millis() - last_time >= 3000) {
     Serial.print("Proc = ");
     Serial.print(AudioProcessorUsage());

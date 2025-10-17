@@ -24,11 +24,16 @@ void readFretboard(int sensMode) {
   for (int s = 0; s < nStrings; s++) {
     strPrs[s] = 0;
     bool used = 0;
+    frtPrs[s] = 0;
     for (int f = nFrets - 1; f >= 0; f--) {
-      if (frtState[f][s] == 1 && used == 0) {
-        if (f < nFrets)strPrs[s] = f + 1;
-        //lastChng[s]=millis();
-        used = 1;
+      if (frtState[f][s] == 1) {
+        if (used == 0){
+          strPrs[s] = f + 1;
+          used = 1;
+        }
+        else {
+          frtPrs[s]+=1;
+        }        
       }
       lastFrtState[f][s] = frtState[f][s];
     }
@@ -46,26 +51,25 @@ void readFretboard(int sensMode) {
     unsigned int sBncs = strBncs;
     if (shift==1 && fbrdMode == 0 && strPrs[s]>0 )strHold[s]=1;
     if (shift==1 && fbrdMode == 0 && strPrs[s]==0 )strHold[s]=0;
-    if(frtSplt==1 && strPrs[s]>=frtSplit) sBncs=strBncsP; //extended string bounces threshold for switching patterns
+    //if(frtSplt==1 && strPrs[s]>=frtSplit) sBncs=strBncsP; //extended string bounces threshold for switching patterns
     if (sB >= sBncs && millis() - lastChng[s] > fretMaskT && lastExStrPr[s] != strPrs[s]) {
-      if (strHold[s]==0){
+      if (strHold[s]==0||genSq_muteCh[0][s]){
         if (fbrdMode == 0 && strArp_act == 0 && strSeq_act==0) {
-          sndTrigEnv(s, strPrs[s]);
+          sndTrigEnv(s, strPrs[s]>0);
           if(opMode>=genSq_opMode && opMode<genSq_opMode+genSq_nInst && strPrs[s]<=frtSplit){
-            if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s]);
+            if(sensMode==0)sndMidiNotePress(s,strPrs[s]);
             if (strPrs[s] > 0)kick(s);
           }
           else{
-            if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s]);
+            if(sensMode==0)sndMidiNotePress(s,strPrs[s]);
             if (strPrs[s] > 0)kick(s);
           }
         }
         if (fbrdMode == 0)sndStrPrs(s, strPrs[s]);
-      
-      genSq_editSteps(s);
       //lastStrPrs[s]=strPrs[s];
       lastExStrPr[s] = strPrs[s];
     }
+    genSq_editSteps(s);
       lastChng[s] = millis();
       
       
@@ -89,12 +93,25 @@ void procHidDChng(byte idx, bool val) {
     case 0:
       //display encoder button
       dispEncMode = !val;
+      if (dispEncMode==0){
+        for(int i=0;i<genSq_nInst;i++){
+          if (genSq_edtPttn[i] != genSq_lastActPttn[i]){
+            genSq_cpPttn(i, genSq_lastActPttn[i], i, genSq_edtPttn[i]);
+          }
+        }
+      }
+      if (dispEncMode==1){
+        for(int i=0;i<genSq_nInst;i++){
+          genSq_lastActPttn[i]=genSq_actPttn[i];
+        }
+      }
+        
 //      Serial.print("dispEncMode: ");
 //      Serial.println(dispEncMode);
       break;
 
     case 1:
-      //button under display encoder
+      //Shift: button under display encoder
       shift = !val;
       break;
 
@@ -112,33 +129,51 @@ void procHidDChng(byte idx, bool val) {
     case 4:
       //tripple switch right
       kickOn = val;
+      if (val == 0 && shift == 1 )frtb_sensMode = val;
+      if (val == 1 && shift == 1 )frtb_sensMode = val;
       break;
 
     case 5:
       //right tripple button
       //if (val == 1)loadSong();
-      if (val == 1)schdSync = 1;
+      if (val == 1){
+        schdSync[0] = 1;
+        schdSync[1] = 1;
+        schdSync[2] = 1;
+        //schdSync[genSq_actInst] = 1;
+      }
       break;
 
     case 6:
       //middle tripple button
-      if (val == 1)clck_stp();
+      if (val == 1){
+        tgl_ply=!tgl_ply;
+        if (tgl_ply==1)clck_strt();
+        if (tgl_ply==0)clck_stp();
+      }      
       break;
 
     case 7:
       //left tripple transport button
       //if (val == 1)saveSong();
-      if (val == 1)clck_strt();
+      //if (val == 1)clck_strt();
+      if (val == 1){
+        genSq_actInst=(genSq_actInst+1)%genSq_nInst;
+        chOpMode(genSq_actInst+2);
+      }
       break;
 
     case 8:
       //pots switch
+      genSq_strEncFnc=val;
       break;
 
     case 9:
       //embedden button near pots 
-      if (val == 0 && shift == 1)defaultSong();
-      if (val == 0 && shift == 0)loadSong(0);
+      if (val == 0 && shift == 1 && dispEncMode == 1)defaultSong();
+      if (val == 0 && shift == 0 && dispEncMode == 1)loadSong(0);
+      if (val == 0 && shift == 0 && dispEncMode == 0)loadSong(genSq_actSng);
+      if (val == 0 && shift == 1 && dispEncMode == 0)saveSong(genSq_actSng);
       break;
 
     case 10:
@@ -153,8 +188,9 @@ void procHidDChng(byte idx, bool val) {
       fbrdMode = val; //switch next to display
       break;
 
-    case 12:
-      frtb_sensMode = val; //switch next to next switch to display
+    case 12://switch next to next switch to display
+      //frtb_sensMode = val; 
+      fbrdSeqVHld=val; //see the sequencer while playing (editing disabled)
       break;
   }
 
@@ -287,25 +323,63 @@ void rcvHidR(byte idx, int val) {
 void procHidRChng(byte idx, byte val) {
   switch (idx) {
     case 0:
-      for (int s = 0; s < nStrings; s++) {
-        strArp_tmDv[s] = strArp_tmDvs[val];
+      if(val<genSq_nPttn){
+        if(shift==0){
+          schdPttnCh[idx]=val;
+          for (int i=0;i<genSq_nInst;i++){
+            if(genSq_syncInst[i]==idx){
+              schdPttnCh[i]=val;
+              genSq_edtPttn[i]=val;
+            }
+          }
+        }
+        genSq_edtPttn[idx]=val;
       }
-//      Serial.print("tmDv");
-//      Serial.println(strArp_tmDv[5]);
+      for (int i=0;i<genSq_nInst;i++){
+        if(val==11-i)genSq_syncInst[idx]=i;
+        if(val<=11-genSq_nInst)genSq_syncInst[idx]=-1;
+      }
+      if(val==genSq_nPttn)chOpMode(0);
       break;
 
     case 1:
-      genSq_actPttnsIdx=val;
-      genSq_actPttnsCh();
-      MIDI.sendNoteOn(val*2, 100, mM8Row_chn);
-      MIDI.sendNoteOn(val, 0, mM8Row_chn);
-//      saveSong();
-//      genSq_actSng=val;
-//      loadSong();
+      if(val<genSq_nPttn){
+        if(shift==0){
+          schdPttnCh[idx]=val;
+          for (int i=0;i<genSq_nInst;i++){
+            if(genSq_syncInst[i]==idx){
+              schdPttnCh[i]=val;
+              genSq_edtPttn[i]=val;
+            }
+          }
+        }
+        genSq_edtPttn[idx]=val;
+      }
+      for (int i=0;i<genSq_nInst;i++){
+        if(val==11-i)genSq_syncInst[idx]=i;
+        if(val<=11-genSq_nInst)genSq_syncInst[idx]=-1;
+      }
+      if(val==genSq_nPttn)chOpMode(0);
       break;
 
     case 2:
-      chOpMode(val);
+      if(val<genSq_nPttn){
+        if(shift==0){
+          schdPttnCh[idx]=val;
+          for (int i=0;i<genSq_nInst;i++){
+            if(genSq_syncInst[i]==idx){
+              schdPttnCh[i]=val;
+              genSq_edtPttn[i]=val;
+            }
+          }
+        }
+        genSq_edtPttn[idx]=val;
+      }
+      for (int i=0;i<genSq_nInst;i++){
+        if(val==11-i)genSq_syncInst[idx]=i;
+        if(val<=11-genSq_nInst)genSq_syncInst[idx]=-1;
+      }
+      if(val==genSq_nPttn)chOpMode(0);
       break;
   }
   lastHidRVal[idx] = hidRVal[idx];
@@ -338,16 +412,16 @@ void procHidEChng(byte idx, long val) {
           if (fbrdMode == 1)strArp_chDispEnc(val);
           break;
         case genSq_opMode:
-          if (fbrdMode == 0)scls_chDispEnc(val);
-          if (fbrdMode == 1)genSq_chDispEnc(val);
+          if (fbrdMode==0&&fbrdSeqVHld==0)scls_chDispEnc(val);
+          if (fbrdMode==1||fbrdSeqVHld==1)genSq_chDispEnc(val);
           break;
         case genSq_opMode+1:
-          if (fbrdMode == 0)scls_chDispEnc(val);
-          if (fbrdMode == 1)genSq_chDispEnc(val);
+          if (fbrdMode==0&&fbrdSeqVHld==0)scls_chDispEnc(val);
+          if (fbrdMode==1||fbrdSeqVHld==1)genSq_chDispEnc(val);
           break;
         case genSq_opMode+2:
-          if (fbrdMode == 0)scls_chDispEnc(val);
-          if (fbrdMode == 1)genSq_chDispEnc(val);
+          if (fbrdMode==0&&fbrdSeqVHld==0)scls_chDispEnc(val);
+          if (fbrdMode==1||fbrdSeqVHld==1)genSq_chDispEnc(val);
           break;
       }
     break;
@@ -375,7 +449,7 @@ void procHidEChng(byte idx, long val) {
       }
       if (strEncMode == 1) {
         genSq_strEncChAStps = 1;
-        genSq_chStrEnc(genSq_strPrsFnc, val);
+        genSq_chStrEnc(nStrings-genSq_strPrsFnc-1, val);
       }
 
       break;
@@ -384,6 +458,11 @@ void procHidEChng(byte idx, long val) {
   for (int s = 0; s < nStrings; s++) {
     if (hidEVal[s + 1] != lastHidEVal[s + 1]) {
       genSq_strEncChAStps = 0;
+      for (int s = 0; s < nStrings; s++) {
+        if(frtPrs[s]>1){
+          genSq_strEncChAStps=1;
+        }
+      }
       lastStrEnc = s;
       switch (opMode) {
         case strSetup_opMode:

@@ -9,13 +9,16 @@ void genSq_updClck(){
         //genSq_sync(inst); //todo: do i need this?
       }
       genSq_nxtClkFil[inst][s]++; //advance count up to next clock event
-      if(mClock==-1)genSq_nxtClkFil[inst][s]=tmDv[inst][pttn][s]-1,genSq_clk[inst][s]=-1; //reset on mClock-reset  
+      if(mClock==-1)genSq_nxtClkFil[inst][s]=tmDv[inst][pttn][s]-1,genSq_clkraw[inst][s]=-1; //reset on mClock-reset  
       if(genSq_nxtClkFil[inst][s] >= tmDv[inst][pttn][s]){
-        genSq_clk[inst][s]++;
-        if(genSq_clk[inst][s]>=genSq_chn[inst][pttn][s][genSq_strEncFnc_stps])genSq_clk[inst][s]=0;
+        genSq_clkraw[inst][s]++;
+        //genSq_clk[inst][s]=(genSq_clkraw[inst][s]+genSq_chn[inst][pttn][s][genSq_strEncFnc_offSt])%genSq_chn[inst][pttn][s][genSq_strEncFnc_stps]; //apply the clock offset
+        genSq_clk[inst][s]=((genSq_clkraw[inst][s]%genSq_chn[inst][pttn][s][genSq_strEncFnc_stps])+genSq_chn[inst][pttn][s][genSq_strEncFnc_offSt])%genSq_maxVisSteps; //apply the clock offset
+        //if(genSq_clk[inst][s]>=genSq_chn[inst][pttn][s][genSq_strEncFnc_stps])genSq_clkraw[inst][s]=0;
         //if(s==0 && genSq_muteCh[inst][s] == 0 && genSq_chn[inst][pttn][s][genSq_strEncFnc_chn]>0)genSq_mstStr(inst,pttn);
         genSq_mstStr(inst,pttn,s);
       }
+      
     }
       for(int s=0;s<nStrings;s++){
         if(genSq_nxtClkFil[inst][s] >= tmDv[inst][pttn][s]){
@@ -66,7 +69,7 @@ void genSq_sync(int inst){
   
   for(int s = 0; s<nStrings; s++){
       genSq_nxtClkFil[inst][s]=genSq_tmDv[inst][pttn][s];
-      genSq_clk[inst][s]=-1;
+      genSq_clkraw[inst][s]=-1;
   }
 }
 
@@ -95,12 +98,12 @@ void genSq_rndCh(int inst,int pttn, byte s){
     rndBuf[s][f]=0;
   }
 
-  for(byte f=0;f<nSteps;f++){
-    if(genSq_stpOnOff[s][f]>0){
-      rndBuf[s][random(nSteps)]=1;
-      stpCnt++;
-    }
-  }
+//  for(byte f=0;f<nSteps;f++){
+//    if(genSq_stpOnOff[s][f]>0){
+//      rndBuf[s][random(nSteps)]=1;
+//      stpCnt++;
+//    }
+//  }
 
   for(byte f=0;f<nSteps;f++){
     if(rndBuf[s][f]>0){
@@ -161,20 +164,33 @@ void genSq_sndStpOn(int inst,int pttn, byte s){
     int oct=genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_oct];
     int note = oct*12+pitch;
     //int note = genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_sStp];
-    int vel = genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_vel]*1.0/genSq_maxStpV[genSq_strPrsFnc_vel]*127.0; 
-    sndMidiNote(note,vel, chnl);
-    //play sequence on the strings
+    float vel = genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_vel]*1.0/genSq_maxStpV[genSq_strPrsFnc_vel]; 
+    int mvel=vel*127.0;
+    
+    if(inst!=0)sndMidiNote(note, mvel, chnl);
+    
+    //play sequence on the strings if pressed
     if(inst==0 && strSeq_act==1 && strPrs[s]>0 && fbrdMode == 0){          
-      sndTrigEnv(s, strPrs[s]);
+      sndTrigEnv(s, vel);
+      sndMidiNotePress(s,strPrs[s]);
       kick(s);
     }
     //play if string hold is activated
     if(inst==0 && strHold[s]==1 && fbrdMode == 0){          
-      sndTrigEnv(s, 1);
+      sndTrigEnv(s, vel);
+      sndMidiNotePress(s,12);
+      //sndMidiNote(note,mvel,mInst_chn);
       kick(s);
     }
-    genSq_actNotes[inst][s][note]=vel;
-    genSq_velState[inst][s] = vel;
+    //play if string pitch is not c 
+    if(inst==0 && pitch>0 && strSeq_act==1 && strPrs[s]==0 && fbrdMode == 0){          
+      sndTrigEnv(s, vel);
+      sndMidiNotePress(s,strPrs[s]);
+      kick(s);
+    }
+    
+    genSq_actNotes[inst][s][note]=mvel;
+    genSq_velState[inst][s] = mvel;
     genSq_lastNote[inst][s] = note;
   }
 }
@@ -191,7 +207,8 @@ void genSq_sndStpOff(int inst,int pttn, byte s){
 
   int chnl = genSq_chn[inst][pttn][s][genSq_strEncFnc_chn];
     if(genSq_velState[inst][s] != 0){
-      sndMidiNote(genSq_lastNote[inst][s],0, chnl);
+      if(inst!=0)sndMidiNote(genSq_lastNote[inst][s],0, chnl);
+      if(inst==0 && strSeq_act==1)sndMidiNotePress(s,0);
       genSq_actNotes[inst][s][genSq_lastNote[inst][s]]=0;
     }
 //  if(genSq_stpOnOff[inst][pttn][s][genSq_clk[inst][s]] == 0 && genSq_velState[inst][s] != 0){

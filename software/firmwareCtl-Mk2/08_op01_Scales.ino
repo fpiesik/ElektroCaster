@@ -105,7 +105,7 @@ void scls_updFleds(){
   int nDispFrts;
   
   if(opMode==scls_opMode)nDispFrts=nFrets+1;
-  if(opMode!=scls_opMode)nDispFrts=genSq_pttnMOff-1;
+  if(opMode!=scls_opMode)nDispFrts=genSq_pttnMOff;
   
   scls_dispScale();
   if(scls_fledSrc==0){

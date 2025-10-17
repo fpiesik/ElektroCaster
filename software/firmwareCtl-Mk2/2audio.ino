@@ -11,7 +11,7 @@ void sndStrGain(int str, byte val) {
   //delayMicroseconds(waitS);
   Serial1.write(str);
   //delayMicroseconds(waitS);
-  Serial1.write(val/2); //string gain an the audio server has a max value of 99
+  Serial1.write(val*2); //string gain an the audio server has a max value of 99
   //delayMicroseconds(waitS);
 //  msgOut_audio.beginPacket("strG");
 //  msgOut_audio.addByte(str);
@@ -21,7 +21,7 @@ void sndStrGain(int str, byte val) {
 
 void sndVol(float val){
   Serial1.write(211);
-  Serial1.write(byte(val*199));
+  Serial1.write(byte(val*125)); //lowered to avoid clipping
 }
 
 void sndFilter(byte para, float val){
@@ -64,7 +64,7 @@ void sndTrigEnv(byte str, float vel){
   //delayMicroseconds(waitS);
   Serial1.write(str);
   //delayMicroseconds(waitS);
-  Serial1.write(byte(vel*199));
+  Serial1.write(byte(vel*199.0));
   //delayMicroseconds(waitS);
   
 //  Serial.print("strnote:");

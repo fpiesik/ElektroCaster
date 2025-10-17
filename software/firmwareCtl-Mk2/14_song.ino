@@ -21,11 +21,11 @@ void saveSong(int sng){
       }
     } 
 
-    for(int p=0;p<genSq_nActPttns;p++){
-      for(int i=0;i<genSq_nInst;i++){
-        myFile.write(genSq_actPttns[p][i]);
-      }
-    }
+//    for(int p=0;p<genSq_nActPttns;p++){
+//      for(int i=0;i<genSq_nInst;i++){
+//        myFile.write(genSq_actPttns[p][i]);
+//      }
+//    }
     
     myFile.write(rootNote);
     myFile.write(scls_sclSel);
@@ -75,12 +75,12 @@ void loadSong(int sng){
         }
       }
     }
-    for(int p=0;p<genSq_nActPttns;p++){
-      for(int i=0;i<genSq_nInst;i++){
-        genSq_actPttns[p][i]=myFile.read();
-        if(genSq_actPttns[p][i]>genSq_nPttn)genSq_actPttns[p][i]=0;
-      }
-    }
+//    for(int p=0;p<genSq_nActPttns;p++){
+//      for(int i=0;i<genSq_nInst;i++){
+//        genSq_actPttns[p][i]=myFile.read();
+//        if(genSq_actPttns[p][i]>genSq_nPttn)genSq_actPttns[p][i]=0;
+//      }
+//    }
     rootNote=myFile.read();
     scls_sclSel=myFile.read();
     scls_sclStp=myFile.read();
@@ -97,7 +97,7 @@ void loadSong(int sng){
     
     // close the file:
     myFile.close();
-    genSq_actPttnsCh();
+    //genSq_actPttnsCh();
     
     for(int inst = 0; inst<genSq_nInst; inst++){
       for(int pttn = 0; pttn<genSq_nPttn; pttn++){
@@ -153,7 +153,7 @@ void defaultSong(){
     strGain[s] = defStrGain[s];
     sndStrGain(s, strGain[s]);
   }
-  genSq_actPttnsCh();
+//  genSq_actPttnsCh();
   for(int inst = 0; inst<genSq_nInst; inst++){
     for(int pttn = 0; pttn<genSq_nPttn; pttn++){
       for(int str = 0; str<nStrings; str++){

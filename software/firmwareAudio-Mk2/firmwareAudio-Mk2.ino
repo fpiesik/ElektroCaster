@@ -30,6 +30,7 @@ int waitS=100;
 byte strAIn[nStrings]={10,8,6,4,2,0}; //input audio channels of the strings
 byte strAOut[nStrings]={10,8,6,4,2,0}; //output audio channels of the string coils
 float strInGain[nStrings]={0.65,0.65,0.65,0.65,0.65,0.65};
+
 float tuning[nStrings]={59,54,50,45,40,35}; //{35,40,45,50,54,59};
 //int inputHicut[nStrings]={5000,4500,4000,3500,3000,2500}; //{35,40,45,50,54,59};
 int inputHicut[nStrings]={10000,10000,10000,10000,10000,10000}; //{35,40,45,50,54,59};
@@ -88,7 +89,9 @@ float midiFreq(float note){
 }
 
 float envPA[7]={0,50,0,200,0,80,1};
+float envAAmnt[nStrings]={1,1,1,1,1,1};
 float envPF[7]={0,50,0,200,0,80,1};
+float envFAmnt[nStrings]={1,1,1,1,1,1};
 
 AudioInputTDM   audioInput;
 AudioOutputTDM  audioOutput;
@@ -210,7 +213,9 @@ void chDispMode(byte data){
 
 void trigEnv(byte str, float val){
   if(val>0){
-    //chngStrOutGain(str,val);
+    //envAAmnt[str]=val;
+    envFAmnt[str]=val;
+    chEnvF(6,envPF[6]);
     aEnv[str].noteOn();
     fEnv[str].noteOn();
     //usbMIDI.sendNoteOn(strState[str]+tuning[str], 127, 1);
@@ -228,10 +233,10 @@ void strFret(byte str, byte fret){
   if(fret==0)coilAmp[str].gain(0);
   if(bowOn==1&&fret>0){
     coilAmp[str].gain(50);
-    Serial.print("Str: ");
-    Serial.print(str);
-    Serial.print(" Fret: ");
-    Serial.println(fret);
+    //Serial.print("Str: ");
+    //Serial.print(str);
+    //Serial.print(" Fret: ");
+    //Serial.println(fret);
     //strState[str]=data;   
   }
   //sndMidiNote(str,fret);

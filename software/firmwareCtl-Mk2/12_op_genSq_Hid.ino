@@ -1,7 +1,9 @@
 void genSq_chDispEnc(int val){
   int inst=genSq_actInst;
   int pttn=genSq_edtPttn[genSq_actInst];
+  //
   switch(dispEncMode){
+    //change string press, button and encoder function if button is not pressed and we are on string edit mode
     case 0:
       switch(dispEncFnc[genSq_opMode]){
         case 0:
@@ -18,10 +20,12 @@ void genSq_chDispEnc(int val){
           break;
       }
       break;
+    //change the display encoder function (without sting pressed)  
     case 1:
       if(dispEncFnc[genSq_opMode] + val < 0)dispEncFnc[genSq_opMode] = nDispEncFnc[genSq_opMode];
       dispEncFnc[genSq_opMode]=(dispEncFnc[genSq_opMode] + val)%nDispEncFnc[genSq_opMode];
       break;
+    //edit steps when string(s) are pressed  
     case 2:
       if (shift==0){
         for(int s=0;s<nStrings;s++){
@@ -45,6 +49,7 @@ void genSq_chDispEnc(int val){
           }
         }
       }
+      //change all frets at once
       if (shift==1){
         for(int stp=0;stp<genSq_maxSteps;stp++){
           for(int s=0;s<nStrings;s++){
@@ -123,6 +128,7 @@ void genSq_chStrEnc(int str, int val){
         //}
       }
   }
+ 
   if(strEncMode==1 && genSq_strEncChAStps==0 && nStrings-str-1<genSq_nStrPrsFnc){
     str=nStrings-str-1;
     genSq_strPrsFnc=str;
@@ -148,7 +154,7 @@ void genSq_chStrEnc(int str, int val){
     }
   }
   if(strEncMode==1 && genSq_strEncChAStps==1){
-    //str=nStrings-str-1;
+    str=nStrings-str-1;
     for(int stp=0;stp<genSq_maxSteps;stp++){
       for(int s=0;s<nStrings;s++){
         if(genSq_stpEdtStrs[s]==1){
@@ -211,23 +217,21 @@ void genSq_editSteps(byte s){
           genSq_stpEdtFrt=strPrs[s]-1;
           genSq_stpOnOff[inst][pttn][s][strPrs[s]-1]=(genSq_stpOnOff[inst][pttn][s][strPrs[s]-1]+1)%2;
           if(shift == 1)genSq_stpOnOff[inst][pttn][s][strPrs[s]-1]=0;
-          //sndMidiCC(genSq_SelChnCC, 20,3);
-          //sndMidiCC(genSq_SelChnCC, genSq_sndCh[inst][nStrings-s]*12-12,1);
-          sndMidiCC(genSq_SelChnCC, genSq_chn[inst][pttn][s][genSq_strEncFnc_chn]*12,1);
+          //sndMidiCC(genSq_SelChnCC, genSq_chn[inst][pttn][s][genSq_strEncFnc_chn]*12,1);
         }
       }
     }
     
-    if(strPrs[s]>genSq_pttnMOff-1 ){ 
-      int instSel=genSq_nInst-s/2-1;
-      int pttnSel=(strPrs[s]-(genSq_pttnMOff))+genSq_nPttn/2*((s+1)%2);
-      if(dispEncMode == 1)genSq_cpPttn(genSq_actInst,genSq_actPttn[genSq_actInst],instSel,pttnSel);
-      if(shift == 0)genSq_actPttn[instSel]=pttnSel;
-      if(shift == 0 || shift == 1)genSq_edtPttn[instSel]=pttnSel; 
-      genSq_actPttns[genSq_actPttnsIdx][instSel]=pttnSel;
-      //genSq_sync(instSel); 
-      genSq_actTmDv();
-    }
+//    if(strPrs[s]>genSq_pttnMOff-1 ){ 
+//      int instSel=genSq_nInst-s/2-1;
+//      int pttnSel=(strPrs[s]-(genSq_pttnMOff))+genSq_nPttn/2*((s+1)%2);
+//      if(dispEncMode == 1)genSq_cpPttn(genSq_actInst,genSq_actPttn[genSq_actInst],instSel,pttnSel); //copy a pattern
+//      if(shift == 0)genSq_actPttn[instSel]=pttnSel;
+//      if(shift == 0 || shift == 1)genSq_edtPttn[instSel]=pttnSel; 
+//      genSq_actPttns[genSq_actPttnsIdx][instSel]=pttnSel;
+//      //genSq_sync(instSel); 
+//      genSq_actTmDv();
+//    }
   }
 }
 

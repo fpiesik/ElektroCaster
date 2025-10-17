@@ -11,16 +11,16 @@ void updDisplay(){
         
         break;
       case genSq_opMode:
-        if(fbrdMode==0)scls_updDisp();
-        if(fbrdMode==1)genSq_updDisp();
+        if(fbrdMode==0&&fbrdSeqVHld==0)scls_updDisp();
+        if(fbrdMode==1||fbrdSeqVHld==1)genSq_updDisp();
         break;
       case genSq_opMode+1:
-        if(fbrdMode==0)scls_updDisp();
-        if(fbrdMode==1)genSq_updDisp();
+        if(fbrdMode==0&&fbrdSeqVHld==0)scls_updDisp();
+        if(fbrdMode==1||fbrdSeqVHld==1)genSq_updDisp();
         break;
       case genSq_opMode+2:
-        if(fbrdMode==0)scls_updDisp();
-        if(fbrdMode==1)genSq_updDisp();
+        if(fbrdMode==0&&fbrdSeqVHld==0)scls_updDisp();
+        if(fbrdMode==1||fbrdSeqVHld==1)genSq_updDisp();
         break;
     }
     disp_Buf();

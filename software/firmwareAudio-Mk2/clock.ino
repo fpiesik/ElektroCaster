@@ -15,7 +15,7 @@ delayMicroseconds(waitS);
 }
 
 void midiContinue() {
-  Serial.println("Continue");
+  //Serial.println("Continue");
 }
 
 void midiStop() {

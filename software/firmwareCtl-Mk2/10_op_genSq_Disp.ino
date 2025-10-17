@@ -26,26 +26,49 @@ void genSq_updFleds(){
 void genSq_drwGrid(){
   int inst=genSq_actInst;
   int pttn=genSq_edtPttn[genSq_actInst];
-  //float colorA[3];
-  //colorA[3] = genSq_gridColor[genSq_nInst];
-  //float colorA[3]={0.06,0.06,0.06};
-  //float colorB[3]={0.025,0.02,0.02};
   
   for(int s=0;s<nStrings;s++){
     int nSteps=genSq_chn[inst][pttn][s][genSq_strEncFnc_stps];
+    int off=genSq_chn[inst][pttn][s][genSq_strEncFnc_offSt]; //offset
     for(int f=0;f<genSq_maxVisSteps;f++){
+      int frt=f+off;
       for(int c=0;c<3;c++){  
         genSq_gridPix[s][f][c]=0;  
-        if(f%4==0 && f<nSteps){
+        if(f%4==0 && f>=off && f<nSteps+off || f<off+nSteps-genSq_maxVisSteps){
           genSq_gridPix[s][f][c]=genSq_gridColor[inst][c]*5;
         }
-        if(f%4 != 0 && f<nSteps){
+        if(f%4 != 0 && f>=off && f<nSteps+off || f<off+nSteps-genSq_maxVisSteps){
           genSq_gridPix[s][f][c]=genSq_gridColor[inst][c];
         }
       }
     }
   }
 }
+
+//void genSq_drwGrid(){
+//  int inst=genSq_actInst;
+//  int pttn=genSq_edtPttn[genSq_actInst];
+//  //float colorA[3];
+//  //colorA[3] = genSq_gridColor[genSq_nInst];
+//  //float colorA[3]={0.06,0.06,0.06};
+//  //float colorB[3]={0.025,0.02,0.02};
+//  
+//  for(int s=0;s<nStrings;s++){
+//    int nSteps=genSq_chn[inst][pttn][s][genSq_strEncFnc_stps];
+//    for(int f=0;f<genSq_maxVisSteps;f++){
+//      for(int c=0;c<3;c++){  
+//        genSq_gridPix[s][f][c]=0;  
+//        if(f%4==0 && f<nSteps){
+//          genSq_gridPix[s][f][c]=genSq_gridColor[inst][c]*5;
+//        }
+//        if(f%4 != 0 && f<nSteps){
+//          genSq_gridPix[s][f][c]=genSq_gridColor[inst][c];
+//        }
+//      }
+//    }
+//  }
+//}
+
 
 //void genSq_drwCursor(byte s){
 //  int inst=genSq_actInst;
@@ -80,6 +103,8 @@ void genSq_drwStep(byte s){
   int pttn=genSq_edtPttn[genSq_actInst];
   
   for(int f=0;f<genSq_maxVisSteps;f++){   
+    int nSteps=genSq_chn[inst][pttn][s][genSq_strEncFnc_stps];
+    int off=genSq_chn[inst][pttn][s][genSq_strEncFnc_offSt]; //offset
     int chnl = genSq_chn[inst][pttn][s][genSq_strEncFnc_chn];
     int stpV=genSq_stp[inst][pttn][s][f][genSq_strPrsFnc_sStp];
     float brght=genSq_stp[inst][pttn][s][f][genSq_strPrsFnc_vel]/float(genSq_maxStpV[genSq_strPrsFnc_vel]);
@@ -92,7 +117,7 @@ void genSq_drwStep(byte s){
     //int pitch=scls_scls[scls_sclSel][(genSq_stp[inst][pttn][s][f][genSq_strPrsFnc_sStp]+scls_sclStp)%scls_numSclStp[scls_sclSel]];
     for(int c=0;c<3;c++){
       genSq_stpPix[s][f][c]=0;    
-      if(genSq_stpOnOff[inst][pttn][s][f]>0 && f<genSq_chn[inst][pttn][s][genSq_strEncFnc_stps]){
+      if(genSq_stpOnOff[inst][pttn][s][f]>0 && f>=off && f<nSteps+off || f<off+nSteps-genSq_maxVisSteps){
         if(chnl>0)genSq_stpPix[s][f][c]=tnClrs[pitch][c]*brght;
         if(chnl==0)genSq_stpPix[s][f][c]=brght/2;
       }

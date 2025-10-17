@@ -15,7 +15,7 @@ void chEnvA(byte para, float val){
     if(para==5)aEnv[i].release(val);
     if(para==6){
       aBiasM[i].gain(0,val);
-      aBiasM[i].gain(1,1.0-val);
+      aBiasM[i].gain(1,1.0*envAAmnt[i]-val*envAAmnt[i]);
       }
   }
 }
@@ -37,7 +37,7 @@ void chEnvF(byte para, float val){
     if(para==5)fEnv[i].release(val);
     if(para==6){
       fBiasM[i].gain(0,val);
-      fBiasM[i].gain(1,1.0-val);      
+      fBiasM[i].gain(1,1.0*envFAmnt[i]-val*envFAmnt[i]);      
      }
   }
 }
