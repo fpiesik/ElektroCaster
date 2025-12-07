@@ -123,7 +123,7 @@ void strArp_updClck(){
           
           //if(strPrs[s]==0)strArp_clk[s]=-1;
         if(strArp_stp[s][strArp_clk[s]]==1 && strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
-          if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s]);
+          if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s],mInst_chn);
           sndTrigEnv(s, strPrs[s]);
           kick(s);
         }
@@ -131,7 +131,7 @@ void strArp_updClck(){
         if(strArp_clk[s]>=strArp_nStps[s])strArp_clk[s]=0;
       }
       //if(strPrs[s] == 0)strArp_clk[s]=-1;
-      if(frtb_sensMode==0 && strPrs[s]==0)sndMidiNotePress(s,strPrs[s]);
+      if(frtb_sensMode==0 && strPrs[s]==0)sndMidiNotePress(s,strPrs[s],mInst_chn);
     }
     //strArp_drwGrid();
     strArp_drwCursor();

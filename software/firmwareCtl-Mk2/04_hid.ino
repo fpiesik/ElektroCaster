@@ -44,11 +44,12 @@ void readFretboard(int sensMode) {
 
   //actions when string is pressed or released
   static long lastChng[nStrings];
-  static long lastExStrPr[nStrings];
+  static int lastExStrPr[nStrings];
   bool frtSplt=opMode>=genSq_opMode && opMode<genSq_opMode+genSq_nInst;
   for (int s = 0; s < nStrings; s++) {
     unsigned int sB = strBnc[s];
     unsigned int sBncs = strBncs;
+    int chnl = genSq_chn[0][genSq_actPttn[0]][s][genSq_strEncFnc_chn];
     if (shift==1 && fbrdMode == 0 && strPrs[s]>0 )strHold[s]=1;
     if (shift==1 && fbrdMode == 0 && strPrs[s]==0 )strHold[s]=0;
     //if(frtSplt==1 && strPrs[s]>=frtSplit) sBncs=strBncsP; //extended string bounces threshold for switching patterns
@@ -57,22 +58,23 @@ void readFretboard(int sensMode) {
         if (fbrdMode == 0 && strArp_act == 0 && strSeq_act==0) {
           sndTrigEnv(s, strPrs[s]>0);
           if(opMode>=genSq_opMode && opMode<genSq_opMode+genSq_nInst && strPrs[s]<=frtSplit){
-            if(sensMode==0)sndMidiNotePress(s,strPrs[s]);
+            if(sensMode==0)sndMidiNotePress(s,strPrs[s],chnl);
             if (strPrs[s] > 0)kick(s);
           }
           else{
-            if(sensMode==0)sndMidiNotePress(s,strPrs[s]);
+            if(sensMode==0)sndMidiNotePress(s,strPrs[s],chnl);
             if (strPrs[s] > 0)kick(s);
           }
         }
-        if (fbrdMode == 0)sndStrPrs(s, strPrs[s]);
+      //if (fbrdMode == 0)sndStrPrs(s, strPrs[s]);
       //lastStrPrs[s]=strPrs[s];
+      //lastExStrPr[s] = strPrs[s];
+      }
+      if (fbrdMode == 0)sndStrPrs(s, strPrs[s]);
       lastExStrPr[s] = strPrs[s];
-    }
-    genSq_editSteps(s);
+      if (strPrs[s] != 0) lastNZStrPrs[s] = strPrs[s];
+      genSq_editSteps(s);
       lastChng[s] = millis();
-      
-      
     }
   }
 }

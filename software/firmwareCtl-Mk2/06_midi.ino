@@ -24,20 +24,19 @@ void sndMidiNote(byte note,byte velocity, byte channel){
 //    Serial.println(velocity);
 }
 
-void sndMidiNotePress(int str, int frt){
+void sndMidiNotePress(int str, int frt, int chn){
   static int lastNote[nStrings];
   static int lastChn[nStrings];
-  int chn = mInst_chn;
   //int chn=genSq_chn[genSq_actInst][genSq_actPttns[genSq_actPttnsIdx][genSq_actInst]][str][genSq_strEncFnc_chn];
   if (frt > 0){ 
 //    for (int s = 0;s<nStrings;s++){
 //      sndMidiNote(lastNote[s],0, lastChn[s]);
 //    }
-    sndMidiNote(lastNote[str],0, lastChn[str]);
+    if (lastNote[str]!=0) sndMidiNote(lastNote[str],0, lastChn[str]);
     int note=tuning[str]+frt;
     lastNote[str]=note;
     lastChn[str]=chn;
-    sndMidiNote(note,120, chn);
+    sndMidiNote(note,127, chn);
   }    
   if (frt == 0){ 
     sndMidiNote(lastNote[str],0, lastChn[str]);
@@ -93,6 +92,9 @@ void midiStop() {
 }
 
 void genSq_allNOff(){
+  for(int str = 0; str<nStrings; str++){
+    sndMidiNotePress(str, 0, 1); //channel is irrelevant when frt==0
+  }
   for(int inst = 0; inst<genSq_nInst; inst++){
     for(int str = 0; str<nStrings; str++){
       for(int pttn = 0; pttn<genSq_nPttn; pttn++){

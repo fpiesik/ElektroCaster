@@ -16,7 +16,7 @@ AsciiMassageParser msgIn_audio; //todo
 
 //midi
   MIDI_CREATE_INSTANCE(HardwareSerial, Serial8, MIDI); 
-  int mInst_chn=8;
+  int mInst_chn=1;
   int mM8Row_chn=11;
   int mKick_chn=2;
   int mInst_anaXyCc[2]={1,2};
@@ -50,6 +50,8 @@ const int chipSelect = BUILTIN_SDCARD;
   float strA[nStrings];
   float lastStrA[nStrings];
   bool strHold[nStrings]; //treat those strings as hold they were pressed
+  int lastExStrPr[nStrings];
+  int lastNZStrPrs[nStrings]; //last string press without releases
 
 //led defintions and variables
   #define LED_PIN     14   //led pin
@@ -127,7 +129,7 @@ const int chipSelect = BUILTIN_SDCARD;
   const char* sclNm[nScales]={"off", "root", "pentatonic", "major", "minor", "hrm minor", "mel minor", "altered", "whole", "wholeHalf"}; //max 16!
   float scls_sclPix[nStrings][nLedFrets][3];
   float scls_midiPix[nStrings][nLedFrets][3];
-  int scls_sclClr=0;
+  int scls_sclClr=1;
   int scls_numSclStp[nScales]= {0, 1, 5, 7, 7, 7, 7, 7, 6, 8};
   int scls_sclSel=2;
   int scls_sclStp=0;
@@ -293,7 +295,7 @@ const int chipSelect = BUILTIN_SDCARD;
   byte strEncFnc[maxOpMds];
   
 //global parameters
-  bool shift=1;
+  bool shift=0;
   bool extClk=0;
   float vol;
   bool mtOut = 0;

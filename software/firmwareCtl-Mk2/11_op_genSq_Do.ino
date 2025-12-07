@@ -89,7 +89,7 @@ void genSq_mstStr(int inst, int pttn, int s){
 
 
 
-void genSq_rndCh(int inst,int pttn, byte s){
+  void genSq_rndCh(int inst,int pttn, byte s){
   byte rndBuf[nStrings][genSq_maxVisSteps];
   byte stpCnt=0;
   byte rndCnt=0;
@@ -170,22 +170,22 @@ void genSq_sndStpOn(int inst,int pttn, byte s){
     if(inst!=0)sndMidiNote(note, mvel, chnl);
     
     //play sequence on the strings if pressed
-    if(inst==0 && strSeq_act==1 && strPrs[s]>0 && fbrdMode == 0){          
+    if(inst==0 && strSeq_act==1 && strPrs[s]>0 && fbrdMode == 0 && strHold[s]==0){          
       sndTrigEnv(s, vel);
-      sndMidiNotePress(s,strPrs[s]);
+      sndMidiNotePress(s,strPrs[s],chnl);
       kick(s);
     }
     //play if string hold is activated
     if(inst==0 && strHold[s]==1 && fbrdMode == 0){          
       sndTrigEnv(s, vel);
-      sndMidiNotePress(s,12);
+      sndMidiNotePress(s,lastNZStrPrs[s],chnl);
       //sndMidiNote(note,mvel,mInst_chn);
-      kick(s);
+      //kick(s);
     }
     //play if string pitch is not c 
     if(inst==0 && pitch>0 && strSeq_act==1 && strPrs[s]==0 && fbrdMode == 0){          
       sndTrigEnv(s, vel);
-      sndMidiNotePress(s,strPrs[s]);
+      sndMidiNotePress(s,strPrs[s],chnl);
       kick(s);
     }
     
@@ -197,25 +197,12 @@ void genSq_sndStpOn(int inst,int pttn, byte s){
 
 void genSq_sndStpOff(int inst,int pttn, byte s){
     
-//  int chnl = genSq_chn[inst][pttn][s][genSq_strEncFnc_chn];
-//  if(genSq_stpOnOff[inst][pttn][s][genSq_clk[inst][s]] > 0){ 
-//    if(genSq_velState[inst][s] != 0){
-//      sndMidiNote(genSq_lastNote[inst][s],0, chnl);
-//      genSq_actNotes[inst][s][genSq_lastNote[inst][s]]=0;
-//    }
-//  }
-
   int chnl = genSq_chn[inst][pttn][s][genSq_strEncFnc_chn];
     if(genSq_velState[inst][s] != 0){
       if(inst!=0)sndMidiNote(genSq_lastNote[inst][s],0, chnl);
-      if(inst==0 && strSeq_act==1)sndMidiNotePress(s,0);
+      if(inst==0 && strSeq_act==1)sndMidiNotePress(s,0,chnl);
       genSq_actNotes[inst][s][genSq_lastNote[inst][s]]=0;
     }
-//  if(genSq_stpOnOff[inst][pttn][s][genSq_clk[inst][s]] == 0 && genSq_velState[inst][s] != 0){
-//    sndMidiNote(genSq_lastNote[inst][s],0, chnl);
-//    genSq_actNotes[inst][s][genSq_lastNote[inst][s]]=0;
-//    genSq_velState[inst][s] = 0;
-//  }
 }
 
 void genSq_sndStpOffNMW(int inst,int pttn, byte s){
@@ -233,6 +220,7 @@ void genSq_sndStpOffNMW(int inst,int pttn, byte s){
     genSq_velState[inst][s] = 0;
   }
 }
+
 void genSq_cpPttn(int frmInst, int frmPttn, int toInst, int toPttn){
   for(int str = 0; str<nStrings; str++){
     for(int chFnc = 0; chFnc<genSq_nStrEncFnc; chFnc++){
@@ -246,6 +234,7 @@ void genSq_cpPttn(int frmInst, int frmPttn, int toInst, int toPttn){
     }
   }  
 }
+
 void genSq_actTmDv(){
   for(int inst = 0; inst<genSq_nInst; inst++){
     for(int pttn = 0; pttn<genSq_nPttn; pttn++){
