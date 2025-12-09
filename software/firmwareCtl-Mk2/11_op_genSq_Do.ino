@@ -175,9 +175,9 @@ void genSq_sndStpOn(int inst,int pttn, byte s){
       sndMidiNotePress(s,strPrs[s],chnl);
       kick(s);
     }
-    //play if string hold is activated
+    //play only midi if string hold is activated
     if(inst==0 && strHold[s]==1 && fbrdMode == 0){          
-      sndTrigEnv(s, vel);
+      sndTrigEnv(s, 0);
       sndMidiNotePress(s,lastNZStrPrs[s],chnl);
       //sndMidiNote(note,mvel,mInst_chn);
       //kick(s);
