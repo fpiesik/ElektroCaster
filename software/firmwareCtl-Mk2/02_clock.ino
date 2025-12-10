@@ -53,8 +53,6 @@ void cmpClck(long mClock){
       genSq_sync(i);
       schdPttnCh[i]=-1;
     }
-  }
-  for (int i = 0;i<genSq_nInst;i++){
     if(schdSync[i]==1 && bar != lastBar){
       genSq_sync(i);
       strArp_sync();
