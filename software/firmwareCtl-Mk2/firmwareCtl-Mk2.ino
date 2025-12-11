@@ -195,6 +195,7 @@ const int chipSelect = BUILTIN_SDCARD;
   int genSq_actPttns[genSq_nActPttns][genSq_nInst];
   int genSq_actPttnsIdx=0;
 
+
   float genSq_gridPix[nStrings][genSq_maxVisSteps][3];
   float genSq_crsrPix[nStrings][genSq_maxVisSteps][3];
   float genSq_stpPix[nStrings][genSq_maxVisSteps][3];
@@ -251,6 +252,7 @@ const int chipSelect = BUILTIN_SDCARD;
   int genSq_clkraw[genSq_nInst][nStrings];
   int genSq_nxtClkFil[genSq_nInst][nStrings];
   int genSq_muteCh[genSq_nInst][nStrings];
+  int genSq_nxtPttn[genSq_nInst];
   int genSq_actPttn[genSq_nInst];
   int genSq_lastActPttn[genSq_nInst];
   int genSq_edtPttn[genSq_nInst];
@@ -308,7 +310,12 @@ const int chipSelect = BUILTIN_SDCARD;
   long lastPulse;
   long bar;
   long lastBar;
+  long syncPnt;
+  long lastSyncPnt;
+  int syncInt;
+  int tmDv[genSq_nInst][nStrings]; //time devision actually used (changes on timed occasions)
   bool schdSync[genSq_nInst];
+  bool schdSyncPnt[genSq_nInst];
   int schdPttnCh[genSq_nInst];
   bool tgl_ply=0;
   unsigned int intClockInt; //inerval between clock ticks

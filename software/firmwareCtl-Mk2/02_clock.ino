@@ -46,17 +46,27 @@ void updIntClock(){
 void cmpClck(long mClock){ 
   pulse=mClock/24;
   bar=mClock/96;
+  syncPnt=mClock/syncInt;
   for (int i = 0;i<genSq_nInst;i++){
     if(schdPttnCh[i]>-1 && pulse != lastPulse){
-      genSq_actPttn[i]=schdPttnCh[i];
+      genSq_nxtPttn[i]=schdPttnCh[i];
+      genSq_actPttn[i]=genSq_nxtPttn[i];
       strArp_sync();
       genSq_sync(i);
       schdPttnCh[i]=-1;
+      genSq_actTmDv();
     }
     if(schdSync[i]==1 && bar != lastBar){
       genSq_sync(i);
       strArp_sync();
       schdSync[i]=0;
+    }
+    if(schdSyncPnt[i]==1 && syncPnt != lastSyncPnt){
+      genSq_sync(i);
+      strArp_sync();
+      schdSyncPnt[i]=0;
+      genSq_actPttn[i] = genSq_nxtPttn[i];
+      genSq_actTmDv();
     }
   }
   strArp_updClck(); 
@@ -64,4 +74,5 @@ void cmpClck(long mClock){
   lastMClock=mClock;  
   lastPulse=pulse;  
   lastBar=bar;
+  lastSyncPnt=syncPnt;
   }
