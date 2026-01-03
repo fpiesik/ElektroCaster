@@ -17,8 +17,8 @@ void chCoilDel(int string, float freq) {
 
     // constants
     const float FS = 44100.0f;        // sample rate
-    const int BLOCK = 16;             // block size (quantization)
-    const int SYSTEM_LAT = 32;        // fixed system latency in samples
+    const int BLOCK = 32;             // block size (quantization)
+    const int SYSTEM_LAT = 64;        // fixed system latency in samples
     const int K_MAX = 6;             // how many multiples of T to consider
 
     float tau0 = SYSTEM_LAT / FS;     // fixed latency in seconds
