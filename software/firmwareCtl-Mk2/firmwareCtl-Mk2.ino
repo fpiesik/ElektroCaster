@@ -51,7 +51,7 @@ const int chipSelect = BUILTIN_SDCARD;
   float lastStrA[nStrings];
   bool strHold[nStrings]; //treat those strings as hold they were pressed
   int lastExStrPr[nStrings];
-  int lastNZStrPrs[nStrings]; //last string press without releases
+  int lastNZStrPrs[nStrings]; //last string press without releases (nz=non zero)
 
 //led defintions and variables
   #define LED_PIN     14   //led pin
@@ -94,7 +94,7 @@ const int chipSelect = BUILTIN_SDCARD;
   long lastHidEVal4[8];
 
 //fretboard
-  byte frtb_sensMode=0;
+  byte frtb_sensMode=1; //0=only senses if string is pressed 1=senses also where the string is pressed
   byte frtPins[] = {13,33,2,3,4,5,6,7,8,9,10,11,12,24,25,26,27,30,31,32,17,16}; //{14,13,2,3,4,5,6,7,8,9,10,11,12,24,25,26,27,28,29,30,15,16};
   byte strPins[] = {18,19,20,21,22,23};
   bool frtState[nFrets][nStrings];

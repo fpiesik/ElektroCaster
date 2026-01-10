@@ -156,7 +156,7 @@ void genSq_sndStpOn(int inst,int pttn, byte s){
       kick(s);
     }
     //play only midi if string hold is activated
-    if(inst==0 && strHold[s]==1 && fbrdMode == 0){          
+    if(inst==0 && strHold[s]==1){          
       sndTrigEnv(s, 0);
       sndMidiNotePress(s,lastNZStrPrs[s],chnl);
       //sndMidiNote(note,mvel,mInst_chn);
@@ -180,7 +180,7 @@ void genSq_sndStpOff(int inst,int pttn, byte s){
   int chnl = genSq_chn[inst][pttn][s][genSq_strEncFnc_chn];
     if(genSq_velState[inst][s] != 0){
       if(inst!=0)sndMidiNote(genSq_lastNote[inst][s],0, chnl);
-      if(inst==0 && strSeq_act==1)sndMidiNotePress(s,0,chnl);
+      if(inst==0 && (strSeq_act==1 || strHold[s]==1))sndMidiNotePress(s,0,chnl); 
       genSq_actNotes[inst][s][genSq_lastNote[inst][s]]=0;
     }
 }

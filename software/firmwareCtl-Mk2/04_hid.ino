@@ -72,7 +72,7 @@ void readFretboard(int sensMode) {
       }
       if (fbrdMode == 0)sndStrPrs(s, strPrs[s]);
       lastExStrPr[s] = strPrs[s];
-      if (strPrs[s] != 0) lastNZStrPrs[s] = strPrs[s];
+      if (strPrs[s] != 0 && fbrdMode == 0) lastNZStrPrs[s] = strPrs[s];
       genSq_editSteps(s);
       lastChng[s] = millis();
     }
@@ -187,7 +187,8 @@ void procHidDChng(byte idx, bool val) {
       break;
 
     case 11:
-      fbrdMode = val; //switch next to display
+    //switch next to display
+      fbrdMode = val; 
       break;
 
     case 12://switch next to next switch to display
