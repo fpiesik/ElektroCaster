@@ -25,12 +25,15 @@ void serialEvent1(){
         if (incoming == 1){
           byte a;
           byte b;
+          byte c;
           while(Serial1.available() == 0);
           a=Serial1.read();
           while(Serial1.available() == 0);
           b=Serial1.read();
-          strFret(a, b);
-          strState[a]=b;
+          while(Serial1.available() == 0);
+          c=Serial1.read();
+          strFret(a, b, c);
+          strState[a]=c;
           
           incoming = -1;
         }
@@ -161,7 +164,7 @@ void loop(){
 if (millis()-ctlTimer > ctlInt){ 
   for(int i=0;i<nStrings;i++){
     if(strState[i]!=lastStrState[i]){
-      strFret(i,strState[i]);
+      //strFret(i,strState[i]);
       lastStrState[i]=strState[i];
     }
   }

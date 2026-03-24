@@ -235,19 +235,20 @@ void trigEnv(byte str, float val){
   
   }
 
-void strFret(byte str, byte pitch){
+void strFret(byte str, byte pitch, byte state){
   //if(pitch==0)coilAmp[str].gain(0);
   chLfo1(0, pitch,str);
-  if(pitch==0)coilOsc[str].amplitude(0);
-  if(bowOn==1&&pitch>0){
+  Serial.print("Str: ");
+  Serial.print(str);
+  Serial.print(" pitch: ");
+  Serial.println(pitch);  
+  Serial.print(" state: ");
+  Serial.println(state);
+  if(state==0)coilOsc[str].amplitude(0);
+  if(bowOn==1&&state>0){
     //coilAmp[str].gain(50);
     coilOsc[str].amplitude(1);
     coilOsc[str].frequency(midiFreq(pitch));
-    //Serial.print("Str: ");
-    //Serial.print(str);
-    //Serial.print(" Fret: ");
-    //Serial.println(fret);
-    //strState[str]=data;   
   }
   //sndMidiNote(str,fret);
   //chLfo1(2,0,str);
