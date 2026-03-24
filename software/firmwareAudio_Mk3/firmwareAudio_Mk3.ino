@@ -134,6 +134,8 @@ AudioAnalyzeMonoFrequency nFreq[nStrings];
 
 AudioAnalyzeRMS  strPeak[nStrings];
 
+AudioSynthWaveform coilOsc[nStrings];
+
 
 AudioConnection*  cbl_input[nStrings]; //connect the inputs with the input gain stage (audioInput, 10, inGain1, 0);
 AudioConnection*  cbl_peak[nStrings]; //connect input gain stage to the peak detector  (inGain1, 0, peak1, 0);
@@ -150,6 +152,7 @@ AudioConnection*  cbl_fEnvInDC[nStrings]; //connect dc to the filter envelope to
 AudioConnection*  cbl_fBiasInFEnv[nStrings]; //connect the filter envelope to the filter bias mixer (fEnv1, 0, fBiasM[0], 1);
 AudioConnection*  cbl_coilDelayIn[nStrings]; ////connect the input stage to the coil delay (inGain1, 0, delay1, 0);
 AudioConnection*  cbl_coilShaperIn[nStrings]; //connect the input stage to the coil waveshaper (inGain1, 0, waveshaper1, 0);
+AudioConnection*  cbl_coilOscOut[nStrings];
 AudioConnection*  cbl_coilAmpIn[nStrings]; //connect the coil waveshaper to the coil amp (waveshaper1, 0, cAmp1, 0);
 AudioConnection*  cbl_coilAmpOut[nStrings]; //connect the coil amps to the outputs (coilAmp[0],0, audioOutput,10);
 
@@ -232,10 +235,14 @@ void trigEnv(byte str, float val){
   
   }
 
-void strFret(byte str, byte fret){
-  if(fret==0)coilAmp[str].gain(0);
-  if(bowOn==1&&fret>0){
-    coilAmp[str].gain(50);
+void strFret(byte str, byte pitch){
+  //if(pitch==0)coilAmp[str].gain(0);
+  chLfo1(0, pitch,str);
+  if(pitch==0)coilOsc[str].amplitude(0);
+  if(bowOn==1&&pitch>0){
+    //coilAmp[str].gain(50);
+    coilOsc[str].amplitude(1);
+    coilOsc[str].frequency(midiFreq(pitch));
     //Serial.print("Str: ");
     //Serial.print(str);
     //Serial.print(" Fret: ");

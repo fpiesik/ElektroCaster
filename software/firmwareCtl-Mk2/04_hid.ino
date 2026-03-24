@@ -70,7 +70,8 @@ void readFretboard(int sensMode) {
       //lastStrPrs[s]=strPrs[s];
       //lastExStrPr[s] = strPrs[s];
       }
-      if (fbrdMode == 0)sndStrPrs(s, strPrs[s]);
+      if (fbrdMode == 0 && strPrs[s] == 0)sndStrPrs(s, 0);
+      if (fbrdMode == 0 && strPrs[s] != 0)sndStrPrs(s, tuning[s] + strPrs[s]);
       lastExStrPr[s] = strPrs[s];
       if (strPrs[s] != 0 && fbrdMode == 0) lastNZStrPrs[s] = strPrs[s];
       genSq_editSteps(s);
@@ -428,6 +429,7 @@ void procHidEChng(byte idx, long val) {
           break;
       }
     break;
+    //change all strings at once
     case 7:
       if (strEncMode == 0) {
         for (int s = 0; s < nStrings; s++) {
@@ -439,7 +441,7 @@ void procHidEChng(byte idx, long val) {
               strArp_chStrEnc(s, val);
               break;
             case genSq_opMode:
-              genSq_chStrEnc(s, val);
+              if (strHold[s]==0) genSq_chStrEnc(s, val); //change only if string is not hold
               break;
             case genSq_opMode+1:
               genSq_chStrEnc(s, val);

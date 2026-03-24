@@ -73,11 +73,11 @@ void sndTrigEnv(byte str, float vel){
 //  Serial.println(str);
 }
 
-void sndStrPrs(byte str, byte fret){
+void sndStrPrs(byte str, byte pitch){
   Serial1.write(201);
   //delayMicroseconds(waitS);
   Serial1.write(str);
   //delayMicroseconds(waitS);
-  Serial1.write(fret);
+  Serial1.write(pitch);
   //delayMicroseconds(waitS);
 }

@@ -33,11 +33,13 @@ void setup(void){
     cbl_fBiasInDC[s] = new AudioConnection(dcFEnv,0, fBiasM[s], 0); //connect dc to the filter bias mixer (dcFEnv,0, fBiasM[0], 0);
     cbl_fEnvInDC[s] = new AudioConnection(dcFEnv,0, fEnv[s], 0); //connect dc to the filter envelope to (dcFEnv, 0, fEnv1, 0);
     cbl_fBiasInFEnv[s] = new AudioConnection(fEnv[s],0, fBiasM[s], 1); //connect the filter envelope to the filter bias mixer (fEnv1, 0, fBiasM[0], 1);
-    cbl_coilDelayIn[s] = new AudioConnection(inGain[s],0, coilDelay[s],0); ////connect the input stage to the coil delay (inGain1, 0, coilDelay, 0);
+    
+    //cbl_coilDelayIn[s] = new AudioConnection(inGain[s],0, coilDelay[s],0); ////connect the input stage to the coil delay (inGain1, 0, coilDelay, 0);
     //cbl_coilShaperIn[s] = new AudioConnection(coilDelay[s],0, coilShaper[s], 0); //connect the coil delay to the coil waveshaper (inGain1, 0, coilShaper[0], 0);
-    cbl_coilShaperIn[s] = new AudioConnection(coilDelay[s],0, coilAmp[s], 0); //connect the coil delay to the coil waveshaper (inGain1, 0, coilShaper[0], 0);
-    cbl_coilAmpIn[s] = new AudioConnection(coilShaper[s],0, coilAmp[s], 0); //connect the coil waveshaper to the coil amp (waveshaper1, 0, cAmp1, 0);
-    cbl_coilAmpOut[s] = new AudioConnection(coilAmp[s],0, audioOutput, strAOut[s]); //connect the coil amps to the outputs (coilAmp[0],0, audioOutput,10);
+    //cbl_coilShaperIn[s] = new AudioConnection(coilDelay[s],0, coilAmp[s], 0); //connect the coil delay to the coil amp (inGain1, 0, coilShaper[0], 0);
+    cbl_coilOscOut[s] = new AudioConnection(coilOsc[s],0,audioOutput, strAOut[s] );
+    //cbl_coilAmpIn[s] = new AudioConnection(coilShaper[s],0, coilAmp[s], 0); //connect the coil waveshaper to the coil amp (waveshaper1, 0, cAmp1, 0);
+    //cbl_coilAmpOut[s] = new AudioConnection(coilAmp[s],0, audioOutput, strAOut[s]); //connect the coil amps to the outputs (coilAmp[0],0, audioOutput,10);
   }
 
 //calculate midi frequencies
@@ -73,6 +75,11 @@ void setup(void){
     lfo[i].amplitude(0.5);
     lfo[i].offset(1);
     chLfo1(1, 1,i);
+  }
+
+  for (int i=0; i<nStrings; i++) {
+    coilOsc[i].begin(WAVEFORM_SAWTOOTH);
+    coilOsc[i].amplitude(0);
   }
 
   for (int i=0; i<nStrings; i++) {

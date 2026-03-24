@@ -31,6 +31,7 @@ void serialEvent1(){
           b=Serial1.read();
           strFret(a, b);
           strState[a]=b;
+          
           incoming = -1;
         }
 
@@ -180,8 +181,8 @@ static int nSmp=5;
         float mNote = base_pitch + (12.0 * log(note / base_frequency) / log(2));
         if(prob>0.96){
           strP[s]=mNote;
-          chLfo1(0, mNote,s);
-          chCoilDel(s,note);
+          //chLfo1(0, mNote,s);
+          //chCoilDel(s,note);
 //          Serial.printf("freq1: %3.2f | Probability: %.2f\n", note, prob);    
 //          Serial.print(i+1);
 //          Serial.print(" ");
@@ -223,10 +224,15 @@ if (millis()-peakTimer > peakInt){
 }
 
 if(bowOn!=lastBowOn){
-for (int i=0; i<nStrings; i++) {
-    if(bowOn==0)coilAmp[i].gain(0.000);
-    if(bowOn==1 && strState[i]>0)coilAmp[i].gain(100);
+  // for (int i=0; i<nStrings; i++) {
+  //   if(bowOn==0)coilAmp[i].gain(0.000);
+  //   if(bowOn==1 && strState[i]>0)coilAmp[i].gain(100);
+  // }
+  for (int str=0; str<nStrings; str++) {
+    if(bowOn==1 && strState[str]>0)coilOsc[str].amplitude(1);
+    if(bowOn==0)coilOsc[str].amplitude(0);
   }
+
   Serial.print("bowOn: ");
   Serial.println(bowOn);
   lastBowOn=bowOn;

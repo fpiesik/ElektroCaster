@@ -25,21 +25,4 @@ void chLfo1(byte para, float val,int str){
     case 4:
       break;
    }
-
-   
-//   if(para==0){
-//    lastVal[str]=val;
-//    int note=strState[str]+tuning[str];
-//    midiFreq(note+val-sclLfo1[0]/2);
-//    lfo[str].frequency(midiF);
-//   }
-//    if(para==1){
-//    lfo[str].amplitude(0.0001+val);
-//    lfo[str].offset(1.0-val);
-//   }
-//   if(para==2){
-//    int note=strState[str]+tuning[str];
-//    midiFreq(note+lastVal[str]-sclLfo1[0]/2);
-//    lfo[str].frequency(midiF);
-//   }
 }
