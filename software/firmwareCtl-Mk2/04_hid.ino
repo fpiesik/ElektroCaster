@@ -277,6 +277,7 @@ void procHidAChng(byte idx, float val) {
     case 11:
       //joystick Y
       sndMidiCC(mInst_anaXyCc[1], val*127,mInst_chn);
+      usbMIDI.sendAfterTouch(val*127, mInst_chn);
       break;
 
     case 12:

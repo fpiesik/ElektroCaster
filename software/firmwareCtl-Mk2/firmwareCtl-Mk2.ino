@@ -19,7 +19,7 @@ AsciiMassageParser msgIn_audio; //todo
   int mInst_chn=1;
   int mM8Row_chn=11;
   int mKick_chn=2;
-  int mInst_anaXyCc[2]={1,2};
+  int mInst_anaXyCc[2]={9,10};
   int mInst_potCc[2]={7,8};
   int midi_faderCc[4]={3,4,5,6};
   int extNotes[17][128];
