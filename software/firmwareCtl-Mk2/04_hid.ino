@@ -222,22 +222,30 @@ void procHidAChng(byte idx, float val) {
   switch (idx) {
     case 0:
       // fader 1
-      sndMidiCC(midi_faderCc[0], val*127,mInst_chn);
+      val = val * 130;
+      if (val>127) val = 127;
+      sndMidiCC(midi_faderCc[0], val,mInst_chn);
       break;
     case 1:
       // fader 2
-      sndMidiCC(midi_faderCc[1], val*127,mInst_chn);
+      val = val * 130;
+      if (val>127) val = 127;
+      sndMidiCC(midi_faderCc[1], val,mInst_chn);
       break;
 
     case 2:
       // fader 3
-      sndMidiCC(midi_faderCc[2], val*127,mInst_chn);
+      val = val * 130;
+      if (val>127) val = 127;
+      sndMidiCC(midi_faderCc[2], val,mInst_chn);
       
       break;
 
     case 3:
       //fader 4
-      sndMidiCC(midi_faderCc[3], val*127,mInst_chn);
+      val = val * 130;
+      if (val>127) val = 127;
+      sndMidiCC(midi_faderCc[3], val,mInst_chn);
       break;
 
     case 4:
