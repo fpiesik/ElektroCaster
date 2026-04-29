@@ -127,6 +127,8 @@ void procHidDChng(byte idx, bool val) {
     case 3:
       //tripple switch middle
       sndBowOn(val);
+      if (val == 0 && shift == 1 )extClk = val;
+      if (val == 1 && shift == 1 )extClk = val;
       break;
 
     case 4:
@@ -168,7 +170,8 @@ void procHidDChng(byte idx, bool val) {
 
     case 8:
       //pots switch
-      genSq_strEncFnc=val;
+      //genSq_strEncFnc=val;
+      genSq_strEncBtnSw = val;
       break;
 
     case 9:
@@ -202,11 +205,21 @@ void procHidDChng(byte idx, bool val) {
   byte pO = 13;
   for (byte i = pO; i < (nStrings + pO); i++) {
     byte s = i - pO;
-    if (hidDVal[pO + s] != lastHidDVal[pO + s]) {
-      if(opMode>=genSq_opMode)genSq_chStrBtn(s, val);
-      if(opMode==strArp_opMode)strArp_chStrBtn(s, val);
+    if (genSq_strEncBtnSw == 1){
+      if (hidDVal[pO + s] != lastHidDVal[pO + s]) {
+        if(val == 0){
+          genSq_strEncFnc=nStrings-s-1;
+        }
+      }
+    }
+    if (genSq_strEncBtnSw == 0){
+      if (hidDVal[pO + s] != lastHidDVal[pO + s]) {
+        if(opMode>=genSq_opMode)genSq_chStrBtn(s, val);
+        if(opMode==strArp_opMode)strArp_chStrBtn(s, val);
+      }
     }
   }
+
   lastHidDVal[idx] = hidDVal[idx];
 }
 

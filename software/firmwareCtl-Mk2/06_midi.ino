@@ -76,12 +76,12 @@ void midiClock(){
 
 void midiStart() {
   mClock=-1;
-  extClk=1;
+  //extClk=1;
   cmpClck(mClock);
 }
 void midiStop() {
   mClock = -1;
-  extClk = 1;
+  //extClk = 1;
   cmpClck(mClock);
   for(int ch=0;ch<=16;ch++){
     for(int n=0;n<=127;n++){
@@ -142,6 +142,7 @@ void rcvCC(byte ch, byte cc, byte data) {
 //      chEnvF(n,sclVal);
 //    }
 //  }
+  
   if(cc==10){
     rootNote=ccState[cc]%12;
   }
@@ -152,6 +153,8 @@ void rcvCC(byte ch, byte cc, byte data) {
   if(cc==12){
     scls_sclStp=ccState[cc]%scls_numSclStp[scls_sclSel];
   }
-  
+  if(cc==13){
+    sndLfo1(3, val);
+  }
   
 }

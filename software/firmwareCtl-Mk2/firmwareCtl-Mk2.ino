@@ -184,6 +184,7 @@ const int chipSelect = BUILTIN_SDCARD;
   const int genSq_nSngs = 12;
   const int genSq_pttnMOff = nLedFrets-genSq_nPttn/2;
   int genSq_hrmInst=1;
+  int genSq_strEncBtnSw = 1; //choose between button function or Encoder button select
   
 
   const int genSq_nInst = 3;
@@ -398,8 +399,8 @@ void loop() {
   updIntClock();
   if (fbrdMode == 1)readFretboard(0);
   if (fbrdMode == 0){
-    if (frtb_sensMode==0)readFretboard(1);
-    if (frtb_sensMode==1)readFretboard(0);    
+    if (frtb_sensMode==1)readFretboard(1);
+    if (frtb_sensMode==0)readFretboard(0);    
   }
   cueKicks();
   updLedFrets();
