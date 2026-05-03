@@ -76,9 +76,9 @@ void setup(void){
     lfo[i].offset(1);
     chLfo1(1, 1,i);
   }
-
+  //init coils
   for (int i=0; i<nStrings; i++) {
-    coilOsc[i].begin(WAVEFORM_SAWTOOTH);
+    coilOsc[i].begin(WAVEFORM_SINE);
     coilOsc[i].amplitude(0);
   }
 
