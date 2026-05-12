@@ -207,9 +207,7 @@ void procHidDChng(byte idx, bool val) {
     byte s = i - pO;
     if (genSq_strEncBtnSw == 1){
       if (hidDVal[pO + s] != lastHidDVal[pO + s]) {
-        if(val == 0){
-          genSq_strEncFnc=nStrings-s-1;
-        }
+        genSq_strEncFnc=nStrings-s-1;
       }
     }
     if (genSq_strEncBtnSw == 0){
