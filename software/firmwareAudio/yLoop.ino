@@ -11,24 +11,30 @@ void serialEvent1(){
 
         if (incoming == 0){
           byte a;
-          byte b;
+          float b;
           while(Serial1.available() == 0);
           a=Serial1.read();
           while(Serial1.available() == 0);
           b=Serial1.read();
+          //Serial.println(b);
           trigEnv(a, b/199.0);
+          
           incoming = -1;
         }
          
         if (incoming == 1){
           byte a;
           byte b;
+          byte c;
           while(Serial1.available() == 0);
           a=Serial1.read();
           while(Serial1.available() == 0);
           b=Serial1.read();
-          strFret(a, b);
-          strState[a]=b;
+          while(Serial1.available() == 0);
+          c=Serial1.read();
+          strFret(a, b, c);
+          strState[a]=c;
+          
           incoming = -1;
         }
 
@@ -41,6 +47,7 @@ void serialEvent1(){
           b=Serial1.read();
           float sclVal=scale(b/199.0,1,sclEnvA[a]);
           chEnvA(a,sclVal);
+          envPA[a]=sclVal;
           incoming = -1;
         }
 
@@ -53,6 +60,7 @@ void serialEvent1(){
           b=Serial1.read();
           float sclVal=scale(b/199.0,1,sclEnvF[a]);
           chEnvF(a,sclVal);
+          envPF[a]=sclVal;
           incoming = -1;
         }
 
@@ -67,6 +75,22 @@ void serialEvent1(){
           chFilter(a,valFilter[a]);
           incoming = -1;
         }
+
+        if (incoming == 12){
+           byte a;
+           byte b;
+           float val;
+           while(Serial1.available() == 0);
+           a=Serial1.read();
+           while(Serial1.available() == 0);
+           b=Serial1.read();  
+           val=b/100.0;      
+           chngStrOutGain(a, val);
+            Serial.print(a);
+            Serial.print(": ");
+            Serial.println(val);
+           incoming = -1;
+          }
 
         if (incoming == 15){
           byte a;
@@ -117,17 +141,17 @@ void serialEvent1(){
 
         if (incoming == 11){
           float val=sbyte/199.0;
-          val=val*val;
+          val=val*val*2;
           ampOut.gain(val+0.0001);
-          Serial.println("gain: ");
-          Serial.println(val);
+          //Serial.println("gain: ");
+          //Serial.println(val);
           incoming = -1;
         }
         if (incoming == 17){
           float val=sbyte;
           bpm=val;
-          Serial.println("bpm: ");
-          Serial.println(val);
+          //Serial.println("bpm: ");
+          //Serial.println(val);
           incoming = -1;
         }   
         }
@@ -140,7 +164,7 @@ void loop(){
 if (millis()-ctlTimer > ctlInt){ 
   for(int i=0;i<nStrings;i++){
     if(strState[i]!=lastStrState[i]){
-      strFret(i,strState[i]);
+      //strFret(i,strState[i]);
       lastStrState[i]=strState[i];
     }
   }
@@ -151,39 +175,44 @@ if (millis()-nFrqTimer > nFrqInt){
 static int i=0;
 static int cntSmp;
 static int nSmp=5;
-    if (nFreq[i]->available()) {
-        float note = nFreq[i]->read();
-        float prob = nFreq[i]->probability();
+  for(int s=0;s<nStrings;s++){
+    nFreq[s].resume();
+    if (nFreq[s].available()) {
+        float note = nFreq[s].read();
+        float prob = nFreq[s].probability();
         
         float mNote = base_pitch + (12.0 * log(note / base_frequency) / log(2));
-        if(prob>0.95){
-          strP[i]=mNote;
-          //Serial.printf("freq1: %3.2f | Probability: %.2f\n", note, prob);    
+        if(prob>0.96){
+          strP[s]=mNote;
+          //chLfo1(0, mNote,s);
+          //chCoilDel(s,note);
+//          Serial.printf("freq1: %3.2f | Probability: %.2f\n", note, prob);    
 //          Serial.print(i+1);
 //          Serial.print(" ");
 //          Serial.printf("mNote: %3.2f | Probability: %.2f\n", mNote, prob);
         }               
-    } 
-    cntSmp++;
-    if (cntSmp>=nSmp){
-      nFreq[i]->stop();
-      nFreq[(i+1)%nStrings]->resume();
-      cntSmp=0;
-      i++;
-      i=i%nStrings;
+    
     }
-    //else{
-//      nFreq[i]->stop();
-//      nFreq[(i+1)%nStrings]->resume(); 
-    //}
+    //nFreq[s].stop(); 
+  }
+//    cntSmp++;
+//    if (cntSmp>=nSmp){
+//      nFreq[i].stop();
+//      nFreq[(i+1)%nStrings].resume();
+//      cntSmp=0;
+//      i++;
+//      i=i%nStrings;
+//    }
+
   sndStrP();
+  
   nFrqTimer=millis();
 }
 
 if (millis()-peakTimer > peakInt){ 
   for(int s=0; s<nStrings; s++){
-    if (peak[s]->available()) {
-      float vel = peak[s]->read() * 30.0;
+    if (strPeak[s].available()) {
+      float vel = strPeak[s].read() * 5.0;
       //Serial.printf("freq1: %3.2f | Probability: %.2f\n", note, prob);
       if(vel>1.0)vel=1.0;  
       strA[s]=vel;  
@@ -198,16 +227,21 @@ if (millis()-peakTimer > peakInt){
 }
 
 if(bowOn!=lastBowOn){
-for (int i=0; i<nStrings; i++) {
-    if(bowOn==0)cAmps[i]->gain(0.0001);
-    if(bowOn==1 && strState[i]>0)cAmps[i]->gain(50);
+  // for (int i=0; i<nStrings; i++) {
+  //   if(bowOn==0)coilAmp[i].gain(0.000);
+  //   if(bowOn==1 && strState[i]>0)coilAmp[i].gain(100);
+  // }
+  for (int str=0; str<nStrings; str++) {
+    if(bowOn==1 && strState[str]>0)coilOsc[str].amplitude(1);
+    if(bowOn==0)coilOsc[str].amplitude(0);
   }
+
   Serial.print("bowOn: ");
   Serial.println(bowOn);
   lastBowOn=bowOn;
 }
    
-if(1) {
+if(0) {
   if(millis() - last_time >= 3000) {
     Serial.print("Proc = ");
     Serial.print(AudioProcessorUsage());
