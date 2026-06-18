@@ -1,8 +1,11 @@
+#include "../shared/ProtocolAudio.h"
+#include "../shared/ProtocolHid.h"
+
 void serialEvent1(){
   int incoming=-1;
   byte sbyte = Serial1.read();
-  if (sbyte > 199 && sbyte <= 255) incoming = sbyte - 200;
-    if (incoming == 6){
+  if (sbyte >= AUDIO_CMD_BASE && sbyte <= AUDIO_CMD_MAX) incoming = audioIncoming(sbyte);
+    if (incoming == audioIncoming(AUDIO_STATUS_STR_PITCH)){
     byte a;
     byte b;
     byte c;
@@ -14,7 +17,7 @@ void serialEvent1(){
     c=Serial1.read();
     strP[a]=b+c/100.0;
   }
-    if (incoming == 7){
+    if (incoming == audioIncoming(AUDIO_STATUS_STR_AMPLITUDE)){
     byte a;
     byte b;
     while(Serial1.available() == 0);
@@ -29,15 +32,15 @@ void serialEvent7(){
    
   int incoming=-1;
   byte serbyte = Serial7.read();
-  if (serbyte > 200 && serbyte < 255) incoming = serbyte - 201;
+  if (serbyte >= HID_CMD_BASE && serbyte <= HID_CMD_MAX) incoming = hidIncoming(serbyte);
   //if (serbyte == 255)sndGetMidi();
 
   if(incoming>=0){
     while(Serial7.available() == 0);
     byte val=Serial7.read();
-    if (incoming <19) rcvHidD(incoming,val),incoming=-1;
-    if (incoming >=19 && incoming < 38) rcvHidA(incoming-19,val);
-    if (incoming >=38 && incoming < 41) rcvHidR(incoming-38,val);
-    if (incoming >=41 && incoming < 49) rcvHidE(incoming-41,val-100);
+    if (incoming < HID_ANALOG_OFFSET) rcvHidD(incoming,val),incoming=-1;
+    if (incoming >= HID_ANALOG_OFFSET && incoming < HID_ROTARY_OFFSET) rcvHidA(incoming - HID_ANALOG_OFFSET,val);
+    if (incoming >= HID_ROTARY_OFFSET && incoming < HID_ENCODER_OFFSET) rcvHidR(incoming - HID_ROTARY_OFFSET,val);
+    if (incoming >= HID_ENCODER_OFFSET && incoming < HID_ENCODER_END_OFFSET) rcvHidE(incoming - HID_ENCODER_OFFSET,val - HID_ENCODER_CENTER);
   }
 }

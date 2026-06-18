@@ -1,15 +1,17 @@
+#include "../shared/ProtocolAudio.h"
+
 void serialEvent1(){
         static int incoming;
         byte sbyte = Serial1.read();
         //Serial.write(serbyte);
-        if (sbyte > 199 && sbyte <= 255) incoming = sbyte - 200;
+        if (sbyte >= AUDIO_CMD_BASE && sbyte <= AUDIO_CMD_MAX) incoming = audioIncoming(sbyte);
 
 //        if (incoming == 12) usbMIDI.sendRealTime(usbMIDI.Clock);
 //        if (incoming == 13) usbMIDI.sendRealTime(usbMIDI.Start);
 //        if (incoming == 14) usbMIDI.sendRealTime(usbMIDI.Stop);
-        //if (incoming == 17)sndNotes();
+        //if (incoming == audioIncoming(AUDIO_CMD_BPM))sndNotes();
 
-        if (incoming == 0){
+        if (incoming == audioIncoming(AUDIO_CMD_TRIG_ENV)){
           byte a;
           float b;
           while(Serial1.available() == 0);
@@ -22,7 +24,7 @@ void serialEvent1(){
           incoming = -1;
         }
          
-        if (incoming == 1){
+        if (incoming == audioIncoming(AUDIO_CMD_STR_FRET)){
           byte a;
           byte b;
           byte c;
@@ -38,7 +40,7 @@ void serialEvent1(){
           incoming = -1;
         }
 
-        if (incoming == 7){
+        if (incoming == audioIncoming(AUDIO_CMD_ENV_1)){
           byte a;
           byte b;
           while(Serial1.available() == 0);
@@ -51,7 +53,7 @@ void serialEvent1(){
           incoming = -1;
         }
 
-        if (incoming == 8){
+        if (incoming == audioIncoming(AUDIO_CMD_ENV_2)){
           byte a;
           byte b;
           while(Serial1.available() == 0);
@@ -64,7 +66,7 @@ void serialEvent1(){
           incoming = -1;
         }
 
-        if (incoming == 9){
+        if (incoming == audioIncoming(AUDIO_CMD_FILTER)){
           byte a;
           byte b;
           while(Serial1.available() == 0);
@@ -76,7 +78,7 @@ void serialEvent1(){
           incoming = -1;
         }
 
-        if (incoming == 12){
+        if (incoming == audioIncoming(AUDIO_CMD_STR_GAIN)){
            byte a;
            byte b;
            float val;
@@ -92,7 +94,7 @@ void serialEvent1(){
            incoming = -1;
           }
 
-        if (incoming == 15){
+        if (incoming == audioIncoming(AUDIO_CMD_FX)){
           byte a;
           byte b;
           while(Serial1.available() == 0);
@@ -104,7 +106,7 @@ void serialEvent1(){
           incoming = -1;
         }
 
-        if (incoming == 16){
+        if (incoming == audioIncoming(AUDIO_CMD_LFO_1)){
            byte a;
            float b;
            while(Serial1.available() == 0);
@@ -118,7 +120,7 @@ void serialEvent1(){
           incoming = -1;
           }
 
-        if (incoming == 18){
+        if (incoming == audioIncoming(AUDIO_CMD_MIDI_CC)){
            byte a;
            byte b;
            while(Serial1.available() == 0);
@@ -133,13 +135,13 @@ void serialEvent1(){
         
         if (sbyte <= 199){
                 
-          if (incoming == 2) chOpMode(sbyte),incoming = -1;
-          if (incoming == 3) chDispMode(sbyte),incoming = -1;
-          if (incoming == 4) chKickMode(sbyte),incoming = -1;
-          if (incoming == 5) chBowMode(sbyte),incoming = -1;
-          if (incoming == 6) bowOn=(sbyte),incoming = -1;
+          if (incoming == audioIncoming(AUDIO_CMD_OP_MODE)) chOpMode(sbyte),incoming = -1;
+          if (incoming == audioIncoming(AUDIO_CMD_DISP_MODE)) chDispMode(sbyte),incoming = -1;
+          if (incoming == audioIncoming(AUDIO_CMD_KICK_MODE)) chKickMode(sbyte),incoming = -1;
+          if (incoming == audioIncoming(AUDIO_CMD_BOW_MODE)) chBowMode(sbyte),incoming = -1;
+          if (incoming == audioIncoming(AUDIO_CMD_BOW_ON)) bowOn=(sbyte),incoming = -1;
 
-        if (incoming == 11){
+        if (incoming == audioIncoming(AUDIO_CMD_VOLUME)){
           float val=sbyte/199.0;
           val=val*val*2;
           ampOut.gain(val+0.0001);
@@ -147,7 +149,7 @@ void serialEvent1(){
           //Serial.println(val);
           incoming = -1;
         }
-        if (incoming == 17){
+        if (incoming == audioIncoming(AUDIO_CMD_BPM)){
           float val=sbyte;
           bpm=val;
           //Serial.println("bpm: ");
