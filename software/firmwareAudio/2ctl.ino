@@ -1,8 +1,10 @@
+#include "../shared/ProtocolAudio.h"
+
 void sndClock(long clck){
 }
  
 void sndNote(byte pitch, byte vel){
-  Serial1.write(201);
+  Serial1.write(AUDIO_STATUS_NOTE);
   delayMicroseconds(waitS);
   Serial1.write(pitch);
   delayMicroseconds(waitS);
@@ -26,7 +28,7 @@ void sndNotes(){
 void sndCC(){
   for(byte i = 0;i<=127;i++){
     if(ccState[i]!=lastCCState[i]){
-      Serial1.write(205);
+      Serial1.write(AUDIO_STATUS_CC);
       delayMicroseconds(waitS);
       Serial1.write(i);
       delayMicroseconds(waitS);
@@ -40,7 +42,7 @@ void sndCC(){
 void sndStrP(){
   for(byte i = 0;i<nStrings;i++){
     if(strP[i]!=lastStrP[i]){
-      Serial1.write(206);
+      Serial1.write(AUDIO_STATUS_STR_PITCH);
       delayMicroseconds(waitS);
       Serial1.write(i);
       delayMicroseconds(waitS);
@@ -56,7 +58,7 @@ void sndStrP(){
 void sndStrA(){
   for(byte i = 0;i<nStrings;i++){
     if(strA[i]!=lastStrA[i]){
-      Serial1.write(207);
+      Serial1.write(AUDIO_STATUS_STR_AMPLITUDE);
       delayMicroseconds(waitS);
       Serial1.write(i);
       delayMicroseconds(waitS);

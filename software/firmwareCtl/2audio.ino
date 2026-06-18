@@ -1,5 +1,7 @@
+#include "../shared/ProtocolAudio.h"
+
 void sndLfo1(byte para, float val){
-  Serial1.write(216);
+  Serial1.write(AUDIO_CMD_LFO_1);
   //delayMicroseconds(waitS);
   Serial1.write(para);
   //delayMicroseconds(waitS);
@@ -7,7 +9,7 @@ void sndLfo1(byte para, float val){
 }
 
 void sndStrGain(int str, byte val) {
-  Serial1.write(212);
+  Serial1.write(AUDIO_CMD_STR_GAIN);
   //delayMicroseconds(waitS);
   Serial1.write(str);
   //delayMicroseconds(waitS);
@@ -20,12 +22,12 @@ void sndStrGain(int str, byte val) {
 }
 
 void sndVol(float val){
-  Serial1.write(211);
+  Serial1.write(AUDIO_CMD_VOLUME);
   Serial1.write(byte(val*125)); //lowered to avoid clipping
 }
 
 void sndFilter(byte para, float val){
-  Serial1.write(209);
+  Serial1.write(AUDIO_CMD_FILTER);
   //delayMicroseconds(waitS);
   Serial1.write(para);
   //delayMicroseconds(waitS);
@@ -33,7 +35,7 @@ void sndFilter(byte para, float val){
 }
 
 void sndEnv2(byte para, float val){
-  Serial1.write(208);
+  Serial1.write(AUDIO_CMD_ENV_2);
   //delayMicroseconds(waitS);
   Serial1.write(para);
   //delayMicroseconds(waitS);
@@ -41,7 +43,7 @@ void sndEnv2(byte para, float val){
 }
 
 void sndEnv1(byte para, float val){
-  Serial1.write(207);
+  Serial1.write(AUDIO_CMD_ENV_1);
   //delayMicroseconds(waitS);
   Serial1.write(para);
   //delayMicroseconds(waitS);
@@ -49,18 +51,18 @@ void sndEnv1(byte para, float val){
 }
 
 void sndBowMode(byte mode){
-  Serial1.write(205);
+  Serial1.write(AUDIO_CMD_BOW_MODE);
   Serial1.write(mode);
 }
 
 void sndBowOn(byte mode){
-  Serial1.write(206);
+  Serial1.write(AUDIO_CMD_BOW_ON);
   Serial1.write(mode);
   //bowOn=mode;
 }
 
 void sndTrigEnv(byte str, float vel){
-  Serial1.write(200);
+  Serial1.write(AUDIO_CMD_TRIG_ENV);
   //delayMicroseconds(waitS);
   Serial1.write(str);
   //delayMicroseconds(waitS);
@@ -74,7 +76,7 @@ void sndTrigEnv(byte str, float vel){
 }
 
 void sndStrPrs(byte str, byte pitch, byte state){
-  Serial1.write(201);
+  Serial1.write(AUDIO_CMD_STR_FRET);
   //delayMicroseconds(waitS);
   Serial1.write(str);
   //delayMicroseconds(waitS);
