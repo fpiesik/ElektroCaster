@@ -14,6 +14,7 @@
 //#include "effect_tapedelay10tap.h"
 
 const byte nStrings=6;
+#include "HardwareConfig.h"
 const int nCtlFrets=17; //how many led frets
 byte midiCh=15;
 
@@ -27,8 +28,6 @@ byte lastBowMode=0;
 byte dispMode=0;
 byte lastDispMode=0;
 int waitS=100;
-byte strAIn[nStrings]={10,8,6,4,2,0}; //input audio channels of the strings
-byte strAOut[nStrings]={10,8,6,4,2,0}; //output audio channels of the string coils
 float strInGain[nStrings]={0.65,0.65,0.65,0.65,0.65,0.65};
 
 float tuning[nStrings]={59,54,50,45,40,35}; //{35,40,45,50,54,59};
