@@ -88,9 +88,9 @@ void serialEvent1(){
            b=Serial1.read();  
            val=b/100.0;      
            chngStrOutGain(a, val);
-            Serial.print(a);
-            Serial.print(": ");
-            Serial.println(val);
+            DBG_AUDIO_PRINT(a);
+            DBG_AUDIO_PRINT(": ");
+            DBG_AUDIO_PRINTLN(val);
            incoming = -1;
           }
 
@@ -238,22 +238,22 @@ if(bowOn!=lastBowOn){
     if(bowOn==0)coilOsc[str].amplitude(0);
   }
 
-  Serial.print("bowOn: ");
-  Serial.println(bowOn);
+  DBG_AUDIO_PRINT("bowOn: ");
+  DBG_AUDIO_PRINTLN(bowOn);
   lastBowOn=bowOn;
 }
    
-if(0) {
+if(DEBUG_AUDIO) {
   if(millis() - last_time >= 3000) {
-    Serial.print("Proc = ");
-    Serial.print(AudioProcessorUsage());
-    Serial.print(" (");    
-    Serial.print(AudioProcessorUsageMax());
-    Serial.print("),  Mem = ");
-    Serial.print(AudioMemoryUsage());
-    Serial.print(" (");    
-    Serial.print(AudioMemoryUsageMax());
-    Serial.println(")");
+    DBG_AUDIO_PRINT("Proc = ");
+    DBG_AUDIO_PRINT(AudioProcessorUsage());
+    DBG_AUDIO_PRINT(" (");
+    DBG_AUDIO_PRINT(AudioProcessorUsageMax());
+    DBG_AUDIO_PRINT("),  Mem = ");
+    DBG_AUDIO_PRINT(AudioMemoryUsage());
+    DBG_AUDIO_PRINT(" (");
+    DBG_AUDIO_PRINT(AudioMemoryUsageMax());
+    DBG_AUDIO_PRINTLN(")");
     last_time = millis();
   }
 }
