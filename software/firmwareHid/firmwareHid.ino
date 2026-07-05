@@ -26,7 +26,7 @@ U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
 
 const int nAnalog = 22;
 const int nDigital = 19;
-const int nEnc = 7;
+const int nEnc = 8;
 
 const int aPin[nAnalog] = {31, 32, 33, 34, 35, 36, 37, 38, 39, A21, A22, 14, A26, A25, A11, A10, A24, A23, A9, A8, A7, A6 };
 

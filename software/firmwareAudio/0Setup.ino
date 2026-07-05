@@ -5,17 +5,42 @@ void setup(void){
 
   delay(1000);
 
-  AudioMemory(2500);
+  AudioMemory(2000);
 
   audioShield.enable();
   audioShield.volume(1);
 
-  audioShield.inputLevel(1,0.6);
-  audioShield.inputLevel(2,0.6);
-  audioShield.inputLevel(3,0.6);
-  audioShield.inputLevel(4,0.6);
-  audioShield.inputLevel(5,0.6);
-  audioShield.inputLevel(6,0.6);
+  audioShield.inputLevel(0.5);
+//  audioShield.inputLevel(2,4); // specific channel gain doesnt work
+//  audioShield.inputLevel(3,4);
+//  audioShield.inputLevel(4,4);
+//  audioShield.inputLevel(5,4);
+//  audioShield.inputLevel(6,4);
+
+  for (int s=0; s<nStrings; s++){
+    //mPC001[i] = new AudioConnection(dcFEnv,0, aBiasM[i], 0);
+    //mPC001[i] = new AudioConnection(dcFEnv,0, fBiasM[i], 0);
+    cbl_input[s] = new AudioConnection(audioInput, strAIn[s], inGain[s], 0); //connect the inputs with the input gain stage (audioInput, 10, inGain1, 0); strAIn
+    cbl_peak[s] = new AudioConnection(inGain[s],0, strPeak[s], 0); //connect input gain stage to the peak detector  (inGain1, 0, peak1, 0);
+    cbl_pitch[s] = new AudioConnection(inGain[s],0, nFreq[s], 0); // connect the input stage to the pitch detector (inGain1, 0, nFreq1, 0);
+    cbl_ringAmpSig[s] = new AudioConnection(inGain[s],0, ringAmp[s], 0); //connect the input stage to the ringmod amp (inGain1, 0, mulA1, 0)
+    cbl_ringAmpLFO[s] = new AudioConnection(lfo[s],0, ringAmp[s], 1); // connect the lfo to the ringmod amp (lfo1, 0, mulA1, 1);
+    cbl_aBiasDryIn[s] = new AudioConnection(ringAmp[s],0, aBiasM[s], 0); // connect the ring Amp to the amp bias mixer (mulA1, 0, aBiasM1, 0);
+    cbl_aBiasEnvIn[s] = new AudioConnection(aEnv[s],0, aBiasM[s], 1); // connect the amp envelope to the amp bias mixer (aEnv1, 0, aBiasM1, 1);
+    cbl_aEnvRingIn[s] = new AudioConnection(ringAmp[s],0, aEnv[s], 0); // connect the ring amp to the amp envelope (mulA1, 0, aEnv1, 0);
+    cbl_filterInSig[s] = new AudioConnection(aBiasM[s],0, filter[s], 0); //connect bias mixer to the filter audio input (aBiasM1, 0, filter1, 0);
+    cbl_filterInCutoff[s] = new AudioConnection(fBiasM[s],0, filter[s], 1); //connect the filter bias mixer to filter cutoff input(fBiasM[0], 0, filter1, 1);
+    cbl_fBiasInDC[s] = new AudioConnection(dcFEnv,0, fBiasM[s], 0); //connect dc to the filter bias mixer (dcFEnv,0, fBiasM[0], 0);
+    cbl_fEnvInDC[s] = new AudioConnection(dcFEnv,0, fEnv[s], 0); //connect dc to the filter envelope to (dcFEnv, 0, fEnv1, 0);
+    cbl_fBiasInFEnv[s] = new AudioConnection(fEnv[s],0, fBiasM[s], 1); //connect the filter envelope to the filter bias mixer (fEnv1, 0, fBiasM[0], 1);
+    
+    //cbl_coilDelayIn[s] = new AudioConnection(inGain[s],0, coilDelay[s],0); ////connect the input stage to the coil delay (inGain1, 0, coilDelay, 0);
+    //cbl_coilShaperIn[s] = new AudioConnection(coilDelay[s],0, coilShaper[s], 0); //connect the coil delay to the coil waveshaper (inGain1, 0, coilShaper[0], 0);
+    //cbl_coilShaperIn[s] = new AudioConnection(coilDelay[s],0, coilAmp[s], 0); //connect the coil delay to the coil amp (inGain1, 0, coilShaper[0], 0);
+    cbl_coilOscOut[s] = new AudioConnection(coilOsc[s],0,audioOutput, strAOut[s] );
+    //cbl_coilAmpIn[s] = new AudioConnection(coilShaper[s],0, coilAmp[s], 0); //connect the coil waveshaper to the coil amp (waveshaper1, 0, cAmp1, 0);
+    //cbl_coilAmpOut[s] = new AudioConnection(coilAmp[s],0, audioOutput, strAOut[s]); //connect the coil amps to the outputs (coilAmp[0],0, audioOutput,10);
+  }
 
 //calculate midi frequencies
 //for (int x = 0; x < 127; ++x){ 
@@ -23,15 +48,15 @@ void setup(void){
 //}
 
 //  nFreq6.begin(.15);
-  nFreq2.begin(.15);
+//  nFreq2.begin(.15);
 
   for (int i=0; i<nStrings; i++) {
-    nFreq[i]->begin(0.05);
+    nFreq[i].begin(0.2);
   }
 
-  for (int i=0; i<nStrings; i++) {
-    nFreq[i]->stop();
-  }
+//  for (int i=0; i<nStrings; i++) {
+//    nFreq[i].stop();
+//  }
 
 //  for (int i=0; i<nStrings; i++) {
 //    
@@ -39,36 +64,51 @@ void setup(void){
 //  }
   
   for (int i=0; i<nStrings; i++) {
-    filter[i]->frequency(0);
-    filter[i]->resonance(0.707);
-    filter[i]->octaveControl(7);
+    filter[i].frequency(0);
+    filter[i].resonance(0.707);
+    filter[i].octaveControl(7);
   }
 
   for (int i=0; i<nStrings; i++) {
-    lfos1[i]->begin(WAVEFORM_SINE);
-    lfos1[i]->frequency(1);
-    lfos1[i]->amplitude(0.0001);
-    lfos1[i]->offset(1.0);
+    lfo[i].begin(WAVEFORM_SINE);
+    lfo[i].frequency(30);
+    lfo[i].amplitude(0.5);
+    lfo[i].offset(1);
+    chLfo1(1, 1,i);
+  }
+  //init coils
+  for (int i=0; i<nStrings; i++) {
+    coilOsc[i].begin(WAVEFORM_SINE);
+    coilOsc[i].amplitude(0);
   }
 
   for (int i=0; i<nStrings; i++) {
-    cAmps[i]->gain(1);
+    bowOn=0;
+    coilAmp[i].gain(0.000);
+  }
+  for (int i=0; i<nStrings; i++) {
+    bowOn=0;
+    coilDelay[i].delay(0,0);
+    coilDelay[i].disable(1);
+    coilDelay[i].disable(2);
+    coilDelay[i].disable(3);
+    coilDelay[i].disable(4);
+    coilDelay[i].disable(5);
+    coilDelay[i].disable(6);
+    coilDelay[i].disable(7);
+  }
+  
+  for (int i=0; i<nStrings; i++) {
+    aBiasM[i].gain(0,0.5);
+    aBiasM[i].gain(1,0.5 );
+    fBiasM[i].gain(0,1);
+    fBiasM[i].gain(1,0);
   }
 
   for (int i=0; i<nStrings; i++) {
-    aBiasM[i]->gain(0,0.5);
-    aBiasM[i]->gain(1,0.5 );
-    fBiasM[i]->gain(0,0.5);
-    fBiasM[i]->gain(1,0.5);
+    inGain[i].gain(strInGain[i]);
   }
 
-  for (int i=0; i<nStrings; i++) {
-    inGains[i]->gain(strGain[i]);
-  }
-
-  for (int i=0; i<nStrings; i++) {
-    preA[i]->gain(2);
-  }
 
 //  strDel[0]->begin(sample_delay_line1, DELAY_MAX_LEN);
 //  strDel[1]->begin(sample_delay_line2, DELAY_MAX_LEN);
@@ -80,79 +120,34 @@ void setup(void){
   dcFEnv.amplitude(1);
   ampOut.gain(1);
 
-not0.begin(WAVEFORM_SINE);
-not0.frequency(1);
-not0.amplitude(0.0001);
 
-float shpStr[9]= {
-  -1,
-  -0.95,
-  -0.9,
-  -0.85,
-  0,
-  0.85,
-  0.9,
-  0.95,
-  1,
-};
-
-  for (int i=0; i<nStrings; i++) {
-    ws[i]->shape(shpStr,9);
-  }
 float shp[9]={-1,-0.95,-0.9,-0.85,0,0.85,0.9,0.95,1};
-waveshaper1.shape(shp,9);
-waveshaper2.shape(shp,9);
-waveshaper3.shape(shp,9);
-waveshaper4.shape(shp,9);
-waveshaper5.shape(shp,9);
-waveshaper6.shape(shp,9);
+  for (int i=0; i<nStrings; i++) {
+    coilShaper[i].shape(shp,9);
+  }
 
 
   for (int i=0; i<nStrings; i++) {
-    aEnvs[i]->delay(envPA[0]);
-    aEnvs[i]->attack(envPA[1]);
-    aEnvs[i]->hold(envPA[2]);
-    aEnvs[i]->decay(envPA[3]);
-    aEnvs[i]->sustain(0);
-    aEnvs[i]->release(envPA[5]);
+    aEnv[i].delay(envPA[0]);
+    aEnv[i].attack(envPA[1]);
+    aEnv[i].hold(envPA[2]);
+    aEnv[i].decay(envPA[3]);
+    aEnv[i].sustain(0);
+    aEnv[i].release(envPA[5]);
   }
 
-    for (int i=0; i<nStrings; i++) {
-    fEnvs[i]->delay(envPF[0]);
-    fEnvs[i]->attack(envPF[1]);
-    fEnvs[i]->hold(envPF[2]);
-    fEnvs[i]->decay(envPF[3]);
-    fEnvs[i]->sustain(0);
-    fEnvs[i]->release(envPF[5]);
+  for (int i=0; i<nStrings; i++) {
+    fEnv[i].delay(envPF[0]);
+    fEnv[i].attack(envPF[1]);
+    fEnv[i].hold(envPF[2]);
+    fEnv[i].decay(envPF[3]);
+    fEnv[i].sustain(0);
+    fEnv[i].release(envPF[5]);
   }
 
-  outMix1.gain(0,1);
-  outMix2.gain(0,1);
-  outMix3.gain(0,1);
-  outMix4.gain(0,1);
-  outMix5.gain(0,1);
-  outMix6.gain(0,1);
-
-  outMix1.gain(3,0.001);
-  outMix2.gain(3,0.001);
-  outMix3.gain(3,0.001);
-  outMix4.gain(3,0.001);
-  outMix5.gain(3,0.001);
-  outMix6.gain(3,0.001);
-  //outMix7.gain(3,0.001);
-  //outMix8.gain(3,0.001);
 
 
 //  delay0.begin(tape_delay_bank, DELAY_MAX_LEN, 5000, 1, 2); //bank to use, size of bank, delay time in samples , rate reduction, interpolation time
   
   opmode=0;
-  
-
-//usbMIDI.setHandleControlChange(rcvCC);
-//usbMIDI.setHandleClock(midiClock);
-//usbMIDI.setHandleStart(midiStart);
-//usbMIDI.setHandleContinue(midiContinue);
-//usbMIDI.setHandleStop(midiStop);
-//usbMIDI.setHandleNoteOn(rcvNoteOn);
-//usbMIDI.setHandleNoteOff(rcvNoteOff);
 }
