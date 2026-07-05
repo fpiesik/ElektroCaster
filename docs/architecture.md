@@ -16,6 +16,14 @@ ElektroCaster is a hardware/firmware electric guitar platform with:
 
 The firmware is split across three microcontrollers.
 
+## Board role summary
+
+| Firmware | Board role | Owns / directly touches | Communicates with | Protected behavior to preserve |
+| --- | --- | --- | --- | --- |
+| `software/firmwareHid` | Body-control and display companion | Analog controls, digital controls, encoders, resistor-ladder rotary switches, SH1106 128x64 OLED | `firmwareCtl` over `Serial6` at 115200 baud | HID command byte layout, display packet names/payloads, input pin assignments |
+| `software/firmwareCtl` | Main coordinator | LED fretboard, fretboard contact scanning, Kickup pins/timing, MIDI, SD song state, display composition, Audio/HID routing | `firmwareHid` over `Serial7` at 115200 baud; `firmwareAudio` over `Serial1` at 250000 baud; USB/hardware MIDI | Fretboard scan/debounce, Kickup pulse timing, serial payload formats, LED pin/mapping |
+| `software/firmwareAudio` | Hexaphonic DSP and actuator-audio board | TDM audio I/O, CS42448 codec control, per-string DSP, analysis objects, coil/MulEBow outputs | `firmwareCtl` over `Serial1` at 250000 baud | AudioConnection graph, audio routing, analysis intervals, audio command scaling |
+
 ## Microcontroller roles
 
 ### `software/firmwareHid`

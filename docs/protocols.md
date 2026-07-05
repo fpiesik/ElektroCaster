@@ -13,6 +13,15 @@ This document records currently observed serial protocols. It is based on reposi
 
 Open question: physical wiring and electrical directionality are not documented in the repository.
 
+## Protocol byte-space summary
+
+| Direction | Transport | Framing style | Command / packet namespace | Payload style | Receiver notes |
+| --- | --- | --- | --- | --- | --- |
+| HID -> CTL | Raw bytes on HID/CTL serial link | Command/index byte followed by value byte; HID also sends `255` after `sendAllNew()` | Command bytes are offset from HID indexes using `+ 201`; CTL subtracts `201` before dispatch | One value byte per recognized input event | CTL blocks while waiting for payload bytes; no checksum or versioning identified. |
+| CTL -> HID display | AsciiMassage on HID/CTL serial link | Named AsciiMassage packets | Text packet names such as `str`, `int`, `frm`, `buf` | Packet-specific byte/int/long/string fields | HID delegates parsing/framing to AsciiMassage and executes U8g2 drawing calls. |
+| CTL -> Audio | Raw bytes on CTL/Audio serial link | Command byte `200..255`, then command-specific payload | Shared audio command constants; Audio decodes `command - 200` | One or more bytes; most scaled values are intended to stay `<= 199` | Audio uses blocking waits for payload bytes; no checksum or length byte identified. |
+| Audio -> CTL | Raw bytes on CTL/Audio serial link | Status command byte, then status-specific payload | Audio status constants reuse some numeric IDs from the opposite direction | Pitch/amplitude/status bytes | CTL decodes by direction, so numeric reuse is only safe because links are directional at parser level. |
+
 ## HID -> CTL protocol
 
 Implemented in:

@@ -14,3 +14,30 @@ Here is a list with the most important "guitar-extensions" I've implemented on t
     10 faders, 7 potis, 8 rotary encoder(&switches), 5 buttons, 7 toggle switches, 3 rotary switches (12steps), an analog joystick
     128*64 oled display
 
+## Documentation quick reference
+
+This repository contains three cooperating firmware targets. The tables below summarize the currently documented board roles, serial links, and hardware/protocol references without changing firmware behavior.
+
+### Board roles
+
+| Board firmware | Target noted in docs | Main role | Documentation |
+| --- | --- | --- | --- |
+| `software/firmwareHid` | Teensy 3.5 | Body controls, encoder/analog/digital input scanning, and local OLED rendering. | `docs/architecture.md`, `docs/protocols.md`, `docs/pinout.md` |
+| `software/firmwareCtl` | Teensy 4.1 | Main controller for system state, LED fretboard, fretboard sensing, Kickup, MulEBow control, sequencer/MIDI/SD coordination, and board-to-board routing. | `docs/architecture.md`, `docs/protocols.md`, `docs/realtime.md` |
+| `software/firmwareAudio` | Teensy 4.1 | Hexaphonic audio processing, pitch/amplitude analysis, per-string DSP, and actuator audio/control outputs. | `docs/architecture.md`, `docs/protocols.md`, `docs/realtime.md` |
+
+### Serial protocol map
+
+| Link | Baud | Purpose | Details |
+| --- | ---: | --- | --- |
+| HID <-> CTL | 115200 | Body-control events from HID to CTL and AsciiMassage display commands from CTL to HID. | `docs/protocols.md` |
+| CTL <-> Audio | 250000 | Raw byte audio-control commands from CTL to Audio and pitch/amplitude status from Audio to CTL. | `docs/protocols.md` |
+
+### Hardware and timing notes
+
+| Topic | Documentation file | Notes |
+| --- | --- | --- |
+| Pin assignments | `docs/pinout.md` | Documents firmware-inferred pins only; hardware connector names remain open unless present in source. |
+| Realtime intervals | `docs/realtime.md` | Documents LED, fretboard debounce, Kickup, display, clock, HID, and audio intervals. |
+| Testing guidance | `docs/testing.md` | Lists safe checks and hardware validation areas. |
+
