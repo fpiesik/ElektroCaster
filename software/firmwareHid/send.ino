@@ -1,33 +1,35 @@
+#include "ProtocolHid.h"
+
 void sndA(byte idx, int val){
-  Serial6.write(idx + nDigital + 201);
+  Serial6.write(idx + nDigital + HID_CMD_BASE);
   delayMicroseconds(waitS);
-  Serial6.write(map(val, 0,1023,0,200));
+  Serial6.write(map(val, 0,1023,0,HID_ANALOG_MAX_VALUE));
   delayMicroseconds(waitS);
 }
 
 void sndD(byte idx, int val){
-  Serial6.write(idx + 201);
+  Serial6.write(idx + HID_CMD_BASE);
   delayMicroseconds(waitS);
   Serial6.write(val);
   delayMicroseconds(waitS);
 }
 
 void sndR(byte idx, int val){
-  Serial6.write(idx + nDigital + 19 + 201);
+  Serial6.write(idx + HID_ROTARY_OFFSET + HID_CMD_BASE);
   delayMicroseconds(waitS);
   Serial6.write(val);
   delayMicroseconds(waitS);
 }
 
 void sndE(byte idx, int val){
-  Serial6.write(idx + nDigital + 22 + 201);
+  Serial6.write(idx + HID_ENCODER_OFFSET + HID_CMD_BASE);
   delayMicroseconds(waitS);
   Serial6.write(val);
   delayMicroseconds(waitS);
 }
 
 void sndF(){
-  Serial6.write(255);
+  Serial6.write(HID_FRAME_END);
 }
 
 void sendAll(){
