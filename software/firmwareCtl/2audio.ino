@@ -1,4 +1,4 @@
-#include "../shared/ProtocolAudio.h"
+#include "ProtocolAudio.h"
 
 void sndLfo1(byte para, float val){
   Serial1.write(AUDIO_CMD_LFO_1);

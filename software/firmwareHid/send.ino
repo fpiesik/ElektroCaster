@@ -1,4 +1,4 @@
-#include "../shared/ProtocolHid.h"
+#include "ProtocolHid.h"
 
 void sndA(byte idx, int val){
   Serial6.write(idx + nDigital + HID_CMD_BASE);

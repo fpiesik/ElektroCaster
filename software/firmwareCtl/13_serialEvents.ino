@@ -1,5 +1,5 @@
-#include "../shared/ProtocolAudio.h"
-#include "../shared/ProtocolHid.h"
+#include "ProtocolAudio.h"
+#include "ProtocolHid.h"
 
 void serialEvent1(){
   int incoming=-1;

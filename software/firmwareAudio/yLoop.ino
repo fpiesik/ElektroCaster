@@ -1,4 +1,4 @@
-#include "../shared/ProtocolAudio.h"
+#include "ProtocolAudio.h"
 
 void serialEvent1(){
         static int incoming;

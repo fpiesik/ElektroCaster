@@ -1,4 +1,6 @@
-#include "../shared/ProtocolAudio.h"
+
+#include "ProtocolAudio.h"
+
 
 void sndClock(long clck){
 }
