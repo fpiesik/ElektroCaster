@@ -40,7 +40,7 @@ const int chipSelect = BUILTIN_SDCARD;
   int strGain[nStrings];
   int defStrGain[nStrings]={40,40,40,40,40,40};
   int strGainMx=50;
-  const byte strSnsPins[nStrings]={2,3,4,5,6,7};
+  #include "HardwareConfig.h"
   unsigned long lastFretRead[nStrings];
   unsigned int fretMaskT=50; //time until a next strPres on he same string is detected
   unsigned int strBncs=500; //number of same samples to trigger strPres
@@ -73,13 +73,6 @@ const int chipSelect = BUILTIN_SDCARD;
   CRGB lastFrtPix[NUMPIXELS];
   float trgtC[nStrings][nLedFrets][3];
   float actC[nStrings][nLedFrets][3];
-  const byte led_pixPos[nStrings][nLedFrets]={
-  {144,143,132,131,120,119,108,107,96,95,84,83,72,71,60,59,48,47,36,35,24,23,12,11,0}, //for 25 frets
-  {145,142,133,130,121,118,109,106,97,94,85,82,73,70,61,58,49,46,37,34,25,22,13,10,1}, //for 25 frets
-  {146,141,134,129,122,117,110,105,98,93,86,81,74,69,62,57,50,45,38,33,26,21,14,9,2}, //for 25 frets
-  {147,140,135,128,123,116,111,104,99,92,87,80,75,68,63,56,51,44,39,32,27,20,15,8,3}, //for 25 frets
-  {148,139,136,127,124,115,112,103,100,91,88,79,76,67,64,55,52,43,40,31,28,19,16,7,4}, //for 25 frets
-  {149,138,137,126,125,114,113,102,101,90,89,78,77,66,65,54,53,42,41,30,29,18,17,6,5}}; //for 25 frets
 
 //hid
   float hidAVal[22];
@@ -95,8 +88,6 @@ const int chipSelect = BUILTIN_SDCARD;
 
 //fretboard
   byte frtb_sensMode=1; //0=only senses if string is pressed 1=senses also where the string is pressed
-  byte frtPins[] = {13,33,2,3,4,5,6,7,8,9,10,11,12,24,25,26,27,30,31,32,17,16}; //{14,13,2,3,4,5,6,7,8,9,10,11,12,24,25,26,27,28,29,30,15,16};
-  byte strPins[] = {18,19,20,21,22,23};
   bool frtState[nFrets][nStrings];
   bool lastFrtState[nFrets][nStrings];
   byte strPrs[nStrings]={0,0,0,0,0,0};
@@ -108,7 +99,6 @@ const int chipSelect = BUILTIN_SDCARD;
   bool fbrdSeqVHld=0; //let the leds stay in seqencer mode
 
 //kickup
-  const byte kickupPins[6]={41,40,39,38,37,36};//34
   unsigned int kickDur[nStrings]={5,5,5,5,5,5};
   bool kickCue[nStrings]={0,0,0,0,0,0};
   bool kickState[nStrings];
