@@ -2,6 +2,14 @@
 
 This document records pin assignments inferable from firmware source. It does not change pin values. Hardware labels and board connector names are open unless explicitly shown in code.
 
+## Board-level pin ownership
+
+| Firmware | Pin / hardware area | Source of truth in firmware | Notes |
+| --- | --- | --- | --- |
+| `software/firmwareHid` | Body controls, encoders, OLED I2C | `software/firmwareHid/HardwareConfig.h`, `software/firmwareHid/firmwareHid.ino` | OLED constructor uses hardware I2C with `U8X8_PIN_NONE`; exact SDA/SCL board pins are implied by Teensy hardware I2C rather than listed here. |
+| `software/firmwareCtl` | LED data, fret contacts, string sense pins, Kickup outputs | `software/firmwareCtl/HardwareConfig.h`, `software/firmwareCtl/firmwareCtl.ino` | LED matrix order is encoded in `led_pixPos`; fret and string scan semantics are timing-sensitive. |
+| `software/firmwareAudio` | TDM audio channels and codec/audio objects | `software/firmwareAudio/firmwareAudio.ino`, `software/firmwareAudio/0Setup.ino` | Physical codec connector labels are not documented in source. |
+
 ## `software/firmwareHid`
 
 ### Encoders
@@ -17,7 +25,7 @@ This document records pin assignments inferable from firmware source. It does no
 | `enc6` | `29`, `28` |
 | `enc7` | `45`, `44` |
 
-Open: `nEnc` is declared as `7` while eight encoders are instantiated and sent.
+Note: `nEnc` is declared as `8`; eight encoders are instantiated and sent.
 
 ### Analog inputs
 
