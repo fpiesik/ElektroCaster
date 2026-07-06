@@ -1,5 +1,7 @@
 void updDisplay(){
   if (millis()-disp_frameTimer > disp_frameInt){
+    if (!displayClockSafe()) return;
+    unsigned long disp_startMicros = micros();
     disp_Clr();
     switch (opMode){
       case strSetup_opMode:
@@ -24,8 +26,19 @@ void updDisplay(){
         break;
     }
     disp_Buf();
+    disp_lastDurationMicros=micros()-disp_startMicros;
     disp_frameTimer=millis();
   }
+}
+
+bool displayClockSafe(){
+  if (extClk == 0 && clckOn == 1){
+    unsigned long elapsed = micros()-intClockTimer;
+    unsigned long needed = disp_lastDurationMicros+disp_clockGuardMicros;
+    if (elapsed >= intClockInt) return false;
+    if (intClockInt-elapsed <= needed) return false;
+  }
+  return true;
 }
 
 //display functions

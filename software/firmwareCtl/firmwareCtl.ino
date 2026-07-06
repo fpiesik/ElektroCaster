@@ -269,6 +269,8 @@ const int chipSelect = BUILTIN_SDCARD;
 //display
   unsigned long disp_frameTimer; //timer for the led update
   unsigned int disp_frameInt=200;
+  unsigned long disp_lastDurationMicros=0; //measured display serialization time
+  const unsigned long disp_clockGuardMicros=1000; //keep this margin before the next internal clock tick
 
 // instance modes
   const int strSetup_opMode=0;
@@ -386,6 +388,7 @@ void setup() {
 void loop() {
   usbMIDI.read();    
   updIntClock();
+  updDisplay();
   if (fbrdMode == 1)readFretboard(0);
   if (fbrdMode == 0){
     if (frtb_sensMode==1)readFretboard(1);
