@@ -70,7 +70,6 @@ void midiClock(){
   if(extClk==1 && clckOn==1){
     mClock++;
     cmpClck(mClock);
-    updDisplay();
   }
 }
 

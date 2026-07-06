@@ -38,7 +38,6 @@ void updIntClock(){
       sndMidiClck(1);
       cmpClck(mClock);        
     }
-    updDisplay();
     intClockTimer+=intClockInt;
   }
 }
