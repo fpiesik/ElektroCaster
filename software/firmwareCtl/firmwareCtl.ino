@@ -178,13 +178,69 @@ const int chipSelect = BUILTIN_SDCARD;
 
   const int genSq_nInst = 3;
   int genSq_actInst = 0;
-  int genSq_actSng = 0;
-  int genSq_syncInst[genSq_nInst]={-1,-1,-1}; //sync pattern switching to another sequencer instance
-  const char* genSq_SongNm[12]={"Song01","Song02","Song03","Song04","Song05","Song06","Song07","Song08","Song09","Song10","Song11","Song12"};
   const int genSq_nActPttns=12;
-  int genSq_actPttns[genSq_nActPttns][genSq_nInst];
-  int genSq_actPttnsIdx=0;
 
+  struct GenSeqRuntimeState {
+    int actNotes[genSq_nInst][nStrings][128];
+    int velState[genSq_nInst][nStrings];
+    int lastNote[genSq_nInst][nStrings];
+    int clk[genSq_nInst][nStrings];
+    int clkraw[genSq_nInst][nStrings];
+    int nxtClkFil[genSq_nInst][nStrings];
+    int muteCh[genSq_nInst][nStrings];
+    int nxtPttn[genSq_nInst];
+    int actPttn[genSq_nInst];
+    int lastActPttn[genSq_nInst];
+    int edtPttn[genSq_nInst];
+    bool sclQ[genSq_nInst][nStrings];
+  };
+
+  struct GenSeqPattern {
+    int tmDv[genSq_nInst][genSq_nPttn][nStrings];
+    bool stpOnOff[genSq_nInst][genSq_nPttn][nStrings][genSq_maxSteps];
+    int stp[genSq_nInst][genSq_nPttn][nStrings][genSq_maxSteps][genSq_nStrPrsFnc];
+    int chn[genSq_nInst][genSq_nPttn][nStrings][genSq_nStrEncFnc];
+  };
+
+  struct GenSeqSong {
+    int actSng;
+    int syncInst[genSq_nInst]; //sync pattern switching to another sequencer instance
+    const char* names[genSq_nSngs];
+    int actPttns[genSq_nActPttns][genSq_nInst];
+    int actPttnsIdx;
+  };
+
+  GenSeqRuntimeState genSeqRuntime;
+  GenSeqPattern genSeqPatterns;
+  GenSeqSong genSeqSong = {
+    0,
+    {-1,-1,-1},
+    {"Song01","Song02","Song03","Song04","Song05","Song06","Song07","Song08","Song09","Song10","Song11","Song12"},
+    {0},
+    0
+  };
+
+  #define genSq_actNotes genSeqRuntime.actNotes
+  #define genSq_velState genSeqRuntime.velState
+  #define genSq_lastNote genSeqRuntime.lastNote
+  #define genSq_clk genSeqRuntime.clk
+  #define genSq_clkraw genSeqRuntime.clkraw
+  #define genSq_nxtClkFil genSeqRuntime.nxtClkFil
+  #define genSq_muteCh genSeqRuntime.muteCh
+  #define genSq_nxtPttn genSeqRuntime.nxtPttn
+  #define genSq_actPttn genSeqRuntime.actPttn
+  #define genSq_lastActPttn genSeqRuntime.lastActPttn
+  #define genSq_edtPttn genSeqRuntime.edtPttn
+  #define genSq_sclQ genSeqRuntime.sclQ
+  #define genSq_tmDv genSeqPatterns.tmDv
+  #define genSq_stpOnOff genSeqPatterns.stpOnOff
+  #define genSq_stp genSeqPatterns.stp
+  #define genSq_chn genSeqPatterns.chn
+  #define genSq_actSng genSeqSong.actSng
+  #define genSq_syncInst genSeqSong.syncInst
+  #define genSq_SongNm genSeqSong.names
+  #define genSq_actPttns genSeqSong.actPttns
+  #define genSq_actPttnsIdx genSeqSong.actPttnsIdx
 
   float genSq_gridPix[nStrings][genSq_maxVisSteps][3];
   float genSq_crsrPix[nStrings][genSq_maxVisSteps][3];
@@ -234,28 +290,11 @@ const int chipSelect = BUILTIN_SDCARD;
 
   float genSq_edtPttnColor[3]={0.0,0.0,0.1};
 
-  //per instance 
-  int genSq_actNotes[genSq_nInst][nStrings][128];
-  int genSq_velState[genSq_nInst][nStrings];
-  int genSq_lastNote[genSq_nInst][nStrings];
-  int genSq_clk[genSq_nInst][nStrings];
-  int genSq_clkraw[genSq_nInst][nStrings];
-  int genSq_nxtClkFil[genSq_nInst][nStrings];
-  int genSq_muteCh[genSq_nInst][nStrings];
-  int genSq_nxtPttn[genSq_nInst];
-  int genSq_actPttn[genSq_nInst];
-  int genSq_lastActPttn[genSq_nInst];
-  int genSq_edtPttn[genSq_nInst];
-  //bool genSq_attSng[genSq_nInst]={1,0,0}; //depreceated
-  bool genSq_sclQ[genSq_nInst][nStrings];
+  // GenSeq per-instance runtime state lives in genSeqRuntime.
+  // GenSeq per-pattern step/channel data lives in genSeqPatterns.
+  // Compatibility macros above keep existing index order unchanged.
   //int genSq_sndCh[genSq_nInst][nStrings]={{1,1,1,1,1,1},{2,2,2,2,2,2},{3,3,3,3,3,3}};
   float genSq_gridColor[genSq_nInst][3]={{0.0,0.01,0.01},{0.015,0.0,0.01},{0.015,0.01,0.0}};
-
-  // per pattern
-  int genSq_tmDv[genSq_nInst][genSq_nPttn][nStrings];
-  bool genSq_stpOnOff[genSq_nInst][genSq_nPttn][nStrings][genSq_maxSteps];
-  int genSq_stp[genSq_nInst][genSq_nPttn][nStrings][genSq_maxSteps][genSq_nStrPrsFnc];
-  int genSq_chn[genSq_nInst][genSq_nPttn][nStrings][genSq_nStrEncFnc]; 
 
 // String Sequencer (from genSeq)
   bool strSeq_act=1;
