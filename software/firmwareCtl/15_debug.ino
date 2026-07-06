@@ -2,6 +2,7 @@ namespace {
 const byte DEBUG_LINE_MAX = 48;
 char debugLine[DEBUG_LINE_MAX];
 byte debugLinePos = 0;
+bool debugEnabled = false;
 
 bool debugTokenEquals(const char* value, const char* token){
   while(*value != '\0' && *token != '\0'){
@@ -94,6 +95,10 @@ void debugPrintStatus(){
 
 void debugPrintHelp(){
   Serial.println("USB debug commands:");
+
+  Serial.println("  debug on      enable debug output");
+  Serial.println("  debug off     disable debug output");
+  Serial.println("  debug status  print whether debug output is enabled");
   Serial.println("  help, ?       show this help");
   Serial.println("  status        print runtime and last song status");
   Serial.println("  song          print last song status");
@@ -105,10 +110,32 @@ void debugHandleLine(char* line){
   while(*line == ' ' || *line == '\t')line++;
   if(*line == '\0')return;
 
+  if(debugTokenEquals(line, "debug on")){
+    debugEnabled = true;
+    Serial.println("debug enabled");
+    return;
+  }
+  if(debugTokenEquals(line, "debug off")){
+    Serial.println("debug disabled");
+    debugEnabled = false;
+    return;
+  }
+  if(debugTokenEquals(line, "debug status")){
+    Serial.print("debug=");
+    Serial.println(debugEnabled ? "on" : "off");
+    return;
+  }
+
   if(debugTokenEquals(line, "?") || debugTokenEquals(line, "help")){
     debugPrintHelp();
     return;
   }
+
+  if(!debugEnabled){
+    Serial.println("debug disabled; send 'debug on' to enable output");
+    return;
+  }
+
   if(debugTokenEquals(line, "status")){
     debugPrintStatus();
     return;
@@ -134,7 +161,7 @@ void debugHandleLine(char* line){
 }
 
 void debugSetup(){
-  Serial.println("USB debug ready. Type 'help' and press enter.");
+  Serial.println("USB debug ready but disabled. Type 'debug on' and press enter.");
 }
 
 void debugPoll(){
