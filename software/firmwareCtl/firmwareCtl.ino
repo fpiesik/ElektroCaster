@@ -372,6 +372,7 @@ void setup() {
     return;
   }
   Serial.println("initialization done.");
+  debugSetup();
 
   // init LEDs  
   LEDS.addLeds<WS2812SERIAL,LED_PIN,RGB>(frtPix,NUMPIXELS);
@@ -425,6 +426,7 @@ void setup() {
 }
 
 void loop() {
+  debugPoll();
   usbMIDI.read();    
   updIntClock();
   updDisplay();
