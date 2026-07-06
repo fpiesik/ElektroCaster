@@ -39,6 +39,7 @@ struct SongData {
   uint8_t rootNote;
   uint8_t sclSel;
   uint8_t sclStp;
+  uint8_t sclClr;
   uint8_t songBpm;
   uint8_t fledSrc;
   uint8_t songTuning[nStrings];
@@ -268,10 +269,11 @@ bool songValueFitsByte(int value){
 }
 
 bool songCollectFromRuntime(struct SongData* song){
-  if(!songValueFitsByte(rootNote) || !songValueFitsByte(scls_sclSel) || !songValueFitsByte(scls_sclStp) || !songValueFitsByte(bpm) || !songValueFitsByte(scls_fledSrc))return false;
+  if(!songValueFitsByte(rootNote) || !songValueFitsByte(scls_sclSel) || !songValueFitsByte(scls_sclStp) || !songValueFitsByte(scls_sclClr) || !songValueFitsByte(bpm) || !songValueFitsByte(scls_fledSrc))return false;
   song->rootNote = rootNote;
   song->sclSel = scls_sclSel;
   song->sclStp = scls_sclStp;
+  song->sclClr = scls_sclClr;
   song->songBpm = bpm;
   song->fledSrc = scls_fledSrc;
   for(int inst = 0; inst < genSq_nInst; inst++){
@@ -306,6 +308,7 @@ bool songValidateData(const struct SongData* song){
   if(song->rootNote > 11)return false;
   if(song->sclSel >= nScales)return false;
   if(song->sclStp >= scls_numSclStp[song->sclSel] && scls_numSclStp[song->sclSel] > 0)return false;
+  if(song->sclClr > 1)return false;
   if(song->songBpm < 1 || song->songBpm > 250)return false;
   for(int inst = 0; inst < genSq_nInst; inst++){
     for(int str = 0; str < nStrings; str++){
@@ -356,6 +359,7 @@ void songApply(const struct SongData* song){
   rootNote = song->rootNote;
   scls_sclSel = song->sclSel;
   scls_sclStp = song->sclStp;
+  scls_sclClr = song->sclClr;
   bpm = song->songBpm;
   chngBpm(bpm);
   scls_fledSrc = song->fledSrc;
@@ -393,6 +397,7 @@ void songBuildDefault(struct SongData* song){
   song->rootNote = 0;
   song->sclSel = 3;
   song->sclStp = 0;
+  song->sclClr = 1;
   song->songBpm = 90;
   song->fledSrc = 2;
   for(int str = 0; str < nStrings; str++){
@@ -412,6 +417,7 @@ bool songWriteMeta(File& file, const struct SongData* song, uint32_t* crc){
   if(!songWriteByte(file, song->rootNote, crc))return false;
   if(!songWriteByte(file, song->sclSel, crc))return false;
   if(!songWriteByte(file, song->sclStp, crc))return false;
+  if(!songWriteByte(file, song->sclClr, crc))return false;
   if(!songWriteByte(file, song->songBpm, crc))return false;
   if(!songWriteByte(file, song->fledSrc, crc))return false;
   return songFinishChunk(file, &chunk);
@@ -474,6 +480,11 @@ bool songReadMeta(File& file, struct SongData* song, uint32_t* crc){
   int value = songReadByte(file, crc); if(value < 0)return false; song->rootNote = value;
   value = songReadByte(file, crc); if(value < 0)return false; song->sclSel = value;
   value = songReadByte(file, crc); if(value < 0)return false; song->sclStp = value;
+  if(chunk.payloadLength >= 6){
+    value = songReadByte(file, crc); if(value < 0)return false; song->sclClr = value;
+  } else {
+    song->sclClr = 1;
+  }
   value = songReadByte(file, crc); if(value < 0)return false; song->songBpm = value;
   value = songReadByte(file, crc); if(value < 0)return false; song->fledSrc = value;
   return songSkipChunkRemaining(file, &chunk, crc);
