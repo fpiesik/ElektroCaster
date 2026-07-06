@@ -47,8 +47,6 @@ void updateFretDebounce() {
 bool emitFretEvents(int *eventString, int *eventPress) {
   static long lastChng[nStrings];
   static int lastExStrPr[nStrings];
-  bool frtSplt=opMode>=genSq_opMode && opMode<genSq_opMode+genSq_nInst;
-
   for (int s = 0; s < nStrings; s++) {
     unsigned int sB = strBnc[s];
     unsigned int sBncs = strBncs;
