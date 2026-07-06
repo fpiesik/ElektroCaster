@@ -95,6 +95,7 @@ void debugPrintStatus(){
 
 void debugPrintHelp(){
   Serial.println("USB debug commands:");
+
   Serial.println("  debug on      enable debug output");
   Serial.println("  debug off     disable debug output");
   Serial.println("  debug status  print whether debug output is enabled");
@@ -124,14 +125,17 @@ void debugHandleLine(char* line){
     Serial.println(debugEnabled ? "on" : "off");
     return;
   }
+
   if(debugTokenEquals(line, "?") || debugTokenEquals(line, "help")){
     debugPrintHelp();
     return;
   }
+
   if(!debugEnabled){
     Serial.println("debug disabled; send 'debug on' to enable output");
     return;
   }
+
   if(debugTokenEquals(line, "status")){
     debugPrintStatus();
     return;
