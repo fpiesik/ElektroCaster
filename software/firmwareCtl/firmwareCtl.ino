@@ -118,7 +118,7 @@ const int chipSelect = BUILTIN_SDCARD;
   const char* sclNm[nScales]={"off", "root", "pentatonic", "major", "minor", "hrm minor", "mel minor", "altered", "whole", "wholeHalf"}; //max 16!
   float scls_sclPix[nStrings][nLedFrets][3];
   float scls_midiPix[nStrings][nLedFrets][3];
-  int scls_sclClr=1;
+  int scls_sclClr=1; // colored or white scale view
   int scls_numSclStp[nScales]= {0, 1, 5, 7, 7, 7, 7, 7, 6, 8};
   int scls_sclSel=2;
   int scls_sclStp=0;
