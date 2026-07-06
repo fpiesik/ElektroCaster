@@ -174,7 +174,35 @@ const int chipSelect = BUILTIN_SDCARD;
   const int genSq_pttnMOff = nLedFrets-genSq_nPttn/2;
   int genSq_hrmInst=1;
   int genSq_strEncBtnSw = 1; //choose between button function or Encoder button select
-  
+
+
+  const int genSq_nTmDvs=14; //global
+  int genSq_tmDvs[genSq_nTmDvs]={384,192,96,64,48,32,24,16,12,8,6,4,3,2};
+  const char* genSq_tmDvNm[genSq_nTmDvs]={"4","2","1",".75","/2","/3","/4","/6","/8","/12","/16","/24","/32","/48"};
+
+  const char* genSq_strPrsNm[]={"pStp","oct","vel","c10","c11","c12"};
+  const int genSq_strPrsFnc_sStp=0;
+  const int genSq_strPrsFnc_oct=1;
+  const int genSq_strPrsFnc_vel=2;
+  const int genSq_strPrsFnc_cc1=3;
+  const int genSq_strPrsFnc_cc2=4;
+  const int genSq_strPrsFnc_cc3=5;
+  const int genSq_nStrPrsFnc=6;
+  const int genSq_SelChnCC=127; //selected channel; currently commented
+  const int genSq_maxStpV[genSq_nStrPrsFnc]={12,9,50,99,99,99};
+  int genSq_strPrsFnc=0;
+
+  const char* genSq_strEncNm[]={"tmDv","offSt","stps","sync","chn"};
+  const int genSq_strEncFnc_stps=2;
+  const int genSq_strEncFnc_tmDv=0;
+  const int genSq_strEncFnc_offSt=1;
+  const int genSq_strEncFnc_sync=3;
+  const int genSq_strEncFnc_chn=4;
+
+  const int genSq_nStrEncFnc=5;
+  const int genSeq_maxEncV[genSq_nStrPrsFnc]={genSq_nTmDvs,16,genSq_maxVisSteps,6,16};
+  int genSq_strEncFnc=0;
+  int genSq_strEncChAStps=0;
 
   const int genSq_nInst = 3;
   int genSq_actInst = 0;
@@ -249,34 +277,6 @@ const int chipSelect = BUILTIN_SDCARD;
   float genSq_pttnGridPix[nStrings][genSq_nPttn/2][3];
   float genSq_pttnPttnPix[nStrings][genSq_nPttn/2][3];
 
-  const int genSq_nTmDvs=14; //global
-  int genSq_tmDvs[genSq_nTmDvs]={384,192,96,64,48,32,24,16,12,8,6,4,3,2};
-  const char* genSq_tmDvNm[genSq_nTmDvs]={"4","2","1",".75","/2","/3","/4","/6","/8","/12","/16","/24","/32","/48"};
-
-  const char* genSq_strPrsNm[]={"pStp","oct","vel","c10","c11","c12"}; 
-  const int genSq_strPrsFnc_sStp=0;
-  const int genSq_strPrsFnc_oct=1;
-  const int genSq_strPrsFnc_vel=2;
-  const int genSq_strPrsFnc_cc1=3;
-  const int genSq_strPrsFnc_cc2=4;
-  const int genSq_strPrsFnc_cc3=5;
-  const int genSq_nStrPrsFnc=6;
-  const int genSq_SelChnCC=127; //selected channel; currently commented
-  const int genSq_maxStpV[genSq_nStrPrsFnc]={12,9,50,99,99,99};
-  int genSq_strPrsFnc=0;
-  
-  const char* genSq_strEncNm[]={"tmDv","offSt","stps","sync","chn"}; 
-  const int genSq_strEncFnc_stps=2;
-  const int genSq_strEncFnc_tmDv=0;
-  const int genSq_strEncFnc_offSt=1;
-  const int genSq_strEncFnc_sync=3;
-  const int genSq_strEncFnc_chn=4;
-  
-  const int genSq_nStrEncFnc=5;
-  const int genSeq_maxEncV[genSq_nStrPrsFnc]={genSq_nTmDvs,16,genSq_maxVisSteps,6,16};
-  int genSq_strEncFnc=0;
-  int genSq_strEncChAStps=0;
-  
   const char* genSq_strBtnNm[]={"mute", "rnd", "sclQ"};
   const int genSq_strBtnFnc_mute=0;
   const int genSq_strBtnFnc_rnd=1;
