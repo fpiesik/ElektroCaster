@@ -175,7 +175,7 @@ bool songWriteHeader(File& file, uint32_t crc){
   return true;
 }
 
-bool songReadHeader(File& file, SongFileHeader* header){
+bool songReadHeader(File& file, struct SongFileHeader* header){
   char magic[4];
   if(!songReadId(file, magic, NULL))return false;
   if(!songIdEquals(magic, songMagic)){
@@ -199,7 +199,7 @@ bool songReadHeader(File& file, SongFileHeader* header){
   return true;
 }
 
-bool songValidateHeader(File& file, const SongFileHeader* header){
+bool songValidateHeader(File& file, const struct SongFileHeader* header){
   if(header->version != songFormatVersion){
     lastSongStatus = SONG_DEFAULT_USED_BAD_VERSION;
     return false;
@@ -237,7 +237,7 @@ bool songValueFitsByte(int value){
   return value >= 0 && value <= 255;
 }
 
-bool songCollectFromRuntime(SongData* song){
+bool songCollectFromRuntime(struct SongData* song){
   if(!songValueFitsByte(rootNote) || !songValueFitsByte(scls_sclSel) || !songValueFitsByte(scls_sclStp) || !songValueFitsByte(bpm) || !songValueFitsByte(scls_fledSrc))return false;
   song->rootNote = rootNote;
   song->sclSel = scls_sclSel;
@@ -272,7 +272,7 @@ bool songCollectFromRuntime(SongData* song){
   return true;
 }
 
-bool songValidateData(const SongData* song){
+bool songValidateData(const struct SongData* song){
   if(song->rootNote > 11)return false;
   if(song->sclSel >= nScales)return false;
   if(song->sclStp >= scls_numSclStp[song->sclSel] && scls_numSclStp[song->sclSel] > 0)return false;
@@ -302,7 +302,7 @@ bool songValidateData(const SongData* song){
   return true;
 }
 
-void songApply(const SongData* song){
+void songApply(const struct SongData* song){
   for(int inst = 0; inst < genSq_nInst; inst++){
     genSq_actPttn[inst] = 0;
     genSq_edtPttn[inst] = 0;
@@ -338,7 +338,7 @@ void songApply(const SongData* song){
   }
 }
 
-void songBuildDefault(SongData* song){
+void songBuildDefault(struct SongData* song){
   for(int inst = 0; inst < genSq_nInst; inst++){
     for(int str = 0; str < nStrings; str++){
       song->sclQ[inst][str] = 0;
@@ -376,12 +376,12 @@ void defaultSong(){
   songApply(&songBuffer);
 }
 
-bool songWriteMeta(File& file, const SongData* song, uint32_t* crc){
+bool songWriteMeta(File& file, const struct SongData* song, uint32_t* crc){
   if(!songWriteChunkHeader(file, songMetaChunkId, songMetaPayloadSize, crc))return false;
   return songWriteByte(file, song->rootNote, crc) && songWriteByte(file, song->sclSel, crc) && songWriteByte(file, song->sclStp, crc) && songWriteByte(file, song->songBpm, crc) && songWriteByte(file, song->fledSrc, crc);
 }
 
-bool songWriteSeq(File& file, const SongData* song, uint32_t* crc){
+bool songWriteSeq(File& file, const struct SongData* song, uint32_t* crc){
   if(!songWriteChunkHeader(file, songSeqChunkId, songSeqPayloadSize, crc))return false;
   for(int inst = 0; inst < genSq_nInst; inst++){
     for(int str = 0; str < nStrings; str++){
@@ -402,7 +402,7 @@ bool songWriteSeq(File& file, const SongData* song, uint32_t* crc){
   return true;
 }
 
-bool songWriteMix(File& file, const SongData* song, uint32_t* crc){
+bool songWriteMix(File& file, const struct SongData* song, uint32_t* crc){
   if(!songWriteChunkHeader(file, songMixChunkId, songMixPayloadSize, crc))return false;
   for(int str = 0; str < nStrings; str++){
     if(!songWriteByte(file, song->songTuning[str], crc))return false;
@@ -418,7 +418,7 @@ bool songWriteEnd(File& file, uint32_t* crc){
   return songWriteU32(file, 0x444F4E45UL, crc);
 }
 
-bool songWritePayload(File& file, const SongData* song, uint32_t* finalCrc){
+bool songWritePayload(File& file, const struct SongData* song, uint32_t* finalCrc){
   uint32_t crc = songCrcSeed;
   if(!songWriteMeta(file, song, &crc))return false;
   if(!songWriteSeq(file, song, &crc))return false;
@@ -428,7 +428,7 @@ bool songWritePayload(File& file, const SongData* song, uint32_t* finalCrc){
   return true;
 }
 
-bool songReadMeta(File& file, SongData* song, uint32_t* crc){
+bool songReadMeta(File& file, struct SongData* song, uint32_t* crc){
   if(!songReadChunkHeader(file, songMetaChunkId, songMetaPayloadSize, crc))return false;
   int value = songReadByte(file, crc); if(value < 0)return false; song->rootNote = value;
   value = songReadByte(file, crc); if(value < 0)return false; song->sclSel = value;
@@ -438,7 +438,7 @@ bool songReadMeta(File& file, SongData* song, uint32_t* crc){
   return true;
 }
 
-bool songReadSeq(File& file, SongData* song, uint32_t* crc){
+bool songReadSeq(File& file, struct SongData* song, uint32_t* crc){
   if(!songReadChunkHeader(file, songSeqChunkId, songSeqPayloadSize, crc))return false;
   for(int inst = 0; inst < genSq_nInst; inst++){
     for(int str = 0; str < nStrings; str++){
@@ -459,7 +459,7 @@ bool songReadSeq(File& file, SongData* song, uint32_t* crc){
   return true;
 }
 
-bool songReadMix(File& file, SongData* song, uint32_t* crc){
+bool songReadMix(File& file, struct SongData* song, uint32_t* crc){
   if(!songReadChunkHeader(file, songMixChunkId, songMixPayloadSize, crc))return false;
   for(int str = 0; str < nStrings; str++){
     int value = songReadByte(file, crc); if(value < 0)return false; song->songTuning[str] = value;
@@ -481,7 +481,7 @@ bool songReadEnd(File& file, uint32_t* crc){
   return true;
 }
 
-bool songReadPayload(File& file, SongData* song, uint32_t expectedCrc){
+bool songReadPayload(File& file, struct SongData* song, uint32_t expectedCrc){
   uint32_t crc = songCrcSeed;
   if(!songReadMeta(file, song, &crc))return false;
   if(!songReadSeq(file, song, &crc))return false;
@@ -495,7 +495,7 @@ bool songReadPayload(File& file, SongData* song, uint32_t expectedCrc){
   return true;
 }
 
-bool songLoadFile(int sng, SongData* song){
+bool songLoadFile(int sng, struct SongData* song){
   char fileName[24];
   songFileName(sng, fileName, sizeof(fileName));
   if(!SD.exists(fileName)){
@@ -519,7 +519,7 @@ bool songLoadFile(int sng, SongData* song){
   return ok;
 }
 
-bool songWriteFile(int sng, const SongData* song){
+bool songWriteFile(int sng, const struct SongData* song){
   char fileName[24];
   char tempName[24];
   songFileName(sng, fileName, sizeof(fileName));
