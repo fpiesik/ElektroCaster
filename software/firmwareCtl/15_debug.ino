@@ -90,6 +90,20 @@ void debugPrintStatus(){
   Serial.print(clckOn ? "yes" : "no");
   Serial.print(" external=");
   Serial.println(extClk ? "yes" : "no");
+  Serial.print("display job active=");
+  Serial.print(disp_jobActive ? "yes" : "no");
+  Serial.print(" pos=");
+  Serial.print(disp_jobPos);
+  Serial.print("/");
+  Serial.print(disp_jobLen);
+  Serial.print(" lastCmds=");
+  Serial.print(disp_lastJobCommandCount);
+  Serial.print(" sendMicros=");
+  Serial.print(disp_lastDurationMicros);
+  Serial.print(" jobMicros=");
+  Serial.print(disp_lastJobDurationMicros);
+  Serial.print(" maxClockSlackMicros=");
+  Serial.println(disp_lastClockSlackMicros);
   debugPrintSongStatus();
 }
 
