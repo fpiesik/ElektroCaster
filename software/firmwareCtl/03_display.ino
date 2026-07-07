@@ -62,6 +62,7 @@ unsigned long disp_jobStartMicros = 0;
 unsigned long disp_jobSendMicros = 0;
 unsigned long disp_lastJobDurationMicros = 0;
 unsigned long disp_lastJobCommandCount = 0;
+unsigned long disp_lastCommandDurationMicros = 0;
 unsigned long disp_lastClockSlackMicros = 0;
 
 void updDisplay(){
@@ -134,13 +135,15 @@ void sendDisplayJobChunk(){
 
   byte sent = 0;
   while (disp_jobPos < disp_jobLen && sent < disp_maxCmdsPerChunk){
-    if (!displayClockSafeFor(disp_lastDurationMicros + disp_clockGuardMicros)) return;
+    if (!displayClockSafeFor(disp_lastCommandDurationMicros + disp_clockGuardMicros)) return;
     unsigned long slack = displayClockSlackMicros();
     if (slack > disp_lastClockSlackMicros) disp_lastClockSlackMicros = slack;
 
     unsigned long cmdStartMicros = micros();
     sendDisplayCmd(disp_jobPos);
-    disp_jobSendMicros += micros()-cmdStartMicros;
+    unsigned long cmdDurationMicros = micros()-cmdStartMicros;
+    disp_jobSendMicros += cmdDurationMicros;
+    if (cmdDurationMicros > disp_lastCommandDurationMicros) disp_lastCommandDurationMicros = cmdDurationMicros;
     disp_jobPos++;
     sent++;
   }
@@ -155,7 +158,7 @@ void sendDisplayJobChunk(){
 }
 
 bool displayClockSafe(){
-  return displayClockSafeFor(disp_lastDurationMicros+disp_clockGuardMicros);
+  return displayClockSafeFor(disp_lastCommandDurationMicros+disp_clockGuardMicros);
 }
 
 bool displayClockSafeFor(unsigned long needed){

@@ -100,6 +100,8 @@ void debugPrintStatus(){
   Serial.print(disp_lastJobCommandCount);
   Serial.print(" sendMicros=");
   Serial.print(disp_lastDurationMicros);
+  Serial.print(" cmdMicros=");
+  Serial.print(disp_lastCommandDurationMicros);
   Serial.print(" jobMicros=");
   Serial.print(disp_lastJobDurationMicros);
   Serial.print(" maxClockSlackMicros=");
