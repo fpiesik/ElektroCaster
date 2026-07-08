@@ -298,6 +298,8 @@ const int chipSelect = BUILTIN_SDCARD;
 
 // String Sequencer (from genSeq)
   bool strSeq_act=1;
+  bool strArp_modeSel=0;
+  byte strArp_modeVal=0;
 
 //sequence settings
   unsigned int bpm=90;

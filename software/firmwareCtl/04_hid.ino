@@ -144,8 +144,8 @@ void procHidDChng(byte idx, bool val) {
 
     case 2:
       //tripple switch left
-      strArp_act = 0;
-      strSeq_act = val;
+      strSeq_act = val && !strArp_modeSel;
+      strArp_act = val && strArp_modeSel;
       break;
 
     case 3:
@@ -188,7 +188,8 @@ void procHidDChng(byte idx, bool val) {
       //if (val == 1)clck_strt();
       if (val == 1){
         genSq_actInst=(genSq_actInst+1)%genSq_nInst;
-        chOpMode(genSq_actInst+2);
+        if(genSq_actInst==0 && strArp_modeSel)chOpMode(strArp_opMode);
+        else chOpMode(genSq_actInst+genSq_opMode);
       }
       break;
 
@@ -368,10 +369,19 @@ void rcvHidR(byte idx, int val) {
   hidRVal[idx] = val;
   if (hidRVal[idx] != lastHidRVal[idx])procHidRChng(idx, val);
 }
+void updStrAutoMode(){
+  bool autoTrig = hidDVal[2];
+  strSeq_act = autoTrig && !strArp_modeSel;
+  strArp_act = autoTrig && strArp_modeSel;
+}
+
 void procHidRChng(byte idx, byte val) {
   switch (idx) {
     case 0:
       if(val<genSq_nPttn){
+        strArp_modeSel = 0;
+        updStrAutoMode();
+        if(opMode==strArp_opMode)chOpMode(genSq_opMode);
         if(shift==0){
           schdPttnCh[idx]=val;
           for (int i=0;i<genSq_nInst;i++){
@@ -383,11 +393,23 @@ void procHidRChng(byte idx, byte val) {
         }
         genSq_edtPttn[idx]=val;
       }
-      for (int i=0;i<genSq_nInst;i++){
-        if(val==11-i)genSq_syncInst[idx]=i;
-        if(val<=11-genSq_nInst)genSq_syncInst[idx]=-1;
+      if(val<=genSq_nPttn){
+        for (int i=0;i<genSq_nInst;i++){
+          if(val==11-i)genSq_syncInst[idx]=i;
+          if(val<=11-genSq_nInst)genSq_syncInst[idx]=-1;
+        }
       }
-      if(val==genSq_nPttn)chOpMode(0);
+      if(val>genSq_nPttn){
+        strArp_modeSel = 1;
+        strArp_modeVal = val;
+        updStrAutoMode();
+        if(opMode==genSq_opMode)chOpMode(strArp_opMode);
+      }
+      if(val==genSq_nPttn){
+        strArp_modeSel = 0;
+        updStrAutoMode();
+        chOpMode(0);
+      }
       break;
 
     case 1:

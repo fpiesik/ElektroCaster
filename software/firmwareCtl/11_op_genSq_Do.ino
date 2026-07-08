@@ -15,24 +15,24 @@ void genSq_updClck(){
       }
     }
       for(int s=0;s<nStrings;s++){
-        if(genSq_nxtClkFil[inst][s] >= tmDv[inst][s]){
+        if(genSq_nxtClkFil[inst][s] >= tmDv[inst][s] && !(inst==0 && strArp_modeSel)){
           genSq_sndCC(inst,pttn, s);
         }
       }
       for(int s=0;s<nStrings;s++){
-        if(genSq_nxtClkFil[inst][s] >= tmDv[inst][s] - 1){
+        if(genSq_nxtClkFil[inst][s] >= tmDv[inst][s] - 1 && !(inst==0 && strArp_modeSel)){
           genSq_sndStpOff(inst,pttn, s);
         }
       }
       for(int s=0;s<nStrings;s++){
-        if(genSq_nxtClkFil[inst][s] >= tmDv[inst][s]){
+        if(genSq_nxtClkFil[inst][s] >= tmDv[inst][s] && !(inst==0 && strArp_modeSel)){
           if(genSq_muteCh[inst][s] == 0){
             genSq_sndStpOn(inst,pttn, s);
           }
         }
       }
       for(int s=0;s<nStrings;s++){
-        if(genSq_nxtClkFil[inst][s] >= tmDv[inst][s] - 1){
+        if(genSq_nxtClkFil[inst][s] >= tmDv[inst][s] - 1 && !(inst==0 && strArp_modeSel)){
           genSq_mstStr(inst,pttn,s);
         }
       }
