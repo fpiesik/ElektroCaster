@@ -478,8 +478,8 @@ void procHidEChng(byte idx, long val) {
           strSetup_chDispEnc(val);
           break;
         case strArp_opMode:
-          if (fbrdMode == 0)strArp_chDispEnc(val);
-          if (fbrdMode == 1)strArp_chDispEnc(val);
+          if (fbrdMode==0&&fbrdSeqVHld==0)strArp_chDispEnc(val);
+          if (fbrdMode==1||fbrdSeqVHld==1)strArp_chDispEnc(val);
           break;
         case genSq_opMode:
           if (fbrdMode==0&&fbrdSeqVHld==0)scls_chDispEnc(val);

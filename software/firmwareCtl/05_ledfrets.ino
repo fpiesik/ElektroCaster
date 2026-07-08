@@ -7,8 +7,8 @@ void updLedFrets(){
         strSetup_updFleds();
         break;
       case strArp_opMode:
-        if(fbrdMode==0)scls_updFleds();
-        if(fbrdMode==1)strArp_updFleds();
+        if(fbrdMode==0&&fbrdSeqVHld==0)scls_updFleds();
+        if(fbrdMode==1||fbrdSeqVHld==1)strArp_updFleds();
         break;
       case genSq_opMode:
         if(fbrdMode==0&&fbrdSeqVHld==0)scls_updFleds();
