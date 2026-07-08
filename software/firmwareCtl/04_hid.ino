@@ -61,7 +61,6 @@ bool emitFretEvents(int *eventString, int *eventPress) {
       return 1;
     }
   }
-
   return 0;
 }
 
@@ -82,9 +81,6 @@ void handleFretEventForAudioMidiKickSeq(int eventString, int eventPress, int sen
         if (press > 0)kick(s);
       }
     }
-  //if (fbrdMode == 0)sndStrPrs(s, strPrs[s]);
-  //lastStrPrs[s]=strPrs[s];
-  //lastExStrPr[s] = strPrs[s];
   }
   if (fbrdMode == 0 && press == 0)sndStrPrs(s, tuning[s],0);
   if (fbrdMode == 0 && press != 0)sndStrPrs(s, tuning[s] + press,1);
@@ -108,10 +104,6 @@ void rcvHidD(byte idx, int val) {
   hidDVal[idx] = val;
   if (hidDVal[idx] != lastHidDVal[idx]) {
     procHidDChng(idx, val);
-//    Serial.print("hidDVal: ");
-//    Serial.print(idx);
-//    Serial.print(" ");
-//    Serial.println(hidDVal[idx]);
   }
 }
 
@@ -132,9 +124,6 @@ void procHidDChng(byte idx, bool val) {
           genSq_lastActPttn[i]=genSq_actPttn[i];
         }
       }
-        
-//      Serial.print("dispEncMode: ");
-//      Serial.println(dispEncMode);
       break;
 
     case 1:
@@ -164,12 +153,10 @@ void procHidDChng(byte idx, bool val) {
 
     case 5:
       //right tripple button
-      //if (val == 1)loadSong();
       if (val == 1){
         schdSync[0] = 1;
         schdSync[1] = 1;
         schdSync[2] = 1;
-        //schdSync[genSq_actInst] = 1;
       }
       break;
 
@@ -183,9 +170,7 @@ void procHidDChng(byte idx, bool val) {
       break;
 
     case 7:
-      //left tripple transport button
-      //if (val == 1)saveSong();
-      //if (val == 1)clck_strt();
+      //left tripple button
       if (val == 1){
         genSq_actInst=(genSq_actInst+1)%genSq_nInst;
         if(genSq_actInst==0 && strArp_modeSel)chOpMode(strArp_opMode);
@@ -195,12 +180,11 @@ void procHidDChng(byte idx, bool val) {
 
     case 8:
       //pots switch
-      //genSq_strEncFnc=val;
       genSq_strEncBtnSw = val;
       break;
 
     case 9:
-      //embedden button near pots 
+      //embedded button near pots 
       if (val == 0 && shift == 1 && dispEncMode == 1)defaultSong();
       if (val == 0 && shift == 0 && dispEncMode == 1)loadSong(0);
       if (val == 0 && shift == 0 && dispEncMode == 0)loadSong(genSq_actSng);
