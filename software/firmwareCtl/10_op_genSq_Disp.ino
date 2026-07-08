@@ -170,13 +170,23 @@ void genSq_pttnDrwStat(){
   for(int i=0;i<genSq_nInst;i++){
     int actPttn=genSq_actPttn[i];
     int edtPttn=genSq_edtPttn[i];
-    int actStr=i*2+genSq_actPttn[i]/(genSq_nPttn/2);
-    int edtStr=i*2+genSq_edtPttn[i]/(genSq_nPttn/2);
+    if(i==0 && strArp_modeSel){
+      int arpPttn=11-strArp_modeVal;
+      if(arpPttn<0)arpPttn=0;
+      if(arpPttn>=genSq_nPttn)arpPttn=genSq_nPttn-1;
+      actPttn=arpPttn;
+      edtPttn=arpPttn;
+    }
+    int actStr=i*2+actPttn/(genSq_nPttn/2);
+    int edtStr=i*2+edtPttn/(genSq_nPttn/2);
     int actFrt=actPttn-genSq_nPttn/2*(actPttn/(genSq_nPttn/2));
     int edtFrt=edtPttn-genSq_nPttn/2*(edtPttn/(genSq_nPttn/2));
     for(int c=0;c<3;c++){  
-      genSq_pttnPttnPix[nStrings-1-edtStr][edtFrt][c]=0.07;
-      genSq_pttnPttnPix[nStrings-1-actStr][actFrt][c]=0.25;      
+      float edtVal=0.07;
+      float actVal=0.25;
+      if(i==0 && strArp_modeSel && c!=2)edtVal=0, actVal=0;
+      genSq_pttnPttnPix[nStrings-1-edtStr][edtFrt][c]=edtVal;
+      genSq_pttnPttnPix[nStrings-1-actStr][actFrt][c]=actVal;
     }
   }
 }
