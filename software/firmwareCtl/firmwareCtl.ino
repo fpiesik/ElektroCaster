@@ -40,7 +40,6 @@ const int chipSelect = BUILTIN_SDCARD;
   int strGain[nStrings];
   int defStrGain[nStrings]={40,40,40,40,40,40};
   int strGainMx=50;
-  const byte strSnsPins[nStrings]={2,3,4,5,6,7};
   unsigned long lastFretRead[nStrings];
   unsigned int fretMaskT=50; //time until a next strPres on he same string is detected
   unsigned int strBncs=500; //number of same samples to trigger strPres
@@ -54,9 +53,9 @@ const int chipSelect = BUILTIN_SDCARD;
   int lastNZStrPrs[nStrings]; //last string press without releases (nz=non zero)
 
 //led defintions and variables
-  #define LED_PIN     14   //led pin
   #define NUMPIXELS    150  //total number of leds
   const int nLedFrets=25; //how many led frets
+#include "HardwareConfig.h"
   //long sndLedTimer;
   //int sndLedInt=1000;
   float tnClrs[13][3];
@@ -73,13 +72,6 @@ const int chipSelect = BUILTIN_SDCARD;
   CRGB lastFrtPix[NUMPIXELS];
   float trgtC[nStrings][nLedFrets][3];
   float actC[nStrings][nLedFrets][3];
-  const byte led_pixPos[nStrings][nLedFrets]={
-  {144,143,132,131,120,119,108,107,96,95,84,83,72,71,60,59,48,47,36,35,24,23,12,11,0}, //for 25 frets
-  {145,142,133,130,121,118,109,106,97,94,85,82,73,70,61,58,49,46,37,34,25,22,13,10,1}, //for 25 frets
-  {146,141,134,129,122,117,110,105,98,93,86,81,74,69,62,57,50,45,38,33,26,21,14,9,2}, //for 25 frets
-  {147,140,135,128,123,116,111,104,99,92,87,80,75,68,63,56,51,44,39,32,27,20,15,8,3}, //for 25 frets
-  {148,139,136,127,124,115,112,103,100,91,88,79,76,67,64,55,52,43,40,31,28,19,16,7,4}, //for 25 frets
-  {149,138,137,126,125,114,113,102,101,90,89,78,77,66,65,54,53,42,41,30,29,18,17,6,5}}; //for 25 frets
 
 //hid
   float hidAVal[22];
@@ -95,8 +87,6 @@ const int chipSelect = BUILTIN_SDCARD;
 
 //fretboard
   byte frtb_sensMode=1; //0=only senses if string is pressed 1=senses also where the string is pressed
-  byte frtPins[] = {13,33,2,3,4,5,6,7,8,9,10,11,12,24,25,26,27,30,31,32,17,16}; //{14,13,2,3,4,5,6,7,8,9,10,11,12,24,25,26,27,28,29,30,15,16};
-  byte strPins[] = {18,19,20,21,22,23};
   bool frtState[nFrets][nStrings];
   bool lastFrtState[nFrets][nStrings];
   byte strPrs[nStrings]={0,0,0,0,0,0};
@@ -108,7 +98,6 @@ const int chipSelect = BUILTIN_SDCARD;
   bool fbrdSeqVHld=0; //let the leds stay in seqencer mode
 
 //kickup
-  const byte kickupPins[6]={41,40,39,38,37,36};//34
   unsigned int kickDur[nStrings]={5,5,5,5,5,5};
   bool kickCue[nStrings]={0,0,0,0,0,0};
   bool kickState[nStrings];
@@ -129,7 +118,7 @@ const int chipSelect = BUILTIN_SDCARD;
   const char* sclNm[nScales]={"off", "root", "pentatonic", "major", "minor", "hrm minor", "mel minor", "altered", "whole", "wholeHalf"}; //max 16!
   float scls_sclPix[nStrings][nLedFrets][3];
   float scls_midiPix[nStrings][nLedFrets][3];
-  int scls_sclClr=1;
+  int scls_sclClr=1; // colored or white scale view
   int scls_numSclStp[nScales]= {0, 1, 5, 7, 7, 7, 7, 7, 6, 8};
   int scls_sclSel=2;
   int scls_sclStp=0;
@@ -185,30 +174,13 @@ const int chipSelect = BUILTIN_SDCARD;
   const int genSq_pttnMOff = nLedFrets-genSq_nPttn/2;
   int genSq_hrmInst=1;
   int genSq_strEncBtnSw = 1; //choose between button function or Encoder button select
-  
 
-  const int genSq_nInst = 3;
-  int genSq_actInst = 0;
-  int genSq_actSng = 0;
-  int genSq_syncInst[genSq_nInst]={-1,-1,-1}; //sync pattern switching to another sequencer instance
-  const char* genSq_SongNm[12]={"Song01","Song02","Song03","Song04","Song05","Song06","Song07","Song08","Song09","Song10","Song11","Song12"};
-  const int genSq_nActPttns=12;
-  int genSq_actPttns[genSq_nActPttns][genSq_nInst];
-  int genSq_actPttnsIdx=0;
-
-
-  float genSq_gridPix[nStrings][genSq_maxVisSteps][3];
-  float genSq_crsrPix[nStrings][genSq_maxVisSteps][3];
-  float genSq_stpPix[nStrings][genSq_maxVisSteps][3];
-  
-  float genSq_pttnGridPix[nStrings][genSq_nPttn/2][3];
-  float genSq_pttnPttnPix[nStrings][genSq_nPttn/2][3];
 
   const int genSq_nTmDvs=14; //global
   int genSq_tmDvs[genSq_nTmDvs]={384,192,96,64,48,32,24,16,12,8,6,4,3,2};
   const char* genSq_tmDvNm[genSq_nTmDvs]={"4","2","1",".75","/2","/3","/4","/6","/8","/12","/16","/24","/32","/48"};
 
-  const char* genSq_strPrsNm[]={"pStp","oct","vel","c10","c11","c12"}; 
+  const char* genSq_strPrsNm[]={"pStp","oct","vel","c10","c11","c12"};
   const int genSq_strPrsFnc_sStp=0;
   const int genSq_strPrsFnc_oct=1;
   const int genSq_strPrsFnc_vel=2;
@@ -219,19 +191,92 @@ const int chipSelect = BUILTIN_SDCARD;
   const int genSq_SelChnCC=127; //selected channel; currently commented
   const int genSq_maxStpV[genSq_nStrPrsFnc]={12,9,50,99,99,99};
   int genSq_strPrsFnc=0;
-  
-  const char* genSq_strEncNm[]={"tmDv","offSt","stps","sync","chn"}; 
+
+  const char* genSq_strEncNm[]={"tmDv","offSt","stps","sync","chn"};
   const int genSq_strEncFnc_stps=2;
   const int genSq_strEncFnc_tmDv=0;
   const int genSq_strEncFnc_offSt=1;
   const int genSq_strEncFnc_sync=3;
   const int genSq_strEncFnc_chn=4;
-  
+
   const int genSq_nStrEncFnc=5;
   const int genSeq_maxEncV[genSq_nStrPrsFnc]={genSq_nTmDvs,16,genSq_maxVisSteps,6,16};
   int genSq_strEncFnc=0;
   int genSq_strEncChAStps=0;
+
+  const int genSq_nInst = 3;
+  int genSq_actInst = 0;
+  const int genSq_nActPttns=12;
+
+  struct GenSeqRuntimeState {
+    int actNotes[genSq_nInst][nStrings][128];
+    int velState[genSq_nInst][nStrings];
+    int lastNote[genSq_nInst][nStrings];
+    int clk[genSq_nInst][nStrings];
+    int clkraw[genSq_nInst][nStrings];
+    int nxtClkFil[genSq_nInst][nStrings];
+    int muteCh[genSq_nInst][nStrings];
+    int nxtPttn[genSq_nInst];
+    int actPttn[genSq_nInst];
+    int lastActPttn[genSq_nInst];
+    int edtPttn[genSq_nInst];
+    bool sclQ[genSq_nInst][nStrings];
+  };
+
+  struct GenSeqPattern {
+    int tmDv[genSq_nInst][genSq_nPttn][nStrings];
+    bool stpOnOff[genSq_nInst][genSq_nPttn][nStrings][genSq_maxSteps];
+    int stp[genSq_nInst][genSq_nPttn][nStrings][genSq_maxSteps][genSq_nStrPrsFnc];
+    int chn[genSq_nInst][genSq_nPttn][nStrings][genSq_nStrEncFnc];
+  };
+
+  struct GenSeqSong {
+    int actSng;
+    int syncInst[genSq_nInst]; //sync pattern switching to another sequencer instance
+    const char* names[genSq_nSngs];
+    int actPttns[genSq_nActPttns][genSq_nInst];
+    int actPttnsIdx;
+  };
+
+  GenSeqRuntimeState genSeqRuntime;
+  GenSeqPattern genSeqPatterns;
+  GenSeqSong genSeqSong = {
+    0,
+    {-1,-1,-1},
+    {"Song01","Song02","Song03","Song04","Song05","Song06","Song07","Song08","Song09","Song10","Song11","Song12"},
+    {0},
+    0
+  };
+
+  #define genSq_actNotes genSeqRuntime.actNotes
+  #define genSq_velState genSeqRuntime.velState
+  #define genSq_lastNote genSeqRuntime.lastNote
+  #define genSq_clk genSeqRuntime.clk
+  #define genSq_clkraw genSeqRuntime.clkraw
+  #define genSq_nxtClkFil genSeqRuntime.nxtClkFil
+  #define genSq_muteCh genSeqRuntime.muteCh
+  #define genSq_nxtPttn genSeqRuntime.nxtPttn
+  #define genSq_actPttn genSeqRuntime.actPttn
+  #define genSq_lastActPttn genSeqRuntime.lastActPttn
+  #define genSq_edtPttn genSeqRuntime.edtPttn
+  #define genSq_sclQ genSeqRuntime.sclQ
+  #define genSq_tmDv genSeqPatterns.tmDv
+  #define genSq_stpOnOff genSeqPatterns.stpOnOff
+  #define genSq_stp genSeqPatterns.stp
+  #define genSq_chn genSeqPatterns.chn
+  #define genSq_actSng genSeqSong.actSng
+  #define genSq_syncInst genSeqSong.syncInst
+  #define genSq_SongNm genSeqSong.names
+  #define genSq_actPttns genSeqSong.actPttns
+  #define genSq_actPttnsIdx genSeqSong.actPttnsIdx
+
+  float genSq_gridPix[nStrings][genSq_maxVisSteps][3];
+  float genSq_crsrPix[nStrings][genSq_maxVisSteps][3];
+  float genSq_stpPix[nStrings][genSq_maxVisSteps][3];
   
+  float genSq_pttnGridPix[nStrings][genSq_nPttn/2][3];
+  float genSq_pttnPttnPix[nStrings][genSq_nPttn/2][3];
+
   const char* genSq_strBtnNm[]={"mute", "rnd", "sclQ"};
   const int genSq_strBtnFnc_mute=0;
   const int genSq_strBtnFnc_rnd=1;
@@ -245,28 +290,11 @@ const int chipSelect = BUILTIN_SDCARD;
 
   float genSq_edtPttnColor[3]={0.0,0.0,0.1};
 
-  //per instance 
-  int genSq_actNotes[genSq_nInst][nStrings][128];
-  int genSq_velState[genSq_nInst][nStrings];
-  int genSq_lastNote[genSq_nInst][nStrings];
-  int genSq_clk[genSq_nInst][nStrings];
-  int genSq_clkraw[genSq_nInst][nStrings];
-  int genSq_nxtClkFil[genSq_nInst][nStrings];
-  int genSq_muteCh[genSq_nInst][nStrings];
-  int genSq_nxtPttn[genSq_nInst];
-  int genSq_actPttn[genSq_nInst];
-  int genSq_lastActPttn[genSq_nInst];
-  int genSq_edtPttn[genSq_nInst];
-  //bool genSq_attSng[genSq_nInst]={1,0,0}; //depreceated
-  bool genSq_sclQ[genSq_nInst][nStrings];
+  // GenSeq per-instance runtime state lives in genSeqRuntime.
+  // GenSeq per-pattern step/channel data lives in genSeqPatterns.
+  // Compatibility macros above keep existing index order unchanged.
   //int genSq_sndCh[genSq_nInst][nStrings]={{1,1,1,1,1,1},{2,2,2,2,2,2},{3,3,3,3,3,3}};
   float genSq_gridColor[genSq_nInst][3]={{0.0,0.01,0.01},{0.015,0.0,0.01},{0.015,0.01,0.0}};
-
-  // per pattern
-  int genSq_tmDv[genSq_nInst][genSq_nPttn][nStrings];
-  bool genSq_stpOnOff[genSq_nInst][genSq_nPttn][nStrings][genSq_maxSteps];
-  int genSq_stp[genSq_nInst][genSq_nPttn][nStrings][genSq_maxSteps][genSq_nStrPrsFnc];
-  int genSq_chn[genSq_nInst][genSq_nPttn][nStrings][genSq_nStrEncFnc]; 
 
 // String Sequencer (from genSeq)
   bool strSeq_act=1;
@@ -280,6 +308,8 @@ const int chipSelect = BUILTIN_SDCARD;
 //display
   unsigned long disp_frameTimer; //timer for the led update
   unsigned int disp_frameInt=200;
+  unsigned long disp_lastDurationMicros=0; //measured display serialization time
+  const unsigned long disp_clockGuardMicros=1000; //keep this margin before the next internal clock tick
 
 // instance modes
   const int strSetup_opMode=0;
@@ -342,6 +372,7 @@ void setup() {
     return;
   }
   Serial.println("initialization done.");
+  debugSetup();
 
   // init LEDs  
   LEDS.addLeds<WS2812SERIAL,LED_PIN,RGB>(frtPix,NUMPIXELS);
@@ -395,8 +426,10 @@ void setup() {
 }
 
 void loop() {
+  debugPoll();
   usbMIDI.read();    
   updIntClock();
+  updDisplay();
   if (fbrdMode == 1)readFretboard(0);
   if (fbrdMode == 0){
     if (frtb_sensMode==1)readFretboard(1);

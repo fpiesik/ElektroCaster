@@ -14,6 +14,16 @@
 //#include "effect_tapedelay10tap.h"
 
 const byte nStrings=6;
+#include "HardwareConfig.h"
+
+#define DEBUG_AUDIO 0
+#if DEBUG_AUDIO
+#define DBG_AUDIO_PRINT(x) Serial.print(x)
+#define DBG_AUDIO_PRINTLN(x) Serial.println(x)
+#else
+#define DBG_AUDIO_PRINT(x)
+#define DBG_AUDIO_PRINTLN(x)
+#endif
 const int nCtlFrets=17; //how many led frets
 byte midiCh=15;
 
@@ -27,8 +37,6 @@ byte lastBowMode=0;
 byte dispMode=0;
 byte lastDispMode=0;
 int waitS=100;
-byte strAIn[nStrings]={10,8,6,4,2,0}; //input audio channels of the strings
-byte strAOut[nStrings]={10,8,6,4,2,0}; //output audio channels of the string coils
 float strInGain[nStrings]={0.65,0.65,0.65,0.65,0.65,0.65};
 
 float tuning[nStrings]={59,54,50,45,40,35}; //{35,40,45,50,54,59};
@@ -201,20 +209,20 @@ void chOpMode(byte data){
 
 void chKickMode(byte data){
   kickMode=data;
-  Serial.print("kickmode-t: ");
-  Serial.println(kickMode);
+  DBG_AUDIO_PRINT("kickmode-t: ");
+  DBG_AUDIO_PRINTLN(kickMode);
   }
 
 void chBowMode(byte data){
   bowMode=data;
-  Serial.print("bowmode: ");
-  Serial.println(bowMode);
+  DBG_AUDIO_PRINT("bowmode: ");
+  DBG_AUDIO_PRINTLN(bowMode);
   }
 
 void chDispMode(byte data){
   dispMode=data;
-  Serial.print("dispmode: ");
-  Serial.println(dispMode);
+  DBG_AUDIO_PRINT("dispmode: ");
+  DBG_AUDIO_PRINTLN(dispMode);
   }
 
 void trigEnv(byte str, float val){
@@ -238,12 +246,12 @@ void trigEnv(byte str, float val){
 void strFret(byte str, byte pitch, byte state){
   //if(pitch==0)coilAmp[str].gain(0);
   chLfo1(0, pitch,str);
-  Serial.print("Str: ");
-  Serial.print(str);
-  Serial.print(" pitch: ");
-  Serial.println(pitch);  
-  Serial.print(" state: ");
-  Serial.println(state);
+  DBG_AUDIO_PRINT("Str: ");
+  DBG_AUDIO_PRINT(str);
+  DBG_AUDIO_PRINT(" pitch: ");
+  DBG_AUDIO_PRINTLN(pitch);
+  DBG_AUDIO_PRINT(" state: ");
+  DBG_AUDIO_PRINTLN(state);
   if(state==0)coilOsc[str].amplitude(0);
   if(bowOn==1&&state>0){
     //coilAmp[str].gain(50);

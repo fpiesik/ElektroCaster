@@ -1,4 +1,4 @@
-void readFretboard(int sensMode) {
+void scanFretboardPins(int sensMode) {
   switch (sensMode) {
     case 0:
       for (int f = 0; f < nFrets; f++) {
@@ -19,8 +19,9 @@ void readFretboard(int sensMode) {
         frtState[1][s] = !digitalRead(strPins[s]);
       }
   }
+}
 
-
+void updateFretDebounce() {
   for (int s = 0; s < nStrings; s++) {
     strPrs[s] = 0;
     bool used = 0;
@@ -33,7 +34,7 @@ void readFretboard(int sensMode) {
         }
         else {
           frtPrs[s]+=1;
-        }        
+        }
       }
       lastFrtState[f][s] = frtState[f][s];
     }
@@ -41,42 +42,65 @@ void readFretboard(int sensMode) {
     if (strPrs[s] != lastStrPrs[s])strBnc[s] = 0;
     lastStrPrs[s] = strPrs[s];
   }
+}
 
-  //actions when string is pressed or released
+bool emitFretEvents(int *eventString, int *eventPress) {
   static long lastChng[nStrings];
   static int lastExStrPr[nStrings];
-  bool frtSplt=opMode>=genSq_opMode && opMode<genSq_opMode+genSq_nInst;
   for (int s = 0; s < nStrings; s++) {
     unsigned int sB = strBnc[s];
     unsigned int sBncs = strBncs;
-    int chnl = genSq_chn[0][genSq_actPttn[0]][s][genSq_strEncFnc_chn];
     if (shift==1 && fbrdMode == 0 && strPrs[s]>0 )strHold[s]=1;
     if (shift==1 && fbrdMode == 0 && strPrs[s]==0 )strHold[s]=0;
     //if(frtSplt==1 && strPrs[s]>=frtSplit) sBncs=strBncsP; //extended string bounces threshold for switching patterns
     if (sB >= sBncs && millis() - lastChng[s] > fretMaskT && lastExStrPr[s] != strPrs[s]) {
-      if (strHold[s]==0||genSq_muteCh[0][s]){
-        if (fbrdMode == 0 && strArp_act == 0 && strSeq_act==0) {
-          sndTrigEnv(s, strPrs[s]>0);
-          if(opMode>=genSq_opMode && opMode<genSq_opMode+genSq_nInst && strPrs[s]<=frtSplit){
-            if(sensMode==0)sndMidiNotePress(s,strPrs[s],chnl);
-            if (strPrs[s] > 0)kick(s);
-          }
-          else{
-            if(sensMode==0)sndMidiNotePress(s,strPrs[s],chnl);
-            if (strPrs[s] > 0)kick(s);
-          }
-        }
-      //if (fbrdMode == 0)sndStrPrs(s, strPrs[s]);
-      //lastStrPrs[s]=strPrs[s];
-      //lastExStrPr[s] = strPrs[s];
-      }
-      if (fbrdMode == 0 && strPrs[s] == 0)sndStrPrs(s, tuning[s],0);
-      if (fbrdMode == 0 && strPrs[s] != 0)sndStrPrs(s, tuning[s] + strPrs[s],1);
+      *eventString = s;
+      *eventPress = strPrs[s];
       lastExStrPr[s] = strPrs[s];
-      if (strPrs[s] != 0 && fbrdMode == 0) lastNZStrPrs[s] = strPrs[s];
-      genSq_editSteps(s);
       lastChng[s] = millis();
+      return 1;
     }
+  }
+
+  return 0;
+}
+
+void handleFretEventForAudioMidiKickSeq(int eventString, int eventPress, int sensMode) {
+  int s = eventString;
+  int press = eventPress;
+  int chnl = genSq_chn[0][genSq_actPttn[0]][s][genSq_strEncFnc_chn];
+
+  if (strHold[s]==0||genSq_muteCh[0][s]){
+    if (fbrdMode == 0 && strArp_act == 0 && strSeq_act==0) {
+      sndTrigEnv(s, press>0);
+      if(opMode>=genSq_opMode && opMode<genSq_opMode+genSq_nInst && press<=frtSplit){
+        if(sensMode==0)sndMidiNotePress(s,press,chnl);
+        if (press > 0)kick(s);
+      }
+      else{
+        if(sensMode==0)sndMidiNotePress(s,press,chnl);
+        if (press > 0)kick(s);
+      }
+    }
+  //if (fbrdMode == 0)sndStrPrs(s, strPrs[s]);
+  //lastStrPrs[s]=strPrs[s];
+  //lastExStrPr[s] = strPrs[s];
+  }
+  if (fbrdMode == 0 && press == 0)sndStrPrs(s, tuning[s],0);
+  if (fbrdMode == 0 && press != 0)sndStrPrs(s, tuning[s] + press,1);
+  if (press != 0 && fbrdMode == 0) lastNZStrPrs[s] = press;
+  genSq_editSteps(s);
+}
+
+void readFretboard(int sensMode) {
+  scanFretboardPins(sensMode);
+  updateFretDebounce();
+
+  //actions when string is pressed or released
+  int eventString;
+  int eventPress;
+  while (emitFretEvents(&eventString, &eventPress)) {
+    handleFretEventForAudioMidiKickSeq(eventString, eventPress, sensMode);
   }
 }
 

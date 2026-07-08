@@ -1,37 +1,8 @@
-void kickup(byte s){
-  switch(s){
-    case 0:
-      digitalWrite(kickupPins[s],1);
-      kickState[s]=1;
-      kickTimer[s]=millis();
-      break;
-      
-    case 1:
-      digitalWrite(kickupPins[s],1);
-      kickState[s]=1;
-      kickTimer[s]=millis();
-      break;
-    case 2:
-      digitalWrite(kickupPins[s],1);
-      kickState[s]=1;
-      kickTimer[s]=millis();
-      break;
-    case 3:
-      digitalWrite(kickupPins[s],1);
-      kickState[s]=1;
-      kickTimer[s]=millis();
-      break;
-    case 4:
-      digitalWrite(kickupPins[s],1);
-      kickState[s]=1;
-      kickTimer[s]=millis();
-      break;
-    case 5:
-      digitalWrite(kickupPins[s],1);
-      kickState[s]=1;
-      kickTimer[s]=millis();
-      break;
-  }
+void kickup(byte s) {
+  if (s >= nStrings) return;
+  digitalWrite(kickupPins[s], HIGH);
+  kickState[s] = true;
+  kickTimer[s] = millis();
 }
 
 void kickOff(){

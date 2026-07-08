@@ -16,6 +16,14 @@ ElektroCaster is a hardware/firmware electric guitar platform with:
 
 The firmware is split across three microcontrollers.
 
+## Board role summary
+
+| Firmware | Board role | Owns / directly touches | Communicates with | Protected behavior to preserve |
+| --- | --- | --- | --- | --- |
+| `software/firmwareHid` | Body-control and display companion | Analog controls, digital controls, encoders, resistor-ladder rotary switches, SH1106 128x64 OLED | `firmwareCtl` over `Serial6` at 115200 baud | HID command byte layout, display packet names/payloads, input pin assignments |
+| `software/firmwareCtl` | Main coordinator | LED fretboard, fretboard contact scanning, Kickup pins/timing, MIDI, SD song state, display composition, Audio/HID routing | `firmwareHid` over `Serial7` at 115200 baud; `firmwareAudio` over `Serial1` at 250000 baud; USB/hardware MIDI | Fretboard scan/debounce, Kickup pulse timing, serial payload formats, LED pin/mapping |
+| `software/firmwareAudio` | Hexaphonic DSP and actuator-audio board | TDM audio I/O, CS42448 codec control, per-string DSP, analysis objects, coil/MulEBow outputs | `firmwareCtl` over `Serial1` at 250000 baud | AudioConnection graph, audio routing, analysis intervals, audio command scaling |
+
 ## Microcontroller roles
 
 ### `software/firmwareHid`
@@ -27,7 +35,7 @@ Responsibilities:
 - Read body controls:
   - 22 analog inputs,
   - 19 digital inputs,
-  - 8 encoders are instantiated in code, although `nEnc` is currently `7`, which should be treated as an open inconsistency until verified on hardware,
+  - 8 encoders,
   - 3 analog resistor-ladder rotary switch values.
 - Send changed control values to `firmwareCtl` over a serial link.
 - Own the OLED display hardware through U8g2.
@@ -35,7 +43,8 @@ Responsibilities:
 
 Important files:
 
-- `software/firmwareHid/firmwareHid.ino`: pin arrays, encoder instances, input scanning loop, display initialization.
+- `software/firmwareHid/HardwareConfig.h`: HID input counts and pin arrays.
+- `software/firmwareHid/firmwareHid.ino`: encoder instances, input scanning loop, display initialization.
 - `software/firmwareHid/send.ino`: HID-to-CTL byte protocol.
 - `software/firmwareHid/receive.ino`: CTL-to-HID display command receiver.
 - `software/firmwareHid/display.ino`: local U8g2 drawing helpers.
@@ -60,6 +69,7 @@ Important files:
 
 - `software/firmwareCtl/firmwareCtl.ino`: large global state block, setup, main loop, hardware initialization.
 - `software/firmwareCtl/04_hid.ino`: fretboard scan/debounce plus HID processing and musical actions.
+- `software/firmwareCtl/ProtocolAudio.h` and `ProtocolHid.h`: shared byte constants for Audio and HID serial protocols.
 - `software/firmwareCtl/2audio.ino`: CTL-to-Audio command senders.
 - `software/firmwareCtl/13_serialEvents.ino`: serial receivers from Audio and HID.
 - `software/firmwareCtl/01_actuators.ino`: Kickup cueing and pulse handling.
@@ -83,6 +93,7 @@ Responsibilities:
 
 Important files:
 
+- `software/firmwareAudio/ProtocolAudio.h`: shared byte constants for the CTL/Audio serial protocol.
 - `software/firmwareAudio/firmwareAudio.ino`: global audio objects, state, static output summing connections.
 - `software/firmwareAudio/0Setup.ino`: audio hardware setup and per-string `AudioConnection` construction.
 - `software/firmwareAudio/yLoop.ino`: serial command parser, analysis loop, MulEBow state handling.
@@ -117,7 +128,7 @@ Additional flows:
 - Several files mix hardware access, state updates, UI handling, musical logic, and protocol handling.
 - Pin assignments and hardware mappings are embedded directly in firmware files.
 - Serial protocols use magic byte values and do not appear to have checksums, versioning, or documented recovery behavior.
-- Several serial parsers use blocking `while(Serial.available() == 0)` waits, which can hang if bytes are lost or boards reset mid-message.
+- Serial packet parsing is non-blocking on the inspected HID and Audio links and uses short packet timeouts, but the byte protocols still lack checksums, sequence numbers, explicit length bytes, or version negotiation.
 - `firmwareCtl/04_hid.ino` couples fretboard scanning, debounce, MIDI, Kickup, audio triggering, and sequencer editing.
 - `firmwareCtl/02_clock.ino` calls display updates from the internal clock path; timing impacts should be measured before changing it.
 - `firmwareAudio/0Setup.ino` builds many audio connections dynamically; audio routing changes are high risk.

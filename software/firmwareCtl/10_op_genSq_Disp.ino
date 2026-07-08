@@ -31,13 +31,12 @@ void genSq_drwGrid(){
     int nSteps=genSq_chn[inst][pttn][s][genSq_strEncFnc_stps];
     int off=genSq_chn[inst][pttn][s][genSq_strEncFnc_offSt]; //offset
     for(int f=0;f<genSq_maxVisSteps;f++){
-      int frt=f+off;
       for(int c=0;c<3;c++){  
         genSq_gridPix[s][f][c]=0;  
-        if(f%4==0 && f>=off && f<nSteps+off || f<off+nSteps-genSq_maxVisSteps){
+        if((f%4==0 && f>=off && f<nSteps+off) || f<off+nSteps-genSq_maxVisSteps){
           genSq_gridPix[s][f][c]=genSq_gridColor[inst][c]*5;
         }
-        if(f%4 != 0 && f>=off && f<nSteps+off || f<off+nSteps-genSq_maxVisSteps){
+        if((f%4 != 0 && f>=off && f<nSteps+off) || f<off+nSteps-genSq_maxVisSteps){
           genSq_gridPix[s][f][c]=genSq_gridColor[inst][c];
         }
       }
@@ -117,7 +116,7 @@ void genSq_drwStep(byte s){
     //int pitch=scls_scls[scls_sclSel][(genSq_stp[inst][pttn][s][f][genSq_strPrsFnc_sStp]+scls_sclStp)%scls_numSclStp[scls_sclSel]];
     for(int c=0;c<3;c++){
       genSq_stpPix[s][f][c]=0;    
-      if(genSq_stpOnOff[inst][pttn][s][f]>0 && f>=off && f<nSteps+off || f<off+nSteps-genSq_maxVisSteps){
+      if((genSq_stpOnOff[inst][pttn][s][f]>0 && f>=off && f<nSteps+off) || f<off+nSteps-genSq_maxVisSteps){
         if(chnl>0)genSq_stpPix[s][f][c]=tnClrs[pitch][c]*brght;
         if(chnl==0)genSq_stpPix[s][f][c]=brght/2;
       }

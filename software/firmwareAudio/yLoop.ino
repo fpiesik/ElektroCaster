@@ -1,162 +1,147 @@
-#include "../shared/ProtocolAudio.h"
+#include "ProtocolAudio.h"
+
+namespace {
+constexpr unsigned long AUDIO_SERIAL_PACKET_TIMEOUT_MS = 10;
+constexpr byte AUDIO_SERIAL_MAX_PAYLOAD = 3;
+
+// CTL -> Audio payload lengths. These preserve the existing byte protocol:
+// command byte AUDIO_CMD_* followed by exactly this many payload bytes.
+byte audioCommandPayloadLength(byte command) {
+  switch (command) {
+    case AUDIO_CMD_TRIG_ENV: return 2;
+    case AUDIO_CMD_STR_FRET: return 3;
+    case AUDIO_CMD_OP_MODE: return 1;
+    case AUDIO_CMD_DISP_MODE: return 1;
+    case AUDIO_CMD_KICK_MODE: return 1;
+    case AUDIO_CMD_BOW_MODE: return 1;
+    case AUDIO_CMD_BOW_ON: return 1;
+    case AUDIO_CMD_ENV_1: return 2;
+    case AUDIO_CMD_ENV_2: return 2;
+    case AUDIO_CMD_FILTER: return 2;
+    case AUDIO_CMD_VOLUME: return 1;
+    case AUDIO_CMD_STR_GAIN: return 2;
+    case AUDIO_CMD_FX: return 2;
+    case AUDIO_CMD_LFO_1: return 2;
+    case AUDIO_CMD_BPM: return 1;
+    case AUDIO_CMD_MIDI_CC: return 2;
+    default: return 0;
+  }
+}
+
+void resetAudioSerialPacket(byte &command, byte &payloadIndex, byte &payloadLength) {
+  command = 0;
+  payloadIndex = 0;
+  payloadLength = 0;
+}
+
+void handleAudioSerialPacket(byte command, const byte payload[]) {
+  int incoming = audioIncoming(command);
+
+  if (incoming == audioIncoming(AUDIO_CMD_TRIG_ENV)) {
+    trigEnv(payload[0], payload[1] / 199.0);
+  }
+
+  if (incoming == audioIncoming(AUDIO_CMD_STR_FRET)) {
+    strFret(payload[0], payload[1], payload[2]);
+    strState[payload[0]] = payload[2];
+  }
+
+  if (incoming == audioIncoming(AUDIO_CMD_ENV_1)) {
+    float sclVal = scale(payload[1] / 199.0, 1, sclEnvA[payload[0]]);
+    chEnvA(payload[0], sclVal);
+    envPA[payload[0]] = sclVal;
+  }
+
+  if (incoming == audioIncoming(AUDIO_CMD_ENV_2)) {
+    float sclVal = scale(payload[1] / 199.0, 1, sclEnvF[payload[0]]);
+    chEnvF(payload[0], sclVal);
+    envPF[payload[0]] = sclVal;
+  }
+
+  if (incoming == audioIncoming(AUDIO_CMD_FILTER)) {
+    valFilter[payload[0]] = scale(payload[1] / 199.0, 1, sclFilter[payload[0]]);
+    chFilter(payload[0], valFilter[payload[0]]);
+  }
+
+  if (incoming == audioIncoming(AUDIO_CMD_STR_GAIN)) {
+    float val = payload[1] / 100.0;
+    chngStrOutGain(payload[0], val);
+    DBG_AUDIO_PRINT(payload[0]);
+    DBG_AUDIO_PRINT(": ");
+    DBG_AUDIO_PRINTLN(val);
+  }
+
+  if (incoming == audioIncoming(AUDIO_CMD_FX)) {
+    valFX[payload[0]] = scale(payload[1] / 199.0, 1, sclFX[payload[0]]);
+    chFX(payload[0], valFX[payload[0]]);
+  }
+
+  if (incoming == audioIncoming(AUDIO_CMD_LFO_1)) {
+    valLfo1[payload[0]] = scale(payload[1] / 199.0, 1, sclLfo1[payload[0]]);
+    for (int i = 0; i < nStrings; i++) {
+      chLfo1(payload[0], valLfo1[payload[0]], i);
+    }
+  }
+
+  if (incoming == audioIncoming(AUDIO_CMD_MIDI_CC)) {
+    if (payload[0] == 2) sndMidiCC(3, payload[1] / 2);
+  }
+
+  if (payload[0] <= 199) {
+    if (incoming == audioIncoming(AUDIO_CMD_OP_MODE)) chOpMode(payload[0]);
+    if (incoming == audioIncoming(AUDIO_CMD_DISP_MODE)) chDispMode(payload[0]);
+    if (incoming == audioIncoming(AUDIO_CMD_KICK_MODE)) chKickMode(payload[0]);
+    if (incoming == audioIncoming(AUDIO_CMD_BOW_MODE)) chBowMode(payload[0]);
+    if (incoming == audioIncoming(AUDIO_CMD_BOW_ON)) bowOn = payload[0];
+
+    if (incoming == audioIncoming(AUDIO_CMD_VOLUME)) {
+      float val = payload[0] / 199.0;
+      val = val * val * 2;
+      ampOut.gain(val + 0.0001);
+    }
+
+    if (incoming == audioIncoming(AUDIO_CMD_BPM)) {
+      bpm = payload[0];
+    }
+  }
+}
+}
 
 void serialEvent1(){
-        static int incoming;
-        byte sbyte = Serial1.read();
-        //Serial.write(serbyte);
-        if (sbyte >= AUDIO_CMD_BASE && sbyte <= AUDIO_CMD_MAX) incoming = audioIncoming(sbyte);
+  static byte command = 0;
+  static byte payload[AUDIO_SERIAL_MAX_PAYLOAD];
+  static byte payloadIndex = 0;
+  static byte payloadLength = 0;
+  static unsigned long packetStartedAt = 0;
 
-//        if (incoming == 12) usbMIDI.sendRealTime(usbMIDI.Clock);
-//        if (incoming == 13) usbMIDI.sendRealTime(usbMIDI.Start);
-//        if (incoming == 14) usbMIDI.sendRealTime(usbMIDI.Stop);
-        //if (incoming == audioIncoming(AUDIO_CMD_BPM))sndNotes();
+  if (payloadLength > 0 && millis() - packetStartedAt > AUDIO_SERIAL_PACKET_TIMEOUT_MS) {
+    resetAudioSerialPacket(command, payloadIndex, payloadLength);
+  }
 
-        if (incoming == audioIncoming(AUDIO_CMD_TRIG_ENV)){
-          byte a;
-          float b;
-          while(Serial1.available() == 0);
-          a=Serial1.read();
-          while(Serial1.available() == 0);
-          b=Serial1.read();
-          //Serial.println(b);
-          trigEnv(a, b/199.0);
-          
-          incoming = -1;
-        }
-         
-        if (incoming == audioIncoming(AUDIO_CMD_STR_FRET)){
-          byte a;
-          byte b;
-          byte c;
-          while(Serial1.available() == 0);
-          a=Serial1.read();
-          while(Serial1.available() == 0);
-          b=Serial1.read();
-          while(Serial1.available() == 0);
-          c=Serial1.read();
-          strFret(a, b, c);
-          strState[a]=c;
-          
-          incoming = -1;
-        }
+  while (Serial1.available() > 0) {
+    byte sbyte = Serial1.read();
 
-        if (incoming == audioIncoming(AUDIO_CMD_ENV_1)){
-          byte a;
-          byte b;
-          while(Serial1.available() == 0);
-          a=Serial1.read();
-          while(Serial1.available() == 0);
-          b=Serial1.read();
-          float sclVal=scale(b/199.0,1,sclEnvA[a]);
-          chEnvA(a,sclVal);
-          envPA[a]=sclVal;
-          incoming = -1;
-        }
+    if (sbyte >= AUDIO_CMD_BASE && sbyte <= AUDIO_CMD_MAX) {
+      command = sbyte;
+      payloadIndex = 0;
+      payloadLength = audioCommandPayloadLength(command);
+      packetStartedAt = millis();
+      if (payloadLength == 0 || payloadLength > AUDIO_SERIAL_MAX_PAYLOAD) {
+        resetAudioSerialPacket(command, payloadIndex, payloadLength);
+      }
+      continue;
+    }
 
-        if (incoming == audioIncoming(AUDIO_CMD_ENV_2)){
-          byte a;
-          byte b;
-          while(Serial1.available() == 0);
-          a=Serial1.read();
-          while(Serial1.available() == 0);
-          b=Serial1.read();
-          float sclVal=scale(b/199.0,1,sclEnvF[a]);
-          chEnvF(a,sclVal);
-          envPF[a]=sclVal;
-          incoming = -1;
-        }
+    if (payloadLength == 0) {
+      continue;
+    }
 
-        if (incoming == audioIncoming(AUDIO_CMD_FILTER)){
-          byte a;
-          byte b;
-          while(Serial1.available() == 0);
-          a=Serial1.read();
-          while(Serial1.available() == 0);
-          b=Serial1.read();
-          valFilter[a]=scale(b/199.0,1,sclFilter[a]);
-          chFilter(a,valFilter[a]);
-          incoming = -1;
-        }
-
-        if (incoming == audioIncoming(AUDIO_CMD_STR_GAIN)){
-           byte a;
-           byte b;
-           float val;
-           while(Serial1.available() == 0);
-           a=Serial1.read();
-           while(Serial1.available() == 0);
-           b=Serial1.read();  
-           val=b/100.0;      
-           chngStrOutGain(a, val);
-            Serial.print(a);
-            Serial.print(": ");
-            Serial.println(val);
-           incoming = -1;
-          }
-
-        if (incoming == audioIncoming(AUDIO_CMD_FX)){
-          byte a;
-          byte b;
-          while(Serial1.available() == 0);
-          a=Serial1.read();
-          while(Serial1.available() == 0);
-          b=Serial1.read();
-          valFX[a]=scale(b/199.0,1,sclFX[a]);
-          chFX(a,valFX[a]);
-          incoming = -1;
-        }
-
-        if (incoming == audioIncoming(AUDIO_CMD_LFO_1)){
-           byte a;
-           float b;
-           while(Serial1.available() == 0);
-           a=Serial1.read();
-           while(Serial1.available() == 0);
-           b=Serial1.read();         
-           valLfo1[a]=scale(b/199.0,1,sclLfo1[a]);
-           for(int i=0;i<nStrings;i++){
-            chLfo1(a,valLfo1[a],i);
-           }
-          incoming = -1;
-          }
-
-        if (incoming == audioIncoming(AUDIO_CMD_MIDI_CC)){
-           byte a;
-           byte b;
-           while(Serial1.available() == 0);
-           a=Serial1.read();
-           while(Serial1.available() == 0);
-           b=Serial1.read();         
-          if(a==2)sndMidiCC(3,b/2);
-          incoming = -1;
-          }
-
-    
-        
-        if (sbyte <= 199){
-                
-          if (incoming == audioIncoming(AUDIO_CMD_OP_MODE)) chOpMode(sbyte),incoming = -1;
-          if (incoming == audioIncoming(AUDIO_CMD_DISP_MODE)) chDispMode(sbyte),incoming = -1;
-          if (incoming == audioIncoming(AUDIO_CMD_KICK_MODE)) chKickMode(sbyte),incoming = -1;
-          if (incoming == audioIncoming(AUDIO_CMD_BOW_MODE)) chBowMode(sbyte),incoming = -1;
-          if (incoming == audioIncoming(AUDIO_CMD_BOW_ON)) bowOn=(sbyte),incoming = -1;
-
-        if (incoming == audioIncoming(AUDIO_CMD_VOLUME)){
-          float val=sbyte/199.0;
-          val=val*val*2;
-          ampOut.gain(val+0.0001);
-          //Serial.println("gain: ");
-          //Serial.println(val);
-          incoming = -1;
-        }
-        if (incoming == audioIncoming(AUDIO_CMD_BPM)){
-          float val=sbyte;
-          bpm=val;
-          //Serial.println("bpm: ");
-          //Serial.println(val);
-          incoming = -1;
-        }   
-        }
+    payload[payloadIndex++] = sbyte;
+    if (payloadIndex >= payloadLength) {
+      handleAudioSerialPacket(command, payload);
+      resetAudioSerialPacket(command, payloadIndex, payloadLength);
+    }
+  }
 }
 
 void loop(){
@@ -238,22 +223,22 @@ if(bowOn!=lastBowOn){
     if(bowOn==0)coilOsc[str].amplitude(0);
   }
 
-  Serial.print("bowOn: ");
-  Serial.println(bowOn);
+  DBG_AUDIO_PRINT("bowOn: ");
+  DBG_AUDIO_PRINTLN(bowOn);
   lastBowOn=bowOn;
 }
    
-if(0) {
+if(DEBUG_AUDIO) {
   if(millis() - last_time >= 3000) {
-    Serial.print("Proc = ");
-    Serial.print(AudioProcessorUsage());
-    Serial.print(" (");    
-    Serial.print(AudioProcessorUsageMax());
-    Serial.print("),  Mem = ");
-    Serial.print(AudioMemoryUsage());
-    Serial.print(" (");    
-    Serial.print(AudioMemoryUsageMax());
-    Serial.println(")");
+    DBG_AUDIO_PRINT("Proc = ");
+    DBG_AUDIO_PRINT(AudioProcessorUsage());
+    DBG_AUDIO_PRINT(" (");
+    DBG_AUDIO_PRINT(AudioProcessorUsageMax());
+    DBG_AUDIO_PRINT("),  Mem = ");
+    DBG_AUDIO_PRINT(AudioMemoryUsage());
+    DBG_AUDIO_PRINT(" (");
+    DBG_AUDIO_PRINT(AudioMemoryUsageMax());
+    DBG_AUDIO_PRINTLN(")");
     last_time = millis();
   }
 }

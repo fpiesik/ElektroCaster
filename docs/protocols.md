@@ -13,14 +13,25 @@ This document records currently observed serial protocols. It is based on reposi
 
 Open question: physical wiring and electrical directionality are not documented in the repository.
 
+## Protocol byte-space summary
+
+| Direction | Transport | Framing style | Command / packet namespace | Payload style | Receiver notes |
+| --- | --- | --- | --- | --- | --- |
+| HID -> CTL | Raw bytes on HID/CTL serial link | Command/index byte followed by value byte; HID also sends `255` after `sendAllNew()` | Command bytes are offset from HID indexes using `+ 201`; CTL subtracts `201` before dispatch | One value byte per recognized input event | CTL uses non-blocking packet assembly with a short timeout; no checksum or versioning identified. |
+| CTL -> HID display | AsciiMassage on HID/CTL serial link | Named AsciiMassage packets | Text packet names such as `str`, `int`, `frm`, `buf` | Packet-specific byte/int/long/string fields | HID delegates parsing/framing to AsciiMassage and executes U8g2 drawing calls. |
+| CTL -> Audio | Raw bytes on CTL/Audio serial link | Command byte `200..255`, then command-specific payload | Shared audio command constants; Audio decodes `command - 200` | One or more bytes; most scaled values are intended to stay `<= 199` | Audio uses non-blocking packet assembly with a short timeout; no checksum or length byte identified. |
+| Audio -> CTL | Raw bytes on CTL/Audio serial link | Status command byte, then status-specific payload | Audio status constants reuse some numeric IDs from the opposite direction | Pitch/amplitude/status bytes | CTL decodes by direction, so numeric reuse is only safe because links are directional at parser level. |
+
 ## HID -> CTL protocol
 
 Implemented in:
 
+- `software/firmwareHid/ProtocolHid.h`
 - `software/firmwareHid/send.ino`
+- `software/firmwareCtl/ProtocolHid.h`
 - `software/firmwareCtl/13_serialEvents.ino`
 
-General form: a command/index byte followed by one value byte. HID also emits `255` as a frame/end marker; CTL currently has a commented reference to it but no active handling was identified.
+General form: a command/index byte followed by one value byte. HID also emits `255` as a frame/end marker; CTL resets the current HID packet state when it receives this marker.
 
 Constants inferred from code:
 
@@ -34,13 +45,13 @@ Constants inferred from code:
 | Analog input | `idx + nDigital + 201` | `incoming >= 19 && incoming < 38` | 1 byte `val` | `analogRead` mapped from `0..1023` to `0..200`; indices `19..21` are excluded. |
 | Rotary switch | `idx + nDigital + 19 + 201` | `incoming >= 38 && incoming < 41` | 1 byte `val` | Rotary state index, likely `0..11`. |
 | Encoder delta | `idx + nDigital + 22 + 201` | `incoming >= 41 && incoming < 49` | 1 byte `val` | Delta encoded as `delta + 100`; CTL subtracts `100`. |
-| Frame/end marker | `255` | Not actively handled | none | Sent by HID after `sendAllNew()`. Semantics open. |
+| Frame/end marker | `255` | Packet-state reset marker | none | Sent by HID after `sendAllNew()`; CTL resets any pending HID packet state. |
 
 Open/incomplete:
 
-- There are 8 `Encoder` instances but `nEnc` is declared as `7`; protocol range supports 8 encoder indices `0..7` through decoded values `41..48`.
-- No checksum, timeout, or sequence number was identified.
-- CTL blocks waiting for value bytes after receiving a recognized command byte.
+- `nEnc` is declared as `8`; eight encoder instances are instantiated and the protocol range supports encoder indices `0..7` through decoded values `41..48`.
+- CTL uses a 20 ms timeout while assembling HID command/value pairs.
+- No checksum or sequence number was identified.
 
 ## CTL -> HID display protocol
 
@@ -80,7 +91,9 @@ Open/incomplete:
 
 Implemented in:
 
+- `software/firmwareCtl/ProtocolAudio.h`
 - `software/firmwareCtl/2audio.ino`
+- `software/firmwareAudio/ProtocolAudio.h`
 - `software/firmwareAudio/yLoop.ino`
 
 General form: first byte is a command ID in the range `200..255`. Audio computes `incoming = command - 200`. Payload length depends on command.
@@ -109,15 +122,17 @@ Known command IDs:
 Open/incomplete:
 
 - Commands `202`, `203`, `204`, `215`, `217`, and `218` are handled by Audio but corresponding CTL sender functions were not identified in `2audio.ino`.
-- Blocking reads are used for payload bytes.
-- No checksum, version, length byte, escaping, or resynchronization strategy was identified.
+- Audio uses a 10 ms timeout while assembling CTL-to-Audio packets.
+- No checksum, version, length byte, escaping, or full resynchronization strategy was identified beyond treating bytes `>= 200` as command/status bytes.
 - Values above `199` are treated as command bytes, so payload values should remain `<=199` unless explicitly safe.
 
 ## Audio -> CTL protocol
 
 Implemented in:
 
+- `software/firmwareAudio/ProtocolAudio.h`
 - `software/firmwareAudio/2ctl.ino`
+- `software/firmwareCtl/ProtocolAudio.h`
 - `software/firmwareCtl/13_serialEvents.ino`
 
 General form: first byte is a command ID, CTL computes `incoming = command - 200`.
@@ -126,12 +141,13 @@ Known command IDs:
 
 | Command byte | CTL `incoming` | Sender function | Payload | CTL receiver behavior |
 | --- | ---: | --- | --- | --- |
-| `201` | `1` | `sndNote(pitch, vel)` | `byte pitch`, `byte vel` | No active CTL receiver case was identified for `incoming == 1` in `13_serialEvents.ino`; source/receiver semantics open. |
-| `205` | `5` | `sndCC()` | `byte cc`, `byte val` | No active CTL receiver case was identified for `incoming == 5` in `13_serialEvents.ino`; source/receiver semantics open. |
+| `201` | `1` | `sndNote(pitch, vel)` | `byte pitch`, `byte vel` | Audio sender exists, but CTL currently assigns no payload length for this status, so these packets are ignored by the non-blocking parser. |
+| `205` | `5` | `sndCC()` | `byte cc`, `byte val` | Audio sender exists, but CTL currently assigns no payload length for this status, so these packets are ignored by the non-blocking parser. |
 | `206` | `6` | `sndStrP()` | `byte string`, `byte integerPart`, `byte fractionalPart` | CTL stores `strP[string] = integerPart + fractionalPart / 100.0`. |
 | `207` | `7` | `sndStrA()` | `byte string`, `byte amplitudePercent` | CTL stores `strA[string] = amplitudePercent / 100.0`. |
 
 Open/incomplete:
 
-- Audio sender functions for note/CC appear to exist, but CTL receiver handling was not identified in the inspected serial event file.
+- Audio sender functions for note/CC exist, but CTL currently ignores those status IDs because only pitch and amplitude are assigned receive payload lengths.
+- CTL uses a 10 ms timeout while assembling Audio-to-CTL status packets.
 - Same numeric command IDs are reused in opposite directions, which is acceptable on a bidirectional link only if direction is always clear.

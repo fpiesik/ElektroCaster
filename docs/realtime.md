@@ -2,6 +2,18 @@
 
 This document records timing values inferable from firmware source. It does not change timing behavior.
 
+## Timing summary
+
+| Firmware | Area | Interval / value | Why it matters |
+| --- | --- | --- | --- |
+| `software/firmwareCtl` | LED fretboard refresh | `fled_frameInt = 50 ms` | Visible LED update cadence. |
+| `software/firmwareCtl` | Fretboard press masking/debounce | `fretMaskT = 50 ms`, `strBncs = 500 samples`, `strBncsP = 5000 samples` | Touch detection behavior; hardware-sensitive. |
+| `software/firmwareCtl` | Kickup actuation | `kickDur[6] = 5 ms`, `kCueInt = 3 ms` | Solenoid pulse width and stagger interval. |
+| `software/firmwareCtl` | Display refresh | `disp_frameInt = 200 ms` | OLED command generation cadence from CTL. |
+| `software/firmwareCtl` | Internal clock basis | 24 PPQN; default `bpm = 90` | Sequencer/MIDI-clock-style timing. |
+| `software/firmwareHid` | Serial byte spacing / analog averaging | `waitS = 50 us`, `analogReadAveraging(200)` | HID serial pacing and analog stability. |
+| `software/firmwareAudio` | Control / analysis loop | `ctlInt = 10 ms`, `nFrqInt = 20 ms`, `peakInt = 20 ms` | DSP status and CTL feedback cadence. |
+
 ## `software/firmwareCtl`
 
 ### LED fretboard
