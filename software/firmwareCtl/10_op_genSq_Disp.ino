@@ -99,7 +99,7 @@ void genSq_updPttnFleds(){
   }        
 }
 
-
+//@codex "void genSq_pttnDrwGrid()" und "void genSq_pttnDrwStat()" sind nicht aktiv, wenn String Arp aktiv ist, da genSeq und strArp sie sich ja gegenseitig ausschließen. erarbeite eine Lösung, so dass die Pattern-Anzeige, bei beiden aktiv ist. 
 void genSq_pttnDrwGrid(){ 
   int inst=genSq_actInst;
   for(int i=0;i<genSq_nInst;i++){
