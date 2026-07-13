@@ -87,67 +87,6 @@ void genSq_drwStep(byte s){
   }
 }
 
-void genSq_updPttnFleds(){ 
-  genSq_pttnDrwGrid();
-  genSq_pttnDrwStat();
-  for(int s=0;s<nStrings;s++){
-    for(int p=0;p<genSq_nPttn/2;p++){
-      for(int ch=0;ch < 3; ch++){
-        trgtC[s][p+genSq_pttnMOff][ch]=genSq_pttnGridPix[s][p][ch]+genSq_pttnPttnPix[s][p][ch];
-      }
-    }
-  }        
-}
-
-//@codex "void genSq_pttnDrwGrid()" und "void genSq_pttnDrwStat()" sind nicht aktiv, wenn String Arp aktiv ist, da genSeq und strArp sie sich ja gegenseitig ausschließen. erarbeite eine Lösung, so dass die Pattern-Anzeige, bei beiden aktiv ist. 
-void genSq_pttnDrwGrid(){ 
-  int inst=genSq_actInst;
-  for(int i=0;i<genSq_nInst;i++){
-    float brght;
-    if(inst!=genSq_nInst-i-1)brght=1;
-    if(inst==genSq_nInst-i-1)brght=5;
-    for(int s=0;s<nStrings;s++){
-      for(int f=0;f<genSq_nPttn/2;f++){
-        for(int c=0;c<3;c++){  
-          if(s==i*2+1||s==i*2)genSq_pttnGridPix[s][f][c]=genSq_gridColor[genSq_nInst-i-1][c]*brght;
-        }
-      }
-    }
-  }
-}
-
-void genSq_pttnDrwStat(){ 
-  for(int s = 0;s<nStrings;s++){
-    for(int f = 0;f<genSq_nPttn/2;f++){
-      for(int c = 0;c<3;c++){
-        genSq_pttnPttnPix[s][f][c]=0;
-      }
-    }
-  }
-  for(int i=0;i<genSq_nInst;i++){
-    int actPttn=genSq_actPttn[i];
-    int edtPttn=genSq_edtPttn[i];
-    if(i==0 && strArp_modeSel){
-      int arpPttn=11-strArp_modeVal;
-      if(arpPttn<0)arpPttn=0;
-      if(arpPttn>=genSq_nPttn)arpPttn=genSq_nPttn-1;
-      actPttn=arpPttn;
-      edtPttn=arpPttn;
-    }
-    int actStr=i*2+actPttn/(genSq_nPttn/2);
-    int edtStr=i*2+edtPttn/(genSq_nPttn/2);
-    int actFrt=actPttn-genSq_nPttn/2*(actPttn/(genSq_nPttn/2));
-    int edtFrt=edtPttn-genSq_nPttn/2*(edtPttn/(genSq_nPttn/2));
-    for(int c=0;c<3;c++){  
-      float edtVal=0.07;
-      float actVal=0.25;
-      if(i==0 && strArp_modeSel && c!=2)edtVal=0, actVal=0;
-      genSq_pttnPttnPix[nStrings-1-edtStr][edtFrt][c]=edtVal;
-      genSq_pttnPttnPix[nStrings-1-actStr][actFrt][c]=actVal;
-    }
-  }
-}
-
 void genSq_updDisp(){
   int inst=genSq_actInst;
   int pttn=genSq_edtPttn[genSq_actInst];
