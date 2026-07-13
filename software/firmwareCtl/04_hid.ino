@@ -173,8 +173,8 @@ void procHidDChng(byte idx, bool val) {
       //left tripple button
       if (val == 1){
         genSq_actInst=(genSq_actInst+1)%genSq_nInst;
-        if(genSq_actInst==0 && strArp_modeSel)chOpMode(strArp_opMode);
-        else chOpMode(genSq_actInst+genSq_opMode);
+        //if(genSq_actInst==0 && strArp_modeSel)chOpMode(strArp_opMode);
+        chOpMode(genSq_actInst+genSq_opMode);
       }
       break;
 
@@ -216,13 +216,16 @@ void procHidDChng(byte idx, bool val) {
     byte s = i - pO;
     if (genSq_strEncBtnSw == 1){
       if (hidDVal[pO + s] != lastHidDVal[pO + s]) {
-        genSq_strEncFnc=nStrings-s-1;
+        if(opMode>genSq_opMode)genSq_strEncFnc=nStrings-s-1;
+        if(opMode==genSq_opMode && strArp_modeSel==0)genSq_strEncFnc=nStrings-s-1;
+        if(opMode==genSq_opMode && strArp_modeSel==1)strArp_strEncFnc=nStrings-s-1;
       }
     }
     if (genSq_strEncBtnSw == 0){
       if (hidDVal[pO + s] != lastHidDVal[pO + s]) {
-        if(opMode>=genSq_opMode)genSq_chStrBtn(s, val);
-        if(opMode==strArp_opMode)strArp_chStrBtn(s, val);
+        if(opMode>genSq_opMode)genSq_chStrBtn(s, val);
+        if(opMode==genSq_opMode && strArp_modeSel==0)genSq_chStrBtn(s, val);
+        if(opMode==genSq_opMode && strArp_modeSel==1)strArp_chStrBtn(s, val);
       }
     }
   }
@@ -365,7 +368,7 @@ void procHidRChng(byte idx, byte val) {
       if(val<genSq_nPttn){
         strArp_modeSel = 0;
         updStrAutoMode();
-        if(opMode==strArp_opMode)chOpMode(genSq_opMode);
+        //if(opMode==strArp_opMode)chOpMode(genSq_opMode);
         if(shift==0){
           schdPttnCh[idx]=val;
           for (int i=0;i<genSq_nInst;i++){
@@ -387,7 +390,7 @@ void procHidRChng(byte idx, byte val) {
         strArp_modeSel = 1;
         strArp_modeVal = val;
         updStrAutoMode();
-        if(opMode==genSq_opMode)chOpMode(strArp_opMode);
+        //if(opMode==genSq_opMode)chOpMode(strArp_opMode);
       }
       if(val==genSq_nPttn){
         strArp_modeSel = 0;
@@ -466,8 +469,10 @@ void procHidEChng(byte idx, long val) {
           if (fbrdMode==1||fbrdSeqVHld==1)strArp_chDispEnc(val);
           break;
         case genSq_opMode:
-          if (fbrdMode==0&&fbrdSeqVHld==0)scls_chDispEnc(val);
-          if (fbrdMode==1||fbrdSeqVHld==1)genSq_chDispEnc(val);
+          if (fbrdMode==0&&fbrdSeqVHld==0&&strArp_modeSel==0)scls_chDispEnc(val);
+          if (fbrdMode==1||fbrdSeqVHld==1&&strArp_modeSel==0)genSq_chDispEnc(val);
+          if (fbrdMode==0&&fbrdSeqVHld==0&&strArp_modeSel==1)scls_chDispEnc(val);
+          if (fbrdMode==1||fbrdSeqVHld==1&&strArp_modeSel==1)strArp_chDispEnc(val);
           break;
         case genSq_opMode+1:
           if (fbrdMode==0&&fbrdSeqVHld==0)scls_chDispEnc(val);
@@ -491,7 +496,8 @@ void procHidEChng(byte idx, long val) {
               strArp_chStrEnc(s, val);
               break;
             case genSq_opMode:
-              if (strHold[s]==0) genSq_chStrEnc(s, val); //change only if string is not hold
+              if(strHold[s]==0&&strArp_modeSel==0) genSq_chStrEnc(s, val); //change only if string is not hold
+              if(strArp_modeSel==1)strArp_chStrEnc(s, val);
               break;
             case genSq_opMode+1:
               genSq_chStrEnc(s, val);
@@ -527,7 +533,8 @@ void procHidEChng(byte idx, long val) {
           strArp_chStrEnc(s, val);
           break;
         case genSq_opMode:
-          genSq_chStrEnc(s, val);
+          if(strArp_modeSel==0)genSq_chStrEnc(s, val);
+          if(strArp_modeSel==1)strArp_chStrEnc(s, val);
           break;
         case genSq_opMode+1:
           genSq_chStrEnc(s, val);
