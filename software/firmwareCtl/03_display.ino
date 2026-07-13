@@ -113,9 +113,9 @@ void buildDisplayJob(){
       break;
     case genSq_opMode:
       if(fbrdMode==0&&fbrdSeqVHld==0&&strArp_modeSel==0)scls_updDisp();
-      if(fbrdMode==1||fbrdSeqVHld==1&&strArp_modeSel==0)genSq_updDisp();
+      if((fbrdMode==1||fbrdSeqVHld==1)&&strArp_modeSel==0)genSq_updDisp();
       if(fbrdMode==0&&fbrdSeqVHld==0&&strArp_modeSel==1)scls_updDisp();
-      if(fbrdMode==1||fbrdSeqVHld==1&&strArp_modeSel==1)strArp_updDisp();
+      if((fbrdMode==1||fbrdSeqVHld==1)&&strArp_modeSel==1)strArp_updDisp();
       break;
     case genSq_opMode+1:
       if(fbrdMode==0&&fbrdSeqVHld==0)scls_updDisp();
