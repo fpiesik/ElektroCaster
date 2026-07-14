@@ -28,10 +28,10 @@ void chngBpm(float bpm){
 
 void updIntClock(){
   //long micro=micros();
-  if (micros()-intClockTimer >= intClockInt && extClk==0){
+  if (micros()-intClockTimer >= intClockInt){
     if(fbrdMode == 1 && opMode != strArp_opMode) mtOut = 1, sndVol(0);  
     else mtOut = 0, sndVol(vol); 
-    if(clckOn){
+    if(clckOn && extClk==0){
       //intClockTimer+=intClockInt;
       //intClockTimer = micro;
       mClock++;
@@ -39,6 +39,7 @@ void updIntClock(){
       cmpClck(mClock);        
     }
     intClockTimer+=intClockInt;
+    updDisplay();
   }
 }
 

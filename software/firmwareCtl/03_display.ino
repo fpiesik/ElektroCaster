@@ -70,7 +70,8 @@ void updDisplay(){
   if (displayJobStale()) cancelDisplayJob();
 
   if (!disp_jobActive){
-    if (!displayStateChanged() && millis()-disp_frameTimer <= disp_frameInt) return;
+    //if (!displayStateChanged() && millis()-disp_frameTimer <= disp_frameInt) return;
+    //if (!displayStateChanged) return;
     buildDisplayJob();
   }
 
@@ -109,8 +110,8 @@ void buildDisplayJob(){
       strSetup_updDisp();
       break;
     case strArp_opMode:
-      if(fbrdMode==0)strArp_updDisp();
-      if(fbrdMode==1)strArp_updDisp();
+      //if(fbrdMode==0)strArp_updDisp();
+      //if(fbrdMode==1)strArp_updDisp();
       break;
     case genSq_opMode:
       if(fbrdMode==0&&fbrdSeqVHld==0&&strArp_modeSel==0)scls_updDisp();

@@ -111,27 +111,30 @@ void strArp_updClck(){
 
     for(int s=0;s<nStrings;s++){
       static int tmDv[nStrings];
+      int chnl = genSq_chn[0][0][s][genSq_strEncFnc_chn]; //midi channel is derived from first pattern of the firs instance of the genSeq
       if(pulse != lastPulse && tmDv[s] != strArp_tmDv[s]){
         tmDv[s]=strArp_tmDv[s];
         strArp_nxtClkFil[s]=strArp_tmDv[s];
         //drmSq_sync();
       }
       strArp_nxtClkFil[s]++;
+      if(strArp_nxtClkFil[s] == strArp_tmDv[s]-1){
+        if(strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
+          if(frtb_sensMode==0)sndMidiNotePress(s,0,chnl);
+        }
+      }
       if (strArp_nxtClkFil[s] >= strArp_tmDv[s]){
         strArp_nxtClkFil[s]=0;
-        
-          
-          //if(strPrs[s]==0)strArp_clk[s]=-1;
+        if(frtb_sensMode==0 && strPrs[s]==0)sndMidiNotePress(s,0,chnl);
         if(strArp_stp[s][strArp_clk[s]]==1 && strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
-          if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s],mInst_chn);
+          if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s],chnl);
           sndTrigEnv(s, strPrs[s]);
           kick(s);
         }
         strArp_clk[s]++;
         if(strArp_clk[s]>=strArp_nStps[s])strArp_clk[s]=0;
       }
-      //if(strPrs[s] == 0)strArp_clk[s]=-1;
-      if(frtb_sensMode==0 && strPrs[s]==0)sndMidiNotePress(s,strPrs[s],mInst_chn);
+      
     }
     //strArp_drwGrid();
     strArp_drwCursor();
