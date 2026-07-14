@@ -128,7 +128,7 @@ void strArp_updClck(){
         if(frtb_sensMode==0 && strPrs[s]==0)sndMidiNotePress(s,0,chnl);
         if(strArp_stp[s][strArp_clk[s]]==1 && strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
           if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s],chnl);
-          sndTrigEnv(s, strPrs[s]);
+          sndTrigEnv(s, 1);
           kick(s);
         }
         strArp_clk[s]++;
