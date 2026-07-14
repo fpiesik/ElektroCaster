@@ -82,7 +82,7 @@ void strArp_updDisp(){
     if(strArp_strEncFnc==0)disp_Int(108-s*21, 55, strArp_nRpt[s]);
     if(strArp_strEncFnc==1)disp_Str(108-s*21, 55, strArp_tmDvNm[strArp_tmDvSel[s]]);
   }
-  
+
   disp_Color(1);
 }
 
@@ -109,33 +109,8 @@ void strArp_updClck(){
   if(strArp_act == 1){  
     strArp_mkArp();
 
-    for(int s=0;s<nStrings;s++){
-      static int tmDv[nStrings];
-      int chnl = genSq_chn[0][0][s][genSq_strEncFnc_chn]; //midi channel is derived from first pattern of the firs instance of the genSeq
-      if(pulse != lastPulse && tmDv[s] != strArp_tmDv[s]){
-        tmDv[s]=strArp_tmDv[s];
-        strArp_nxtClkFil[s]=strArp_tmDv[s];
-        //drmSq_sync();
-      }
-      strArp_nxtClkFil[s]++;
-      if(strArp_nxtClkFil[s] == strArp_tmDv[s]-1){
-        if(strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
-          if(frtb_sensMode==0)sndMidiNotePress(s,0,chnl);
-        }
-      }
-      if (strArp_nxtClkFil[s] >= strArp_tmDv[s]){
-        strArp_nxtClkFil[s]=0;
-        if(frtb_sensMode==0 && strPrs[s]==0)sndMidiNotePress(s,0,chnl);
-        if(strArp_stp[s][strArp_clk[s]]==1 && strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
-          if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s],chnl);
-          sndTrigEnv(s, 1);
-          kick(s);
-        }
-        strArp_clk[s]++;
-        if(strArp_clk[s]>=strArp_nStps[s])strArp_clk[s]=0;
-      }
-      
-    }
+    if(strArp_strPrsFnc == strArp_modeSerial)strArp_updClckSerial();
+    if(strArp_strPrsFnc == strArp_modeParallel)strArp_updClckParallel();
     //strArp_drwGrid();
     strArp_drwCursor();
     strArp_drwStep();
@@ -145,11 +120,83 @@ void strArp_updClck(){
   }
 }
 
+void strArp_updClckParallel(){
+  for(int s=0;s<nStrings;s++){
+    static int tmDv[nStrings];
+    int chnl = genSq_chn[0][0][s][genSq_strEncFnc_chn]; //midi channel is derived from first pattern of the firs instance of the genSeq
+    if(pulse != lastPulse && tmDv[s] != strArp_tmDv[s]){
+      tmDv[s]=strArp_tmDv[s];
+      strArp_nxtClkFil[s]=strArp_tmDv[s];
+      //drmSq_sync();
+    }
+    strArp_nxtClkFil[s]++;
+    if(strArp_nxtClkFil[s] == strArp_tmDv[s]-1){
+      if(strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
+        if(frtb_sensMode==0)sndMidiNotePress(s,0,chnl);
+      }
+    }
+    if (strArp_nxtClkFil[s] >= strArp_tmDv[s]){
+      strArp_nxtClkFil[s]=0;
+      if(frtb_sensMode==0 && strPrs[s]==0)sndMidiNotePress(s,0,chnl);
+      if(strArp_stp[s][strArp_clk[s]]==1 && strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
+        if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s],chnl);
+        sndTrigEnv(s, 1);
+        kick(s);
+      }
+      strArp_clk[s]++;
+      if(strArp_clk[s]>=strArp_nStps[s])strArp_clk[s]=0;
+    }
+
+  }
+}
+
+void strArp_updClckSerial(){
+  if(strArp_seqLen == 0){
+    for(int s = 0; s<nStrings; s++){
+      strArp_clk[s]=-1;
+    }
+    strArp_serialStep=0;
+    strArp_serialNxtClkFil=0;
+    return;
+  }
+
+  if(strArp_serialStep >= strArp_seqLen)strArp_serialStep=0;
+  byte s = strArp_seq[strArp_serialStep];
+  int chnl = genSq_chn[0][0][s][genSq_strEncFnc_chn]; //midi channel is derived from first pattern of the firs instance of the genSeq
+
+  strArp_serialNxtClkFil++;
+  if(strArp_serialNxtClkFil == strArp_tmDv[s]-1){
+    if(strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
+      if(frtb_sensMode==0)sndMidiNotePress(s,0,chnl);
+    }
+  }
+  if(strArp_serialNxtClkFil >= strArp_tmDv[s]){
+    strArp_serialNxtClkFil=0;
+    if(frtb_sensMode==0 && strPrs[s]==0)sndMidiNotePress(s,0,chnl);
+    if(strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
+      if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s],chnl);
+      sndTrigEnv(s, 1);
+      kick(s);
+    }
+    strArp_serialStep++;
+    if(strArp_serialStep>=strArp_seqLen)strArp_serialStep=0;
+  }
+
+  for(int i = 0; i<nStrings; i++){
+    strArp_clk[i]=-1;
+  }
+  byte cursorString = strArp_seq[strArp_serialStep];
+  strArp_clk[cursorString]=strArp_serialStep;
+}
+
 void strArp_sync(){
   for(int s = 0; s<nStrings; s++){
       strArp_nxtClkFil[s]=strArp_tmDv[s];
       strArp_clk[s]=0;
   }
+  strArp_serialStep=0;
+  strArp_serialNxtClkFil=0;
+  if(strArp_seqLen > 0)strArp_serialNxtClkFil=strArp_tmDv[strArp_seq[0]];
 }
 
 void strArp_drwGrid(){
@@ -157,7 +204,7 @@ void strArp_drwGrid(){
   float colorB[3]={0.05,0,0};
   float colorMA[3]={0.1,0,0};
   float colorMB[3]={0.02,0,0};
-  
+
   for(int s=0;s<nStrings;s++){
     for(int f=0;f<strArp_maxVisSteps;f++){
       for(int c=0;c<3;c++){    
@@ -186,7 +233,7 @@ void strArp_drwCursor(){
     }
    for(int s=0;s<nStrings;s++){
     for(int c=0;c<3;c++){    
-      if(strArp_clk[s]>=0)strArp_crsrPix[s][strArp_clk[s]][c]=color[c];
+      if(strArp_clk[s]>=0 && strArp_clk[s]<strArp_maxVisSteps)strArp_crsrPix[s][strArp_clk[s]][c]=color[c];
     }
   }
 }
@@ -215,7 +262,7 @@ void strArp_mkArp(){
   byte arpSize=0;
   byte arpSeq[64];
 
-  
+
 //  if(arpMode==2||arpMode==3||arpMode==6||arpMode==7)orderSrc=1;
 //  if(arpMode==1||arpMode==3||arpMode==5||arpMode==7)flip=1;
 //  if(arpMode==4||arpMode==5||arpMode==6||arpMode==7)mirror=1;
@@ -225,16 +272,20 @@ void strArp_mkArp(){
 
   //calculate size of the sequence
   for(int s=0;s<nStrings;s++){
-    if(strPrs[s]>0)arpSize=arpSize+strArp_nRpt[s];
+    if(strPrs[s]>0){
+      for(int r=0;r<strArp_nRpt[s] && arpSize<strArp_maxSteps;r++){
+        arpSize++;
+      }
+    }
   }
-  
+
   int arpIdx=0;
 
   //-----make arp sequence by string order
   if(1){
     for(int s=0;s<nStrings;s++){
       if(strPrs[s]>0){
-        for(int r=0;r<strArp_nRpt[s];r++){
+        for(int r=0;r<strArp_nRpt[s] && arpIdx<strArp_maxSteps;r++){
           arpSeq[arpIdx]=s;
           arpIdx++;
         }  
@@ -254,12 +305,19 @@ void strArp_mkArp(){
   }
 
   if(mirror==1){
-    for(int i=0;i<arpSize;i++){
-      arpSeq[i+arpSize]=arpSeq[arpSize-i-1];
+    int baseSize=arpSize;
+    for(int i=0;i<baseSize && arpSize<strArp_maxSteps;i++){
+      arpSeq[baseSize+i]=arpSeq[baseSize-i-1];
+      arpSize++;
     }
-    arpSize=arpSize*2;
   }
-  
+
+  strArp_seqLen=arpSize;
+  for(int i=0;i<arpSize;i++){
+    strArp_seq[i]=arpSeq[i];
+  }
+  if(strArp_serialStep>=strArp_seqLen)strArp_serialStep=0;
+
   //---copy arp sequence to sequencer----
   for(int i=0;i<arpSize;i++){
   strArp_stp[arpSeq[i]][i]=1;  
