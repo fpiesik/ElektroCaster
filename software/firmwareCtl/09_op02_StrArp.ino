@@ -162,6 +162,8 @@ void strArp_silenceInactiveSerialNotes(){
 }
 
 void strArp_updClckSerial(){
+  static int strArp_serialDisplayStep = -1;
+
   strArp_silenceInactiveSerialNotes();
 
   if(strArp_seqLen == 0){
@@ -169,11 +171,13 @@ void strArp_updClckSerial(){
       strArp_clk[s]=-1;
     }
     strArp_serialStep=0;
+    strArp_serialDisplayStep=-1;
     strArp_serialNxtClkFil=0;
     return;
   }
 
   if(strArp_serialStep >= strArp_seqLen)strArp_serialStep=0;
+  if(strArp_serialDisplayStep >= strArp_seqLen)strArp_serialDisplayStep=-1;
   byte s = strArp_seq[strArp_serialStep];
   int chnl = genSq_chn[0][0][s][genSq_strEncFnc_chn]; //midi channel is derived from first pattern of the firs instance of the genSeq
 
@@ -201,6 +205,7 @@ void strArp_updClckSerial(){
       sndTrigEnv(s, 1);
       kick(s);
     }
+    strArp_serialDisplayStep=strArp_serialStep;
     strArp_serialStep++;
     if(strArp_serialStep>=strArp_seqLen)strArp_serialStep=0;
   }
@@ -208,8 +213,10 @@ void strArp_updClckSerial(){
   for(int i = 0; i<nStrings; i++){
     strArp_clk[i]=-1;
   }
-  byte cursorString = strArp_seq[strArp_serialStep];
-  strArp_clk[cursorString]=strArp_serialStep;
+  if(strArp_serialDisplayStep >= 0){
+    byte cursorString = strArp_seq[strArp_serialDisplayStep];
+    strArp_clk[cursorString]=strArp_serialDisplayStep;
+  }
 }
 
 void strArp_sync(){
