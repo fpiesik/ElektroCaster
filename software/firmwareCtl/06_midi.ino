@@ -39,7 +39,7 @@ void sndMidiNotePress(int str, int frt, int chn){
     sndMidiNote(note,127, chn);
   }    
   if (frt == 0){ 
-    sndMidiNote(lastNote[str],0, lastChn[str]);
+    if (lastNote[str]!=0) sndMidiNote(lastNote[str],0, lastChn[str]);
     lastNote[str]=0;
   }
 }

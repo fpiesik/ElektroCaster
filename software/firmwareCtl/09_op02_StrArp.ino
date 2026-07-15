@@ -150,7 +150,20 @@ void strArp_updClckParallel(){
   }
 }
 
+void strArp_silenceInactiveSerialNotes(){
+  if(frtb_sensMode!=0)return;
+
+  for(int i = 0; i<nStrings; i++){
+    if(strPrs[i] == 0 || strArp_muteCh[i] == 1 || mtOut != 0 || strPrs[i] > nFrets-genSq_nPttn/2-1){
+      int chnl = genSq_chn[0][0][i][genSq_strEncFnc_chn];
+      sndMidiNotePress(i,0,chnl);
+    }
+  }
+}
+
 void strArp_updClckSerial(){
+  strArp_silenceInactiveSerialNotes();
+
   if(strArp_seqLen == 0){
     for(int s = 0; s<nStrings; s++){
       strArp_clk[s]=-1;
