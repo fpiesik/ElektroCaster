@@ -162,8 +162,6 @@ void strArp_silenceInactiveSerialNotes(){
 }
 
 void strArp_updClckSerial(){
-  static int strArp_serialDisplayStep = -1;
-
   strArp_silenceInactiveSerialNotes();
 
   if(strArp_seqLen == 0){
@@ -225,6 +223,7 @@ void strArp_sync(){
       strArp_clk[s]=0;
   }
   strArp_serialStep=0;
+  strArp_serialDisplayStep=-1;
   strArp_serialNxtClkFil=0;
   if(strArp_seqLen > 0)strArp_serialNxtClkFil=strArp_tmDv[strArp_seq[0]];
 }

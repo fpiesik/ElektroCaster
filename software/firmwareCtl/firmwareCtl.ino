@@ -144,6 +144,7 @@ const int chipSelect = BUILTIN_SDCARD;
   byte strArp_seq[strArp_maxSteps];
   byte strArp_seqLen=0;
   byte strArp_serialStep=0;
+  int strArp_serialDisplayStep=-1;
   byte strArp_serialNxtClkFil=0;
   byte strArp_tmDv[nStrings]={6,6,6,6,6,6};
   byte strArp_tmDvs[12]={96,64,48,32,24,16,12,8,6,4,3,2};
