@@ -182,17 +182,20 @@ void strArp_updClckSerial(){
   if(strArp_serialStep >= strArp_seqLen)strArp_serialStep=0;
   if(strArp_serialDisplayStep >= strArp_seqLen)strArp_serialDisplayStep=-1;
   byte s = strArp_seq[strArp_serialStep];
+  // Time the next trigger from the currently playing step, not the upcoming one.
+  byte durationString = s;
+  if(strArp_serialDisplayStep >= 0)durationString=strArp_seq[strArp_serialDisplayStep];
   int chnl = genSq_chn[0][0][s][genSq_strEncFnc_chn]; //midi channel is derived from first pattern of the firs instance of the genSeq
 
   strArp_serialNxtClkFil++;
   
-  //if(strArp_serialNxtClkFil == strArp_tmDv[s]-1){
+  //if(strArp_serialNxtClkFil == strArp_tmDv[durationString]-1){
   //  if(strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
   //    if(frtb_sensMode==0)sndMidiNotePress(s,0,chnl);
   //  }
   //}
   
-  if(strArp_serialNxtClkFil >= strArp_tmDv[s]){
+  if(strArp_serialNxtClkFil >= strArp_tmDv[durationString]){
     strArp_serialNxtClkFil=0;
     if(frtb_sensMode==0){
       for(int i = 0; i<nStrings; i++){
