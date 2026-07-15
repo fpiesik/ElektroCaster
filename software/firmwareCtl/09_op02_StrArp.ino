@@ -187,6 +187,14 @@ void strArp_updClckSerial(){
   
   if(strArp_serialNxtClkFil >= strArp_tmDv[s]){
     strArp_serialNxtClkFil=0;
+    if(frtb_sensMode==0){
+      for(int i = 0; i<nStrings; i++){
+        if(i != s){
+          int offChnl = genSq_chn[0][0][i][genSq_strEncFnc_chn];
+          sndMidiNotePress(i,0,offChnl);
+        }
+      }
+    }
     if(frtb_sensMode==0 && strPrs[s]==0)sndMidiNotePress(s,0,chnl);
     if(strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
       if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s],chnl);
