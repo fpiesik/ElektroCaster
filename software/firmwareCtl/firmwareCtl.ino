@@ -160,8 +160,10 @@ const int chipSelect = BUILTIN_SDCARD;
   const byte strArp_nStrPrsFnc=2;
   byte strArp_strPrsFnc=0;
   
-  const char* strArp_strEncNm[]={"steps", "tmDv"}; 
-  const byte strArp_nStrEncFnc=2;
+  const byte strArp_strEncFnc_stps=0;
+  const byte strArp_strEncFnc_tmDv=1;
+  const char* strArp_strEncNm[]={"steps", "tmDv"};
+  const byte strArp_nStrEncFnc=sizeof(strArp_strEncNm)/sizeof(strArp_strEncNm[0]);
   byte strArp_strEncFnc=0;
   
   const char* strArp_strBtnNm[]={"mute", "randomise"};
@@ -199,15 +201,15 @@ const int chipSelect = BUILTIN_SDCARD;
   const int genSq_maxStpV[genSq_nStrPrsFnc]={12,9,50,99,99,99};
   int genSq_strPrsFnc=0;
 
-  const char* genSq_strEncNm[]={"tmDv","offSt","stps","sync","chn"};
-  const int genSq_strEncFnc_stps=2;
   const int genSq_strEncFnc_tmDv=0;
   const int genSq_strEncFnc_offSt=1;
+  const int genSq_strEncFnc_stps=2;
   const int genSq_strEncFnc_sync=3;
   const int genSq_strEncFnc_chn=4;
+  const char* genSq_strEncNm[]={"tmDv","offSt","stps","sync","chn"};
 
-  const int genSq_nStrEncFnc=5;
-  const int genSeq_maxEncV[genSq_nStrPrsFnc]={genSq_nTmDvs,16,genSq_maxVisSteps,6,16};
+  const int genSq_nStrEncFnc=sizeof(genSq_strEncNm)/sizeof(genSq_strEncNm[0]);
+  const int genSeq_maxEncV[genSq_nStrEncFnc]={genSq_nTmDvs,16,genSq_maxVisSteps,6,16};
   int genSq_strEncFnc=0;
   int genSq_strEncChAStps=0;
 
