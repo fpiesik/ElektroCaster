@@ -161,6 +161,13 @@ void strArp_silenceInactiveSerialNotes(){
   }
 }
 
+void strArp_resetSerialCursor(){
+  strArp_serialStep=0;
+  strArp_serialDisplayStep=-1;
+  strArp_serialNxtClkFil=0;
+  if(strArp_seqLen > 0)strArp_serialNxtClkFil=strArp_tmDv[strArp_seq[0]];
+}
+
 void strArp_updClckSerial(){
   strArp_silenceInactiveSerialNotes();
 
@@ -168,9 +175,7 @@ void strArp_updClckSerial(){
     for(int s = 0; s<nStrings; s++){
       strArp_clk[s]=-1;
     }
-    strArp_serialStep=0;
-    strArp_serialDisplayStep=-1;
-    strArp_serialNxtClkFil=0;
+    strArp_resetSerialCursor();
     return;
   }
 
@@ -222,10 +227,7 @@ void strArp_sync(){
       strArp_nxtClkFil[s]=strArp_tmDv[s];
       strArp_clk[s]=0;
   }
-  strArp_serialStep=0;
-  strArp_serialDisplayStep=-1;
-  strArp_serialNxtClkFil=0;
-  if(strArp_seqLen > 0)strArp_serialNxtClkFil=strArp_tmDv[strArp_seq[0]];
+  strArp_resetSerialCursor();
 }
 
 void strArp_drwGrid(){
