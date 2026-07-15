@@ -380,22 +380,17 @@ void procHidRChng(byte idx, byte val) {
         }
         genSq_edtPttn[idx]=val;
       }
-      if(val<=genSq_nPttn){
+      if(val<genSq_nPttn){
         for (int i=0;i<genSq_nInst;i++){
           if(val==11-i)genSq_syncInst[idx]=i;
           if(val<=11-genSq_nInst)genSq_syncInst[idx]=-1;
         }
       }
-      if(val>genSq_nPttn){
+      if(val>=genSq_nPttn){
         strArp_modeSel = 1;
         strArp_modeVal = val;
         updStrAutoMode();
         //if(opMode==genSq_opMode)chOpMode(strArp_opMode);
-      }
-      if(val==genSq_nPttn){
-        strArp_modeSel = 0;
-        updStrAutoMode();
-        chOpMode(0);
       }
       break;
 
