@@ -36,6 +36,9 @@ void strArp_chStrEnc(byte s, int val){
       strArp_tmDvSel[s] = (strArp_tmDvSel[s] + val)%strArp_nTmDvs;
       strArp_tmDv[s]=strArp_tmDvs[strArp_tmDvSel[s]];
       break;
+    case strArp_strEncFnc_chn:
+      strArp_chn[s] = constrain(strArp_chn[s] + val, 0, 16);
+      break;
   }
 }
 
@@ -81,6 +84,7 @@ void strArp_updDisp(){
   for(int s =0; s < nStrings;s++){
     if(strArp_strEncFnc==strArp_strEncFnc_stps)disp_Int(108-s*21, 55, strArp_nRpt[s]);
     if(strArp_strEncFnc==strArp_strEncFnc_tmDv)disp_Str(108-s*21, 55, strArp_tmDvNm[strArp_tmDvSel[s]]);
+    if(strArp_strEncFnc==strArp_strEncFnc_chn)disp_Int(108-s*21, 55, strArp_chn[s]);
   }
 
   disp_Color(1);
@@ -123,7 +127,7 @@ void strArp_updClck(){
 void strArp_updClckParallel(){
   for(int s=0;s<nStrings;s++){
     static int tmDv[nStrings];
-    int chnl = genSq_chn[0][0][s][genSq_strEncFnc_chn]; //midi channel is derived from first pattern of the firs instance of the genSeq
+    int chnl = strArp_chn[s];
     if(pulse != lastPulse && tmDv[s] != strArp_tmDv[s]){
       tmDv[s]=strArp_tmDv[s];
       strArp_nxtClkFil[s]=strArp_tmDv[s];
@@ -155,7 +159,7 @@ void strArp_silenceInactiveSerialNotes(){
 
   for(int i = 0; i<nStrings; i++){
     if(strPrs[i] == 0 || strArp_muteCh[i] == 1 || mtOut != 0 || strPrs[i] > nFrets-genSq_nPttn/2-1){
-      int chnl = genSq_chn[0][0][i][genSq_strEncFnc_chn];
+      int chnl = strArp_chn[i];
       sndMidiNotePress(i,0,chnl);
     }
   }
@@ -185,7 +189,7 @@ void strArp_updClckSerial(){
   // Time the next trigger from the currently playing step, not the upcoming one.
   byte durationString = s;
   if(strArp_serialDisplayStep >= 0)durationString=strArp_seq[strArp_serialDisplayStep];
-  int chnl = genSq_chn[0][0][s][genSq_strEncFnc_chn]; //midi channel is derived from first pattern of the firs instance of the genSeq
+  int chnl = strArp_chn[s];
 
   strArp_serialNxtClkFil++;
   
@@ -200,7 +204,7 @@ void strArp_updClckSerial(){
     if(frtb_sensMode==0){
       for(int i = 0; i<nStrings; i++){
         if(i != s){
-          int offChnl = genSq_chn[0][0][i][genSq_strEncFnc_chn];
+          int offChnl = strArp_chn[i];
           sndMidiNotePress(i,0,offChnl);
         }
       }

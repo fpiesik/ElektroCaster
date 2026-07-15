@@ -153,6 +153,7 @@ const int chipSelect = BUILTIN_SDCARD;
   byte strArp_nTmDvs=12;
   byte strArp_nxtClkFil[nStrings];
   byte strArp_nRpt[nStrings] = {1,1,1,1,1,1};
+  byte strArp_chn[nStrings] = {1,1,1,1,1,1};
 
   const byte strArp_modeSerial=0;
   const byte strArp_modeParallel=1;
@@ -162,7 +163,8 @@ const int chipSelect = BUILTIN_SDCARD;
   
   const byte strArp_strEncFnc_stps=0;
   const byte strArp_strEncFnc_tmDv=1;
-  const char* strArp_strEncNm[]={"steps", "tmDv"};
+  const byte strArp_strEncFnc_chn=2;
+  const char* strArp_strEncNm[]={"steps", "tmDv", "chn"};
   const byte strArp_nStrEncFnc=sizeof(strArp_strEncNm)/sizeof(strArp_strEncNm[0]);
   byte strArp_strEncFnc=0;
   
