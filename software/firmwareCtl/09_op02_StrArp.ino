@@ -178,11 +178,13 @@ void strArp_updClckSerial(){
   int chnl = genSq_chn[0][0][s][genSq_strEncFnc_chn]; //midi channel is derived from first pattern of the firs instance of the genSeq
 
   strArp_serialNxtClkFil++;
-  if(strArp_serialNxtClkFil == strArp_tmDv[s]-1){
-    if(strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
-      if(frtb_sensMode==0)sndMidiNotePress(s,0,chnl);
-    }
-  }
+  
+  //if(strArp_serialNxtClkFil == strArp_tmDv[s]-1){
+  //  if(strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
+  //    if(frtb_sensMode==0)sndMidiNotePress(s,0,chnl);
+  //  }
+  //}
+  
   if(strArp_serialNxtClkFil >= strArp_tmDv[s]){
     strArp_serialNxtClkFil=0;
     if(frtb_sensMode==0 && strPrs[s]==0)sndMidiNotePress(s,0,chnl);
