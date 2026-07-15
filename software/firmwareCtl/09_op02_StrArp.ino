@@ -27,11 +27,11 @@ void strArp_chDispEnc(int val){
 
 void strArp_chStrEnc(byte s, int val){
   switch(strArp_strEncFnc){
-    case 0:
+    case strArp_strEncFnc_stps:
       if(strArp_nRpt[s] + val < 1) strArp_nRpt[s]=1;
       strArp_nRpt[s] = strArp_nRpt[s] + val;
       break;
-    case 1:
+    case strArp_strEncFnc_tmDv:
       if(strArp_tmDvSel[s] + val < 0) strArp_tmDvSel[s]=strArp_nTmDvs;
       strArp_tmDvSel[s] = (strArp_tmDvSel[s] + val)%strArp_nTmDvs;
       strArp_tmDv[s]=strArp_tmDvs[strArp_tmDvSel[s]];
@@ -79,8 +79,8 @@ void strArp_updDisp(){
 
   disp_Color(1);
   for(int s =0; s < nStrings;s++){
-    if(strArp_strEncFnc==0)disp_Int(108-s*21, 55, strArp_nRpt[s]);
-    if(strArp_strEncFnc==1)disp_Str(108-s*21, 55, strArp_tmDvNm[strArp_tmDvSel[s]]);
+    if(strArp_strEncFnc==strArp_strEncFnc_stps)disp_Int(108-s*21, 55, strArp_nRpt[s]);
+    if(strArp_strEncFnc==strArp_strEncFnc_tmDv)disp_Str(108-s*21, 55, strArp_tmDvNm[strArp_tmDvSel[s]]);
   }
 
   disp_Color(1);
