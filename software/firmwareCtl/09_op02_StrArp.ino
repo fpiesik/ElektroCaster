@@ -118,7 +118,7 @@ void strArp_updClck(){
   if(strArp_act == 1){  
     strArp_mkArp();
 
-    strArp_updClckHybrid();
+    strArp_updClckSerial();
     //strArp_drwGrid();
     strArp_drwCursor();
     strArp_drwStep();
@@ -128,52 +128,6 @@ void strArp_updClck(){
   }
 }
 
-void strArp_updClckParallel(){
-  strArp_updClckParallelMode(strArp_modeSerial);
-}
-
-void strArp_updClckParallelMode(byte mode){
-  for(int s=0;s<nStrings;s++){
-    if(strArp_mode[s] != mode)continue;
-    static int tmDv[nStrings];
-    int chnl = strArp_chn[s];
-    if(pulse != lastPulse && tmDv[s] != strArp_tmDv[s]){
-      tmDv[s]=strArp_tmDv[s];
-      strArp_nxtClkFil[s]=strArp_tmDv[s];
-      //drmSq_sync();
-    }
-    strArp_nxtClkFil[s]++;
-    if(strArp_nxtClkFil[s] == strArp_tmDv[s]-1){
-      if(strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
-        if(frtb_sensMode==0)sndMidiNotePress(s,0,chnl);
-      }
-    }
-    if (strArp_nxtClkFil[s] >= strArp_tmDv[s]){
-      strArp_nxtClkFil[s]=0;
-      if(frtb_sensMode==0 && strPrs[s]==0)sndMidiNotePress(s,0,chnl);
-      if(strArp_stp[s][strArp_clk[s]]==1 && strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
-        if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s],chnl);
-        sndTrigEnv(s, 1);
-        kick(s);
-      }
-      strArp_clk[s]++;
-      if(strArp_clk[s]>=strArp_nStps[s])strArp_clk[s]=0;
-    }
-
-  }
-}
-
-void strArp_silenceInactiveSerialNotes(){
-  if(frtb_sensMode!=0)return;
-
-  for(int i = 0; i<nStrings; i++){
-    if(strArp_mode[i] != strArp_modeSerial)continue;
-    if(strPrs[i] == 0 || strArp_muteCh[i] == 1 || mtOut != 0 || strPrs[i] > nFrets-genSq_nPttn/2-1){
-      int chnl = strArp_chn[i];
-      sndMidiNotePress(i,0,chnl);
-    }
-  }
-}
 
 void strArp_resetSerialCursor(){
   strArp_serialStep=0;
@@ -182,40 +136,25 @@ void strArp_resetSerialCursor(){
   if(strArp_seqLen > 0)strArp_serialNxtClkFil=strArp_tmDv[strArp_seq[0]];
 }
 
-byte strArp_serialDurationString(){
-  if(strArp_seqLen == 0)return 0;
-  if(strArp_serialDisplayStep >= 0 && strArp_serialDisplayStep < strArp_seqLen)return strArp_seq[strArp_serialDisplayStep];
-  byte step = strArp_serialStep;
-  if(step >= strArp_seqLen)step=0;
-  return strArp_seq[step];
-}
 
-void strArp_syncParallelClocksToSerial(){
-  if(strArp_seqLen == 0)return;
+void strArp_silenceInactiveSerialNotes(){
+  if(frtb_sensMode!=0)return;
 
-  byte durationString = strArp_serialDurationString();
-  byte serialTmDv = strArp_tmDv[durationString];
-  for(int s = 0; s<nStrings; s++){
-    if(strArp_mode[s] != strArp_modeParallel)continue;
-    if(strArp_tmDv[s] != serialTmDv)continue;
-    strArp_nxtClkFil[s]=strArp_serialNxtClkFil;
-    strArp_clk[s]=strArp_serialStep;
-    if(strArp_clk[s]>=strArp_nStps[s])strArp_clk[s]=0;
+  for(int i = 0; i<nStrings; i++){
+    if(strPrs[i] == 0 || strArp_muteCh[i] == 1 || mtOut != 0 || strPrs[i] > nFrets-genSq_nPttn/2-1){
+      int chnl = strArp_chn[i];
+      sndMidiNotePress(i,0,chnl);
+    }
   }
 }
 
-void strArp_updClckHybrid(){
-  strArp_syncParallelClocksToSerial();
-  strArp_updClckParallelMode(strArp_modeParallel);
-  strArp_updClckSerial();
-}
 
 void strArp_updClckSerial(){
   strArp_silenceInactiveSerialNotes();
 
   if(strArp_seqLen == 0){
     for(int s = 0; s<nStrings; s++){
-      if(strArp_mode[s] == strArp_modeSerial)strArp_clk[s]=-1;
+      strArp_clk[s]=-1;
     }
     strArp_resetSerialCursor();
     return;
@@ -241,19 +180,17 @@ void strArp_updClckSerial(){
     strArp_serialNxtClkFil=0;
     if(frtb_sensMode==0){
       for(int i = 0; i<nStrings; i++){
-        if(i != s && strArp_mode[i] == strArp_modeSerial){
+        if(i != s){
           int offChnl = strArp_chn[i];
           sndMidiNotePress(i,0,offChnl);
         }
       }
     }
-    if(strArp_mode[s] == strArp_modeSerial){
-      if(frtb_sensMode==0 && strPrs[s]==0)sndMidiNotePress(s,0,chnl);
-      if(strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
-        if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s],chnl);
-        sndTrigEnv(s, 1);
-        kick(s);
-      }
+    if(frtb_sensMode==0 && strPrs[s]==0)sndMidiNotePress(s,0,chnl);
+    if(strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
+      if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s],chnl);
+      sndTrigEnv(s, 1);
+      kick(s);
     }
     strArp_serialDisplayStep=strArp_serialStep;
     strArp_serialStep++;
@@ -261,7 +198,7 @@ void strArp_updClckSerial(){
   }
 
   for(int i = 0; i<nStrings; i++){
-    if(strArp_mode[i] == strArp_modeSerial)strArp_clk[i]=-1;
+    strArp_clk[i]=-1;
   }
   if(strArp_serialDisplayStep >= 0){
     byte cursorString = strArp_seq[strArp_serialDisplayStep];
