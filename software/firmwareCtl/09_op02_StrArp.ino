@@ -224,11 +224,13 @@ void strArp_updClckSerial(){
         }
       }
     }
-    if(frtb_sensMode==0 && strPrs[s]==0)sndMidiNotePress(s,0,chnl);
-    if(strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
-      if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s],chnl);
-      sndTrigEnv(s, 1);
-      kick(s);
+    if(strArp_mode[s] == strArp_modeSerial){
+      if(frtb_sensMode==0 && strPrs[s]==0)sndMidiNotePress(s,0,chnl);
+      if(strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
+        if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s],chnl);
+        sndTrigEnv(s, 1);
+        kick(s);
+      }
     }
     strArp_serialDisplayStep=strArp_serialStep;
     strArp_serialStep++;
@@ -325,7 +327,7 @@ void strArp_mkArp(){
 
   //calculate size of the sequence
   for(int s=0;s<nStrings;s++){
-    if(strPrs[s]>0 && strArp_mode[s] == strArp_modeSerial){
+    if(strPrs[s]>0){
       for(int r=0;r<strArp_nRpt[s] && arpSize<strArp_maxSteps;r++){
         arpSize++;
       }
@@ -337,7 +339,7 @@ void strArp_mkArp(){
   //-----make arp sequence by string order
   if(1){
     for(int s=0;s<nStrings;s++){
-      if(strPrs[s]>0 && strArp_mode[s] == strArp_modeSerial){
+      if(strPrs[s]>0){
         for(int r=0;r<strArp_nRpt[s] && arpIdx<strArp_maxSteps;r++){
           arpSeq[arpIdx]=s;
           arpIdx++;
@@ -375,15 +377,8 @@ void strArp_mkArp(){
   for(int i=0;i<arpSize;i++){
   strArp_stp[arpSeq[i]][i]=1;  
   }
-  //---parallel strings keep independent one-step lanes----
-  for(int s=0;s<nStrings;s++){
-    if(strPrs[s]>0 && strArp_mode[s] == strArp_modeParallel){
-      strArp_stp[s][0]=1;
-    }
-  }
   //---set seq length----
   for(int s=0;s<nStrings;s++){
-    if(strArp_mode[s] == strArp_modeParallel)strArp_nStps[s]=1;
-    else strArp_nStps[s]=arpSize;
+    strArp_nStps[s]=arpSize;
   }
 }
