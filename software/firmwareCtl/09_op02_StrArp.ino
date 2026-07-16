@@ -43,6 +43,10 @@ void strArp_chStrEnc(byte s, int val){
       strArp_mode[s] = strArp_mode[s] == strArp_modeSerial ? strArp_modeParallel : strArp_modeSerial;
       strArp_resetSerialCursor();
       break;
+    case strArp_strEncFnc_order:
+      strArp_order[s] = constrain(strArp_order[s] + val, 0, nStrings);
+      strArp_resetSerialCursor();
+      break;
   }
 }
 
@@ -90,6 +94,7 @@ void strArp_updDisp(){
     if(strArp_strEncFnc==strArp_strEncFnc_tmDv)disp_Str(108-s*21, 55, strArp_tmDvNm[strArp_tmDvSel[s]]);
     if(strArp_strEncFnc==strArp_strEncFnc_chn)disp_Int(108-s*21, 55, strArp_chn[s]);
     if(strArp_strEncFnc==strArp_strEncFnc_mode)disp_Str(108-s*21, 55, strArp_modeNm[strArp_mode[s]]);
+    if(strArp_strEncFnc==strArp_strEncFnc_order)disp_Int(108-s*21, 55, strArp_order[s]);
   }
 
   disp_Color(1);
@@ -137,11 +142,19 @@ void strArp_resetSerialCursor(){
 }
 
 
+bool strArp_isSameOrderGroup(byte a, byte b){
+  return a != b && strArp_order[a] > 0 && strArp_order[a] == strArp_order[b];
+}
+
+bool strArp_shouldPlayString(byte s){
+  return strPrs[s] > 0 && strArp_muteCh[s] == 0 && mtOut == 0 && strPrs[s] <= nFrets-genSq_nPttn/2-1;
+}
+
 void strArp_silenceInactiveSerialNotes(){
   if(frtb_sensMode!=0)return;
 
   for(int i = 0; i<nStrings; i++){
-    if(strPrs[i] == 0 || strArp_muteCh[i] == 1 || mtOut != 0 || strPrs[i] > nFrets-genSq_nPttn/2-1){
+    if(!strArp_shouldPlayString(i)){
       int chnl = strArp_chn[i];
       sndMidiNotePress(i,0,chnl);
     }
@@ -166,8 +179,6 @@ void strArp_updClckSerial(){
   // Time the next trigger from the currently playing step, not the upcoming one.
   byte durationString = s;
   if(strArp_serialDisplayStep >= 0)durationString=strArp_seq[strArp_serialDisplayStep];
-  int chnl = strArp_chn[s];
-
   strArp_serialNxtClkFil++;
   
   //if(strArp_serialNxtClkFil == strArp_tmDv[durationString]-1){
@@ -180,17 +191,22 @@ void strArp_updClckSerial(){
     strArp_serialNxtClkFil=0;
     if(frtb_sensMode==0){
       for(int i = 0; i<nStrings; i++){
-        if(i != s){
+        if(i != s && !strArp_isSameOrderGroup(s, i)){
           int offChnl = strArp_chn[i];
           sndMidiNotePress(i,0,offChnl);
         }
       }
     }
-    if(frtb_sensMode==0 && strPrs[s]==0)sndMidiNotePress(s,0,chnl);
-    if(strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
-      if(frtb_sensMode==0)sndMidiNotePress(s,strPrs[s],chnl);
-      sndTrigEnv(s, 1);
-      kick(s);
+    for(int i = 0; i<nStrings; i++){
+      if(i == s || strArp_isSameOrderGroup(s, i)){
+        int playChnl = strArp_chn[i];
+        if(frtb_sensMode==0 && strPrs[i]==0)sndMidiNotePress(i,0,playChnl);
+        if(strArp_shouldPlayString(i)){
+          if(frtb_sensMode==0)sndMidiNotePress(i,strPrs[i],playChnl);
+          sndTrigEnv(i, 1);
+          kick(i);
+        }
+      }
     }
     strArp_serialDisplayStep=strArp_serialStep;
     strArp_serialStep++;
@@ -202,7 +218,11 @@ void strArp_updClckSerial(){
   }
   if(strArp_serialDisplayStep >= 0){
     byte cursorString = strArp_seq[strArp_serialDisplayStep];
-    strArp_clk[cursorString]=strArp_serialDisplayStep;
+    for(int i = 0; i<nStrings; i++){
+      if(i == cursorString || strArp_isSameOrderGroup(cursorString, i)){
+        strArp_clk[i]=strArp_serialDisplayStep;
+      }
+    }
   }
 }
 
@@ -285,28 +305,32 @@ void strArp_mkArp(){
   strArp_ersStps(); //clear the sequence
   arpSize=0; //reset arp size
 
-  //calculate size of the sequence
-  for(int s=0;s<nStrings;s++){
-    if(strPrs[s]>0){
-      for(int r=0;r<strArp_nRpt[s] && arpSize<strArp_maxSteps;r++){
-        arpSize++;
-      }
-    }
-  }
-
   int arpIdx=0;
 
-  //-----make arp sequence by string order
+  //-----make arp sequence by configurable string order
   if(1){
+    for(int order=1;order<=nStrings;order++){
+      for(int s=0;s<nStrings;s++){
+        if(strPrs[s]>0 && strArp_order[s]==order){
+          for(int r=0;r<strArp_nRpt[s] && arpIdx<strArp_maxSteps;r++){
+            arpSeq[arpIdx]=s;
+            arpIdx++;
+          }
+          break;
+        }
+      }
+    }
     for(int s=0;s<nStrings;s++){
-      if(strPrs[s]>0){
+      if(strPrs[s]>0 && strArp_order[s]==0){
         for(int r=0;r<strArp_nRpt[s] && arpIdx<strArp_maxSteps;r++){
           arpSeq[arpIdx]=s;
           arpIdx++;
-        }  
+        }
       }
     }
   }
+
+  arpSize=arpIdx;
 
   //----flip sequence----
   if(flip==1){
@@ -335,7 +359,11 @@ void strArp_mkArp(){
 
   //---copy serial arp sequence to sequencer----
   for(int i=0;i<arpSize;i++){
-  strArp_stp[arpSeq[i]][i]=1;  
+    byte stepString = arpSeq[i];
+    strArp_stp[stepString][i]=1;
+    for(int s=0;s<nStrings;s++){
+      if(strArp_isSameOrderGroup(stepString, s))strArp_stp[s][i]=1;
+    }
   }
   //---set seq length----
   for(int s=0;s<nStrings;s++){
