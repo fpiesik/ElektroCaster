@@ -199,6 +199,8 @@ void strArp_syncParallelClocksToSerial(){
     if(strArp_mode[s] != strArp_modeParallel)continue;
     if(strArp_tmDv[s] != serialTmDv)continue;
     strArp_nxtClkFil[s]=strArp_serialNxtClkFil;
+    strArp_clk[s]=strArp_serialStep;
+    if(strArp_clk[s]>=strArp_nStps[s])strArp_clk[s]=0;
   }
 }
 
