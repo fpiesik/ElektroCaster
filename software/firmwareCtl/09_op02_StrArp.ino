@@ -182,7 +182,28 @@ void strArp_resetSerialCursor(){
   if(strArp_seqLen > 0)strArp_serialNxtClkFil=strArp_tmDv[strArp_seq[0]];
 }
 
+byte strArp_serialDurationString(){
+  if(strArp_seqLen == 0)return 0;
+  if(strArp_serialDisplayStep >= 0 && strArp_serialDisplayStep < strArp_seqLen)return strArp_seq[strArp_serialDisplayStep];
+  byte step = strArp_serialStep;
+  if(step >= strArp_seqLen)step=0;
+  return strArp_seq[step];
+}
+
+void strArp_syncParallelClocksToSerial(){
+  if(strArp_seqLen == 0)return;
+
+  byte durationString = strArp_serialDurationString();
+  byte serialTmDv = strArp_tmDv[durationString];
+  for(int s = 0; s<nStrings; s++){
+    if(strArp_mode[s] != strArp_modeParallel)continue;
+    if(strArp_tmDv[s] != serialTmDv)continue;
+    strArp_nxtClkFil[s]=strArp_serialNxtClkFil;
+  }
+}
+
 void strArp_updClckHybrid(){
+  strArp_syncParallelClocksToSerial();
   strArp_updClckParallelMode(strArp_modeParallel);
   strArp_updClckSerial();
 }
