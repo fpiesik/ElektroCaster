@@ -51,11 +51,12 @@ const int chipSelect = BUILTIN_SDCARD;
   bool strHold[nStrings]; //treat those strings as hold they were pressed
   int lastExStrPr[nStrings];
   int lastNZStrPrs[nStrings]; //last string press without releases (nz=non zero)
+  
 
 //led defintions and variables
   #define NUMPIXELS    150  //total number of leds
   const int nLedFrets=25; //how many led frets
-#include "HardwareConfig.h"
+  #include "HardwareConfig.h"
   //long sndLedTimer;
   //int sndLedInt=1000;
   float tnClrs[13][3];
@@ -73,6 +74,12 @@ const int chipSelect = BUILTIN_SDCARD;
   float trgtC[nStrings][nLedFrets][3];
   float actC[nStrings][nLedFrets][3];
 
+//display
+  unsigned long disp_frameTimer; //timer for the led update
+  unsigned int disp_frameInt=100;
+  unsigned long disp_lastDurationMicros=0; //measured display serialization time
+  const unsigned long disp_clockGuardMicros=200; //keep this margin before the next internal clock tick
+  
 //hid
   float hidAVal[22];
   bool hidDVal[19]={0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1};
@@ -127,6 +134,9 @@ const int chipSelect = BUILTIN_SDCARD;
   
 
   //int scls_nDispEncFnc=4; 
+  
+  //string setup
+  const char* toneNm[12]={"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
   
 //string arpeggiator/sequencer
   byte strArp_act=0;
@@ -315,14 +325,8 @@ const int chipSelect = BUILTIN_SDCARD;
 //sequence settings
   unsigned int bpm=90;
 
-//string setup
- const char* toneNm[12]={"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
 
-//display
-  unsigned long disp_frameTimer; //timer for the led update
-  unsigned int disp_frameInt=50;
-  unsigned long disp_lastDurationMicros=0; //measured display serialization time
-  const unsigned long disp_clockGuardMicros=1000; //keep this margin before the next internal clock tick
+
 
 // instance modes
   const int strSetup_opMode=0;
@@ -406,28 +410,6 @@ void setup() {
     digitalWrite(frtPins[f], LOW);
   }
 
-//set default genSq-parameter
-//  for (int i=0; i < genSq_nInst; i++) {
-//    genSq_actPttn[i]=0;
-//    genSq_edtPttn[i]=0;
-//    for (int p=0; p < genSq_nPttn; p++) {
-//      for (int s=0; s < nStrings; s++) {
-//        genSq_chn[i][p][s][genSq_strEncFnc_tmDv]=8; 
-//        genSq_chn[i][p][s][genSq_strEncFnc_stps]=16;
-//        genSq_clk[i][s]=-1;
-//        for (int f=0; f < genSq_maxSteps; f++) {
-//          genSq_stpOnOff[i][p][s][f]=0;
-//          genSq_stp[i][p][s][f][genSq_strPrsFnc_sStp]=0;
-//          genSq_stp[i][p][s][f][genSq_strPrsFnc_oct]=4;
-//          genSq_stp[i][p][s][f][genSq_strPrsFnc_vel]=40; 
-//          genSq_stp[i][p][s][f][genSq_strPrsFnc_cc1]=0; 
-//          genSq_stp[i][p][s][f][genSq_strPrsFnc_cc2]=0; 
-//          genSq_stp[i][p][s][f][genSq_strPrsFnc_cc3]=0;     
-//          genSq_tmDv[i][p][s]=6;
-//        }
-//      }
-//    }
-//  }
 
   //rstAllSngs(); //uncomment if the song structure has changed. Resets all songs
   loadSong(0);
