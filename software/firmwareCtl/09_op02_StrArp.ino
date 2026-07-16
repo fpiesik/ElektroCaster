@@ -39,6 +39,10 @@ void strArp_chStrEnc(byte s, int val){
     case strArp_strEncFnc_chn:
       strArp_chn[s] = constrain(strArp_chn[s] + val, 0, 16);
       break;
+    case strArp_strEncFnc_mode:
+      strArp_mode[s] = strArp_mode[s] == strArp_modeSerial ? strArp_modeParallel : strArp_modeSerial;
+      strArp_resetSerialCursor();
+      break;
   }
 }
 
@@ -85,6 +89,7 @@ void strArp_updDisp(){
     if(strArp_strEncFnc==strArp_strEncFnc_stps)disp_Int(108-s*21, 55, strArp_nRpt[s]);
     if(strArp_strEncFnc==strArp_strEncFnc_tmDv)disp_Str(108-s*21, 55, strArp_tmDvNm[strArp_tmDvSel[s]]);
     if(strArp_strEncFnc==strArp_strEncFnc_chn)disp_Int(108-s*21, 55, strArp_chn[s]);
+    if(strArp_strEncFnc==strArp_strEncFnc_mode)disp_Str(108-s*21, 55, strArp_modeNm[strArp_mode[s]]);
   }
 
   disp_Color(1);
@@ -113,8 +118,7 @@ void strArp_updClck(){
   if(strArp_act == 1){  
     strArp_mkArp();
 
-    if(strArp_strPrsFnc == strArp_modeSerial)strArp_updClckSerial();
-    if(strArp_strPrsFnc == strArp_modeParallel)strArp_updClckParallel();
+    strArp_updClckHybrid();
     //strArp_drwGrid();
     strArp_drwCursor();
     strArp_drwStep();
@@ -125,7 +129,12 @@ void strArp_updClck(){
 }
 
 void strArp_updClckParallel(){
+  strArp_updClckParallelMode(strArp_modeSerial);
+}
+
+void strArp_updClckParallelMode(byte mode){
   for(int s=0;s<nStrings;s++){
+    if(strArp_mode[s] != mode)continue;
     static int tmDv[nStrings];
     int chnl = strArp_chn[s];
     if(pulse != lastPulse && tmDv[s] != strArp_tmDv[s]){
@@ -158,6 +167,7 @@ void strArp_silenceInactiveSerialNotes(){
   if(frtb_sensMode!=0)return;
 
   for(int i = 0; i<nStrings; i++){
+    if(strArp_mode[i] != strArp_modeSerial)continue;
     if(strPrs[i] == 0 || strArp_muteCh[i] == 1 || mtOut != 0 || strPrs[i] > nFrets-genSq_nPttn/2-1){
       int chnl = strArp_chn[i];
       sndMidiNotePress(i,0,chnl);
@@ -172,12 +182,17 @@ void strArp_resetSerialCursor(){
   if(strArp_seqLen > 0)strArp_serialNxtClkFil=strArp_tmDv[strArp_seq[0]];
 }
 
+void strArp_updClckHybrid(){
+  strArp_updClckParallelMode(strArp_modeParallel);
+  strArp_updClckSerial();
+}
+
 void strArp_updClckSerial(){
   strArp_silenceInactiveSerialNotes();
 
   if(strArp_seqLen == 0){
     for(int s = 0; s<nStrings; s++){
-      strArp_clk[s]=-1;
+      if(strArp_mode[s] == strArp_modeSerial)strArp_clk[s]=-1;
     }
     strArp_resetSerialCursor();
     return;
@@ -203,7 +218,7 @@ void strArp_updClckSerial(){
     strArp_serialNxtClkFil=0;
     if(frtb_sensMode==0){
       for(int i = 0; i<nStrings; i++){
-        if(i != s){
+        if(i != s && strArp_mode[i] == strArp_modeSerial){
           int offChnl = strArp_chn[i];
           sndMidiNotePress(i,0,offChnl);
         }
@@ -221,7 +236,7 @@ void strArp_updClckSerial(){
   }
 
   for(int i = 0; i<nStrings; i++){
-    strArp_clk[i]=-1;
+    if(strArp_mode[i] == strArp_modeSerial)strArp_clk[i]=-1;
   }
   if(strArp_serialDisplayStep >= 0){
     byte cursorString = strArp_seq[strArp_serialDisplayStep];
@@ -310,7 +325,7 @@ void strArp_mkArp(){
 
   //calculate size of the sequence
   for(int s=0;s<nStrings;s++){
-    if(strPrs[s]>0){
+    if(strPrs[s]>0 && strArp_mode[s] == strArp_modeSerial){
       for(int r=0;r<strArp_nRpt[s] && arpSize<strArp_maxSteps;r++){
         arpSize++;
       }
@@ -322,7 +337,7 @@ void strArp_mkArp(){
   //-----make arp sequence by string order
   if(1){
     for(int s=0;s<nStrings;s++){
-      if(strPrs[s]>0){
+      if(strPrs[s]>0 && strArp_mode[s] == strArp_modeSerial){
         for(int r=0;r<strArp_nRpt[s] && arpIdx<strArp_maxSteps;r++){
           arpSeq[arpIdx]=s;
           arpIdx++;
@@ -356,12 +371,19 @@ void strArp_mkArp(){
   }
   if(strArp_serialStep>=strArp_seqLen)strArp_serialStep=0;
 
-  //---copy arp sequence to sequencer----
+  //---copy serial arp sequence to sequencer----
   for(int i=0;i<arpSize;i++){
   strArp_stp[arpSeq[i]][i]=1;  
   }
+  //---parallel strings keep independent one-step lanes----
+  for(int s=0;s<nStrings;s++){
+    if(strPrs[s]>0 && strArp_mode[s] == strArp_modeParallel){
+      strArp_stp[s][0]=1;
+    }
+  }
   //---set seq length----
   for(int s=0;s<nStrings;s++){
-  strArp_nStps[s]=arpSize;  
+    if(strArp_mode[s] == strArp_modeParallel)strArp_nStps[s]=1;
+    else strArp_nStps[s]=arpSize;
   }
 }
