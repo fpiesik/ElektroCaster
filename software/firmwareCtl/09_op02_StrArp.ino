@@ -141,6 +141,52 @@ void strArp_resetSerialCursor(){
   if(strArp_seqLen > 0)strArp_serialNxtClkFil=strArp_tmDv[strArp_seq[0]];
 }
 
+void strArp_notePressOrder(byte s, int press){
+  if(press > 0){
+    if(strArp_pressOrder[s] == 0){
+      strArp_pressOrder[s] = strArp_pressOrderNext;
+      strArp_pressOrderNext++;
+    }
+  }
+  else{
+    strArp_pressOrder[s] = 0;
+    bool anyPressed=0;
+    for(int i=0;i<nStrings;i++){
+      if(strArp_pressOrder[i]>0)anyPressed=1;
+    }
+    if(!anyPressed)strArp_pressOrderNext=1;
+  }
+}
+
+unsigned int strArp_orderGroupPressOrder(byte order){
+  unsigned int groupPressOrder=0;
+  for(int s=0;s<nStrings;s++){
+    if(strPrs[s]>0 && strArp_order[s]==order && strArp_pressOrder[s]>0){
+      if(groupPressOrder==0 || strArp_pressOrder[s]<groupPressOrder)groupPressOrder=strArp_pressOrder[s];
+    }
+  }
+  return groupPressOrder;
+}
+
+void strArp_addStringToArp(byte arpSeq[], int *arpIdx, byte s){
+  for(int r=0;r<strArp_nRpt[s] && *arpIdx<strArp_maxSteps;r++){
+    arpSeq[*arpIdx]=s;
+    (*arpIdx)++;
+  }
+}
+
+void strArp_addPressedZeroOrderStrings(byte arpSeq[], int *arpIdx, bool zeroOrderAdded[], unsigned int beforePressOrder, bool addRemaining){
+  for(unsigned int pressed=1;pressed<strArp_pressOrderNext;pressed++){
+    for(int s=0;s<nStrings;s++){
+      if(strPrs[s]>0 && strArp_order[s]==0 && strArp_pressOrder[s]==pressed && !zeroOrderAdded[s]){
+        if(addRemaining || pressed<beforePressOrder){
+          strArp_addStringToArp(arpSeq, arpIdx, s);
+          zeroOrderAdded[s]=1;
+        }
+      }
+    }
+  }
+}
 
 bool strArp_isSameOrderGroup(byte a, byte b){
   return a != b && strArp_order[a] > 0 && strArp_order[a] == strArp_order[b];
@@ -306,28 +352,22 @@ void strArp_mkArp(){
   arpSize=0; //reset arp size
 
   int arpIdx=0;
+  bool zeroOrderAdded[nStrings];
+  for(int s=0;s<nStrings;s++)zeroOrderAdded[s]=0;
 
   //-----make arp sequence by configurable string order
   if(1){
     for(int order=1;order<=nStrings;order++){
+      unsigned int groupPressOrder=strArp_orderGroupPressOrder(order);
+      if(groupPressOrder>0)strArp_addPressedZeroOrderStrings(arpSeq, &arpIdx, zeroOrderAdded, groupPressOrder, 0);
       for(int s=0;s<nStrings;s++){
         if(strPrs[s]>0 && strArp_order[s]==order){
-          for(int r=0;r<strArp_nRpt[s] && arpIdx<strArp_maxSteps;r++){
-            arpSeq[arpIdx]=s;
-            arpIdx++;
-          }
+          strArp_addStringToArp(arpSeq, &arpIdx, s);
           break;
         }
       }
     }
-    for(int s=0;s<nStrings;s++){
-      if(strPrs[s]>0 && strArp_order[s]==0){
-        for(int r=0;r<strArp_nRpt[s] && arpIdx<strArp_maxSteps;r++){
-          arpSeq[arpIdx]=s;
-          arpIdx++;
-        }
-      }
-    }
+    strArp_addPressedZeroOrderStrings(arpSeq, &arpIdx, zeroOrderAdded, 0, 1);
   }
 
   arpSize=arpIdx;

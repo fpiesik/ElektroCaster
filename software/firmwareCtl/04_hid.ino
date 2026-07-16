@@ -67,6 +67,7 @@ bool emitFretEvents(int *eventString, int *eventPress) {
 void handleFretEventForAudioMidiKickSeq(int eventString, int eventPress, int sensMode) {
   int s = eventString;
   int press = eventPress;
+  strArp_notePressOrder(s, press);
   int chnl = genSq_chn[0][genSq_actPttn[0]][s][genSq_strEncFnc_chn];
 
   if (strHold[s]==0||genSq_muteCh[0][s]){

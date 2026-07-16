@@ -165,6 +165,8 @@ const int chipSelect = BUILTIN_SDCARD;
   byte strArp_nRpt[nStrings] = {1,1,1,1,1,1};
   byte strArp_chn[nStrings] = {1,1,1,1,1,1};
   byte strArp_order[nStrings] = {0,0,0,0,0,0};
+  unsigned int strArp_pressOrder[nStrings] = {0,0,0,0,0,0};
+  unsigned int strArp_pressOrderNext = 1;
 
   const byte strArp_modeSerial=0;
   const byte strArp_modeParallel=1;
