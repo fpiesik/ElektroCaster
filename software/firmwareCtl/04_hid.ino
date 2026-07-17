@@ -367,8 +367,7 @@ void procHidRChng(byte idx, byte val) {
   switch (idx) {
     case 0:
       if(val<genSq_nPttn){
-        strArp_modeSel = 0;
-        updStrAutoMode();
+        schdStrArpModeSel = 0;
         //if(opMode==strArp_opMode)chOpMode(genSq_opMode);
         if(shift==0){
           schdPttnCh[idx]=val;
@@ -388,11 +387,10 @@ void procHidRChng(byte idx, byte val) {
         }
       }
       if(val>=genSq_nPttn){
-        strArp_modeSel = 1;
         strArp_modeVal = val;
+        schdStrArpModeSel = 1;
         schdStrArpPttnCh = 11 - val;
         if(schdStrArpPttnCh >= strArp_nPttn)schdStrArpPttnCh = 0;
-        updStrAutoMode();
         //if(opMode==genSq_opMode)chOpMode(strArp_opMode);
       }
       break;

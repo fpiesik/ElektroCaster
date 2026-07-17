@@ -47,6 +47,11 @@ void cmpClck(long mClock){
   pulse=mClock/24;
   bar=mClock/96;
   syncPnt=mClock/syncInt;
+  if(schdStrArpModeSel > -1 && pulse != lastPulse){
+    strArp_modeSel = schdStrArpModeSel;
+    updStrAutoMode();
+    schdStrArpModeSel = -1;
+  }
   if(schdStrArpPttnCh > -1 && pulse != lastPulse){
     strArp_nxtPttn = schdStrArpPttnCh;
     strArp_actPttn = strArp_nxtPttn;
