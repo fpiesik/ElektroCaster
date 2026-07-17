@@ -1,5 +1,5 @@
 const char songMagic[4] = {'E', 'C', 'S', 'G'};
-const uint16_t songFormatVersion = 1;
+const uint16_t songFormatVersion = 2;
 const uint16_t songHeaderSize = 32;
 const uint16_t songChunkHeaderSize = 10;
 const uint16_t songHeaderUsedSize = 26;
@@ -10,6 +10,7 @@ const uint32_t songCrcFinalXor = 0xFFFFFFFFUL;
 const char songMetaChunkId[4] = {'M', 'E', 'T', 'A'};
 const char songSeqChunkId[4] = {'S', 'E', 'Q', ' '};
 const char songMixChunkId[4] = {'M', 'I', 'X', ' '};
+const char songArpChunkId[4] = {'A', 'R', 'P', ' '};
 const char songEndChunkId[4] = {'E', 'N', 'D', ' '};
 
 struct SongFileHeader {
@@ -44,6 +45,15 @@ struct SongData {
   uint8_t fledSrc;
   uint8_t songTuning[nStrings];
   uint8_t songStrGain[nStrings];
+  uint8_t arpTmDvSel[strArp_nPttn][nStrings];
+  uint8_t arpRpt[strArp_nPttn][nStrings];
+  uint8_t arpChn[strArp_nPttn][nStrings];
+  uint8_t arpOrder[strArp_nPttn][nStrings];
+  uint8_t arpMode[strArp_nPttn][nStrings];
+  uint8_t arpMute[strArp_nPttn][nStrings];
+  uint8_t arpStrPrsFnc[strArp_nPttn];
+  uint8_t arpStrEncFnc[strArp_nPttn];
+  uint8_t arpStrBtnFnc[strArp_nPttn];
 };
 
 enum SongStatus {
@@ -301,6 +311,19 @@ bool songCollectFromRuntime(struct SongData* song){
     song->songTuning[str] = tuning[str];
     song->songStrGain[str] = strGain[str];
   }
+  for(int pttn = 0; pttn < strArp_nPttn; pttn++){
+    song->arpStrPrsFnc[pttn] = strArp_patterns.pttn[pttn].strPrsFnc;
+    song->arpStrEncFnc[pttn] = strArp_patterns.pttn[pttn].strEncFnc;
+    song->arpStrBtnFnc[pttn] = strArp_patterns.pttn[pttn].strBtnFnc;
+    for(int str = 0; str < nStrings; str++){
+      song->arpTmDvSel[pttn][str] = strArp_patterns.pttn[pttn].tmDvSel[str];
+      song->arpRpt[pttn][str] = strArp_patterns.pttn[pttn].nRpt[str];
+      song->arpChn[pttn][str] = strArp_patterns.pttn[pttn].chn[str];
+      song->arpOrder[pttn][str] = strArp_patterns.pttn[pttn].order[str];
+      song->arpMode[pttn][str] = strArp_patterns.pttn[pttn].mode[str];
+      song->arpMute[pttn][str] = strArp_patterns.pttn[pttn].muteCh[str];
+    }
+  }
   return true;
 }
 
@@ -331,6 +354,19 @@ bool songValidateData(const struct SongData* song){
   }
   for(int str = 0; str < nStrings; str++){
     if(song->songStrGain[str] > strGainMx)return false;
+  }
+  for(int pttn = 0; pttn < strArp_nPttn; pttn++){
+    if(song->arpStrPrsFnc[pttn] >= strArp_nStrPrsFnc)return false;
+    if(song->arpStrEncFnc[pttn] >= strArp_nStrEncFnc)return false;
+    if(song->arpStrBtnFnc[pttn] >= strArp_nStrBtnFnc)return false;
+    for(int str = 0; str < nStrings; str++){
+      if(song->arpTmDvSel[pttn][str] >= strArp_nTmDvs)return false;
+      if(song->arpRpt[pttn][str] < 1)return false;
+      if(song->arpChn[pttn][str] > 16)return false;
+      if(song->arpOrder[pttn][str] > nStrings)return false;
+      if(song->arpMode[pttn][str] > strArp_modeParallel)return false;
+      if(song->arpMute[pttn][str] > 1)return false;
+    }
   }
   return true;
 }
@@ -370,6 +406,22 @@ void songApply(const struct SongData* song){
     strGain[str] = song->songStrGain[str];
     sndStrGain(str, strGain[str]);
   }
+  for(int pttn = 0; pttn < strArp_nPttn; pttn++){
+    strArp_patterns.pttn[pttn].strPrsFnc = song->arpStrPrsFnc[pttn];
+    strArp_patterns.pttn[pttn].strEncFnc = song->arpStrEncFnc[pttn];
+    strArp_patterns.pttn[pttn].strBtnFnc = song->arpStrBtnFnc[pttn];
+    for(int str = 0; str < nStrings; str++){
+      strArp_patterns.pttn[pttn].tmDvSel[str] = song->arpTmDvSel[pttn][str];
+      strArp_patterns.pttn[pttn].tmDv[str] = strArp_tmDvs[song->arpTmDvSel[pttn][str]];
+      strArp_patterns.pttn[pttn].nRpt[str] = song->arpRpt[pttn][str];
+      strArp_patterns.pttn[pttn].chn[str] = song->arpChn[pttn][str];
+      strArp_patterns.pttn[pttn].order[str] = song->arpOrder[pttn][str];
+      strArp_patterns.pttn[pttn].mode[str] = song->arpMode[pttn][str];
+      strArp_patterns.pttn[pttn].muteCh[str] = song->arpMute[pttn][str];
+    }
+  }
+  if(strArp_actPttn >= strArp_nPttn)strArp_actPttn = 0;
+  strArp_resetSerialCursor();
 }
 
 void songBuildDefault(struct SongData* song){
@@ -403,6 +455,19 @@ void songBuildDefault(struct SongData* song){
   for(int str = 0; str < nStrings; str++){
     song->songTuning[str] = defTuning[str];
     song->songStrGain[str] = defStrGain[str];
+  }
+  for(int pttn = 0; pttn < strArp_nPttn; pttn++){
+    song->arpStrPrsFnc[pttn] = strArp_strPrsFnc_simple;
+    song->arpStrEncFnc[pttn] = strArp_strEncFnc_stps;
+    song->arpStrBtnFnc[pttn] = strArp_strBtnFnc_mute;
+    for(int str = 0; str < nStrings; str++){
+      song->arpTmDvSel[pttn][str] = 8;
+      song->arpRpt[pttn][str] = 1;
+      song->arpChn[pttn][str] = 1;
+      song->arpOrder[pttn][str] = 0;
+      song->arpMode[pttn][str] = strArp_modeSerial;
+      song->arpMute[pttn][str] = 0;
+    }
   }
 }
 
@@ -457,6 +522,25 @@ bool songWriteMix(File& file, const struct SongData* song, uint32_t* crc){
   return songFinishChunk(file, &chunk);
 }
 
+bool songWriteArp(File& file, const struct SongData* song, uint32_t* crc){
+  SongChunkInfo chunk;
+  if(!songWriteChunkHeader(file, songArpChunkId, &chunk, crc))return false;
+  for(int pttn = 0; pttn < strArp_nPttn; pttn++){
+    if(!songWriteByte(file, song->arpStrPrsFnc[pttn], crc))return false;
+    if(!songWriteByte(file, song->arpStrEncFnc[pttn], crc))return false;
+    if(!songWriteByte(file, song->arpStrBtnFnc[pttn], crc))return false;
+    for(int str = 0; str < nStrings; str++){
+      if(!songWriteByte(file, song->arpTmDvSel[pttn][str], crc))return false;
+      if(!songWriteByte(file, song->arpRpt[pttn][str], crc))return false;
+      if(!songWriteByte(file, song->arpChn[pttn][str], crc))return false;
+      if(!songWriteByte(file, song->arpOrder[pttn][str], crc))return false;
+      if(!songWriteByte(file, song->arpMode[pttn][str], crc))return false;
+      if(!songWriteByte(file, song->arpMute[pttn][str], crc))return false;
+    }
+  }
+  return songFinishChunk(file, &chunk);
+}
+
 bool songWriteEnd(File& file, uint32_t* crc){
   SongChunkInfo chunk;
   if(!songWriteChunkHeader(file, songEndChunkId, &chunk, crc))return false;
@@ -469,6 +553,7 @@ bool songWritePayload(File& file, const struct SongData* song, uint32_t* finalCr
   if(!songWriteMeta(file, song, &crc))return false;
   if(!songWriteSeq(file, song, &crc))return false;
   if(!songWriteMix(file, song, &crc))return false;
+  if(!songWriteArp(file, song, &crc))return false;
   if(!songWriteEnd(file, &crc))return false;
   *finalCrc = crc ^ songCrcFinalXor;
   return true;
@@ -524,6 +609,25 @@ bool songReadMix(File& file, struct SongData* song, uint32_t* crc){
   return songSkipChunkRemaining(file, &chunk, crc);
 }
 
+bool songReadArp(File& file, struct SongData* song, uint32_t* crc){
+  SongChunkInfo chunk;
+  if(!songReadChunkHeader(file, songArpChunkId, &chunk, crc))return false;
+  for(int pttn = 0; pttn < strArp_nPttn; pttn++){
+    int value = songReadByte(file, crc); if(value < 0)return false; song->arpStrPrsFnc[pttn] = value;
+    value = songReadByte(file, crc); if(value < 0)return false; song->arpStrEncFnc[pttn] = value;
+    value = songReadByte(file, crc); if(value < 0)return false; song->arpStrBtnFnc[pttn] = value;
+    for(int str = 0; str < nStrings; str++){
+      value = songReadByte(file, crc); if(value < 0)return false; song->arpTmDvSel[pttn][str] = value;
+      value = songReadByte(file, crc); if(value < 0)return false; song->arpRpt[pttn][str] = value;
+      value = songReadByte(file, crc); if(value < 0)return false; song->arpChn[pttn][str] = value;
+      value = songReadByte(file, crc); if(value < 0)return false; song->arpOrder[pttn][str] = value;
+      value = songReadByte(file, crc); if(value < 0)return false; song->arpMode[pttn][str] = value;
+      value = songReadByte(file, crc); if(value < 0)return false; song->arpMute[pttn][str] = value;
+    }
+  }
+  return songSkipChunkRemaining(file, &chunk, crc);
+}
+
 bool songReadEnd(File& file, uint32_t* crc){
   uint32_t marker;
   SongChunkInfo chunk;
@@ -541,6 +645,7 @@ bool songReadPayload(File& file, struct SongData* song, uint32_t expectedCrc){
   if(!songReadMeta(file, song, &crc))return false;
   if(!songReadSeq(file, song, &crc))return false;
   if(!songReadMix(file, song, &crc))return false;
+  if(!songReadArp(file, song, &crc))return false;
   if(!songReadEnd(file, &crc))return false;
   crc ^= songCrcFinalXor;
   if(crc != expectedCrc){

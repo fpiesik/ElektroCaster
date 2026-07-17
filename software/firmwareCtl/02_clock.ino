@@ -47,6 +47,12 @@ void cmpClck(long mClock){
   pulse=mClock/24;
   bar=mClock/96;
   syncPnt=mClock/syncInt;
+  if(schdStrArpPttnCh > -1 && pulse != lastPulse){
+    strArp_nxtPttn = schdStrArpPttnCh;
+    strArp_actPttn = strArp_nxtPttn;
+    strArp_sync();
+    schdStrArpPttnCh = -1;
+  }
   for (int i = 0;i<genSq_nInst;i++){
     if(schdPttnCh[i]>-1 && pulse != lastPulse){
       genSq_nxtPttn[i]=schdPttnCh[i];

@@ -139,6 +139,41 @@ const int chipSelect = BUILTIN_SDCARD;
   const char* toneNm[12]={"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
   
 //string arpeggiator/sequencer
+  const int strArp_nPttn = 6;
+
+  struct StrArpPatternState {
+    byte tmDv[nStrings];
+    byte tmDvSel[nStrings];
+    byte nRpt[nStrings];
+    byte chn[nStrings];
+    byte order[nStrings];
+    byte mode[nStrings];
+    bool muteCh[nStrings];
+    byte strPrsFnc;
+    byte strEncFnc;
+    int strBtnFnc;
+  };
+
+  struct StrArpPatternBank {
+    StrArpPatternState pttn[strArp_nPttn];
+  };
+
+  byte strArp_actPttn = 0;
+  byte strArp_nxtPttn = 0;
+  int schdStrArpPttnCh = -1;
+  StrArpPatternBank strArp_patterns;
+
+  #define strArp_tmDv strArp_patterns.pttn[strArp_actPttn].tmDv
+  #define strArp_tmDvSel strArp_patterns.pttn[strArp_actPttn].tmDvSel
+  #define strArp_nRpt strArp_patterns.pttn[strArp_actPttn].nRpt
+  #define strArp_chn strArp_patterns.pttn[strArp_actPttn].chn
+  #define strArp_order strArp_patterns.pttn[strArp_actPttn].order
+  #define strArp_mode strArp_patterns.pttn[strArp_actPttn].mode
+  #define strArp_muteCh strArp_patterns.pttn[strArp_actPttn].muteCh
+  #define strArp_strPrsFnc strArp_patterns.pttn[strArp_actPttn].strPrsFnc
+  #define strArp_strEncFnc strArp_patterns.pttn[strArp_actPttn].strEncFnc
+  #define strArp_strBtnFnc strArp_patterns.pttn[strArp_actPttn].strBtnFnc
+
   byte strArp_act=0;
   float sclArpMode=7;
   float sclArpClkMode=4;
@@ -156,15 +191,10 @@ const int chipSelect = BUILTIN_SDCARD;
   byte strArp_serialStep=0;
   int strArp_serialDisplayStep=-1;
   byte strArp_serialNxtClkFil=0;
-  byte strArp_tmDv[nStrings]={6,6,6,6,6,6};
   byte strArp_tmDvs[12]={96,64,48,32,24,16,12,8,6,4,3,2};
   const char* strArp_tmDvNm[12]={"1","1.5","2","3","4","6","8","12","16","24","32","64"};
-  byte strArp_tmDvSel[nStrings]={8,8,8,8,8,8};
   byte strArp_nTmDvs=12;
   byte strArp_nxtClkFil[nStrings];
-  byte strArp_nRpt[nStrings] = {1,1,1,1,1,1};
-  byte strArp_chn[nStrings] = {1,1,1,1,1,1};
-  byte strArp_order[nStrings] = {0,0,0,0,0,0};
 
   unsigned int strArp_pressOrder[nStrings] = {0,0,0,0,0,0};
   unsigned int strArp_pressOrderNext = 1;
@@ -172,14 +202,12 @@ const int chipSelect = BUILTIN_SDCARD;
   const byte strArp_modeSerial=0;
   const byte strArp_modeParallel=1;
   const char* strArp_modeNm[]={"se", "pa"};
-  byte strArp_mode[nStrings]={strArp_modeSerial,strArp_modeSerial,strArp_modeSerial,strArp_modeSerial,strArp_modeSerial,strArp_modeSerial};
   const byte strArp_strPrsFnc_simple=0;
   const byte strArp_strPrsFnc_back=1;
   const byte strArp_strPrsFnc_mirror=2;
   const byte strArp_strPrsFnc_revMirror=3;
   const char* strArp_strPrsNm[]={"simple", "back", "mirror", "rev mirror"};
   const byte strArp_nStrPrsFnc=sizeof(strArp_strPrsNm)/sizeof(strArp_strPrsNm[0]);
-  byte strArp_strPrsFnc=strArp_strPrsFnc_simple;
   
   const byte strArp_strEncFnc_stps=0;
   const byte strArp_strEncFnc_tmDv=1;
@@ -188,14 +216,11 @@ const int chipSelect = BUILTIN_SDCARD;
   const byte strArp_strEncFnc_order=2;
   const char* strArp_strEncNm[]={"steps", "tmDv", "order", "ser o par", "chn"};
   const byte strArp_nStrEncFnc=sizeof(strArp_strEncNm)/sizeof(strArp_strEncNm[0]);
-  byte strArp_strEncFnc=0;
   
   const char* strArp_strBtnNm[]={"mute", "randomise"};
   const int strArp_strBtnFnc_mute=0;
   const int strArp_strBtnFnc_rnd=1;
   const int strArp_nStrBtnFnc=2;
-  int strArp_strBtnFnc=0;
-  bool strArp_muteCh[nStrings]={0,0,0,0,0,0};
 
 //generic Sequenzer
   //globals
