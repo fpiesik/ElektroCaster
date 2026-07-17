@@ -338,15 +338,15 @@ void strArp_drwStep(){
 }
 
 void strArp_mkArp(){
-  byte flip=1;
+  byte back=0;
+  byte flip=0;
   byte mirror=0;
   byte arpSize=0;
   byte arpSeq[64];
 
-
-//  if(arpMode==2||arpMode==3||arpMode==6||arpMode==7)orderSrc=1;
-//  if(arpMode==1||arpMode==3||arpMode==5||arpMode==7)flip=1;
-//  if(arpMode==4||arpMode==5||arpMode==6||arpMode==7)mirror=1;
+  if(strArp_strPrsFnc==strArp_strPrsFnc_back)back=1;
+  if(strArp_strPrsFnc==strArp_strPrsFnc_flip)flip=1;
+  if(strArp_strPrsFnc==strArp_strPrsFnc_mirror)mirror=1;
 
   strArp_ersStps(); //clear the sequence
   arpSize=0; //reset arp size
@@ -372,14 +372,20 @@ void strArp_mkArp(){
 
   arpSize=arpIdx;
 
-  //----flip sequence----
-  if(flip==1){
+  //----back sequence----
+  if(back==1){
     byte seqbuf[arpSize];
     for(int i=0;i<arpSize;i++){
       seqbuf[i]=arpSeq[arpSize-i-1];
     }
     for(int i=0;i<arpSize;i++){
       arpSeq[i]=seqbuf[i];
+    }
+  }
+
+  if(flip==1){
+    for(int i=0;i<arpSize;i++){
+      arpSeq[i]=nStrings-arpSeq[i]-1;
     }
   }
 
