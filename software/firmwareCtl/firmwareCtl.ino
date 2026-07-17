@@ -161,6 +161,7 @@ const int chipSelect = BUILTIN_SDCARD;
   byte strArp_actPttn = 0;
   byte strArp_nxtPttn = 0;
   int schdStrArpPttnCh = -1;
+  int schdStrArpModeSel = -1;
   StrArpPatternBank strArp_patterns;
 
   #define strArp_tmDv strArp_patterns.pttn[strArp_actPttn].tmDv
