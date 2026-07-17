@@ -390,6 +390,8 @@ void procHidRChng(byte idx, byte val) {
       if(val>=genSq_nPttn){
         strArp_modeSel = 1;
         strArp_modeVal = val;
+        schdStrArpPttnCh = 11 - val;
+        if(schdStrArpPttnCh >= strArp_nPttn)schdStrArpPttnCh = 0;
         updStrAutoMode();
         //if(opMode==genSq_opMode)chOpMode(strArp_opMode);
       }
