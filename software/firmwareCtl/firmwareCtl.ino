@@ -165,6 +165,7 @@ const int chipSelect = BUILTIN_SDCARD;
   byte strArp_nRpt[nStrings] = {1,1,1,1,1,1};
   byte strArp_chn[nStrings] = {1,1,1,1,1,1};
   byte strArp_order[nStrings] = {0,0,0,0,0,0};
+
   unsigned int strArp_pressOrder[nStrings] = {0,0,0,0,0,0};
   unsigned int strArp_pressOrderNext = 1;
 
@@ -172,9 +173,13 @@ const int chipSelect = BUILTIN_SDCARD;
   const byte strArp_modeParallel=1;
   const char* strArp_modeNm[]={"se", "pa"};
   byte strArp_mode[nStrings]={strArp_modeSerial,strArp_modeSerial,strArp_modeSerial,strArp_modeSerial,strArp_modeSerial,strArp_modeSerial};
-  const char* strArp_strPrsNm[]={"mode"};
-  const byte strArp_nStrPrsFnc=1;
-  byte strArp_strPrsFnc=0;
+  const byte strArp_strPrsFnc_simple=0;
+  const byte strArp_strPrsFnc_back=1;
+  const byte strArp_strPrsFnc_flip=2;
+  const byte strArp_strPrsFnc_mirror=3;
+  const char* strArp_strPrsNm[]={"simple", "back", "flip", "mirror"};
+  const byte strArp_nStrPrsFnc=sizeof(strArp_strPrsNm)/sizeof(strArp_strPrsNm[0]);
+  byte strArp_strPrsFnc=strArp_strPrsFnc_simple;
   
   const byte strArp_strEncFnc_stps=0;
   const byte strArp_strEncFnc_tmDv=1;
