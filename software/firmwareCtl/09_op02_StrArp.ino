@@ -339,14 +339,14 @@ void strArp_drwStep(){
 
 void strArp_mkArp(){
   byte back=0;
-  byte flip=0;
   byte mirror=0;
+  byte revMirror=0;
   byte arpSize=0;
   byte arpSeq[64];
 
   if(strArp_strPrsFnc==strArp_strPrsFnc_back)back=1;
-  if(strArp_strPrsFnc==strArp_strPrsFnc_flip)flip=1;
   if(strArp_strPrsFnc==strArp_strPrsFnc_mirror)mirror=1;
+  if(strArp_strPrsFnc==strArp_strPrsFnc_revMirror)revMirror=1;
 
   strArp_ersStps(); //clear the sequence
   arpSize=0; //reset arp size
@@ -383,16 +383,20 @@ void strArp_mkArp(){
     }
   }
 
-  if(flip==1){
-    for(int i=0;i<arpSize;i++){
-      arpSeq[i]=nStrings-arpSeq[i]-1;
-    }
-  }
-
-  if(mirror==1){
+  if(mirror==1 || revMirror==1){
     int baseSize=arpSize;
+    byte seqbuf[baseSize];
+    for(int i=0;i<baseSize;i++){
+      seqbuf[i]=arpSeq[i];
+    }
+    if(revMirror==1){
+      for(int i=0;i<baseSize;i++){
+        arpSeq[i]=seqbuf[baseSize-i-1];
+      }
+    }
     for(int i=0;i<baseSize && arpSize<strArp_maxSteps;i++){
-      arpSeq[baseSize+i]=arpSeq[baseSize-i-1];
+      arpSeq[baseSize+i]=seqbuf[baseSize-i-1];
+      if(revMirror==1)arpSeq[baseSize+i]=seqbuf[i];
       arpSize++;
     }
   }

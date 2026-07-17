@@ -175,9 +175,9 @@ const int chipSelect = BUILTIN_SDCARD;
   byte strArp_mode[nStrings]={strArp_modeSerial,strArp_modeSerial,strArp_modeSerial,strArp_modeSerial,strArp_modeSerial,strArp_modeSerial};
   const byte strArp_strPrsFnc_simple=0;
   const byte strArp_strPrsFnc_back=1;
-  const byte strArp_strPrsFnc_flip=2;
-  const byte strArp_strPrsFnc_mirror=3;
-  const char* strArp_strPrsNm[]={"simple", "back", "flip", "mirror"};
+  const byte strArp_strPrsFnc_mirror=2;
+  const byte strArp_strPrsFnc_revMirror=3;
+  const char* strArp_strPrsNm[]={"simple", "back", "mirror", "rev mirror"};
   const byte strArp_nStrPrsFnc=sizeof(strArp_strPrsNm)/sizeof(strArp_strPrsNm[0]);
   byte strArp_strPrsFnc=strArp_strPrsFnc_simple;
   
