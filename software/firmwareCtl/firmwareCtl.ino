@@ -181,7 +181,7 @@ const int chipSelect = BUILTIN_SDCARD;
   float sclArpRpt=4;
   byte strArp_stp[nStrings][nFrets];
   long strArp_clk[nStrings];
-  const int strArp_maxVisSteps = 16;
+  const int strArp_maxVisSteps = 20;
   const int strArp_maxSteps = 64;
   float strArp_gridPix[nStrings][strArp_maxVisSteps][3];
   float strArp_crsrPix[nStrings][strArp_maxVisSteps][3];
@@ -379,7 +379,7 @@ const int chipSelect = BUILTIN_SDCARD;
   int lastStrEnc;
   const byte nDispEncFnc[maxOpMds]={3,6,3,3,3,3,3,3,3,3,3,3}; //number of functions selectable with the disp encoder in each opMode
   //const byte nStrEncFnc[maxOpMds]={2,2,2,2,2,2,2,2,2,2,2,2}; //number of functions selectable with the string encoders in each opMode
-  int dispEncFnc[maxOpMds]={0,4,2,2,2,2,0,0,0,0,0,0};
+  int dispEncFnc[maxOpMds]={0,4,0,0,0,0,0,0,0,0,0,0}; //{0,4,2,2,2,2,0,0,0,0,0,0};
   byte strEncFnc[maxOpMds];
   
 //global parameters
