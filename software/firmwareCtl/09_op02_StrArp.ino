@@ -61,56 +61,6 @@ void strArp_chStrBtn(byte s, bool val){
   }
 }
 
-void strArp_updDisp(){
-  //disp_Str(3, 8, "strArp");
-  disp_Color(1);
-  switch (dispEncFnc[opMode]){
-    case 0:
-      if(dispEncMode==0)disp_RBox(0, 0, 128, 15, 3);
-      if(dispEncMode==1)disp_RFrm(0, 0, 128, 15, 3);
-      break;
-    case 1:
-      if(dispEncMode==0)disp_RBox(0, 15, 128, 15, 3);
-      if(dispEncMode==1)disp_RFrm(0, 15, 128, 15, 3);
-      break;
-    case 2:
-      if(dispEncMode==0)disp_RBox(0, 30, 128, 15, 3);
-      if(dispEncMode==1)disp_RFrm(0, 30, 128, 15, 3);
-      break;
-  }
-  disp_Color(dispEncMode==1||dispEncFnc[opMode]!=0);
-  disp_Str(3, 9, "str:");
-  disp_Str(45, 9, strArp_strPrsNm[strArp_strPrsFnc]);
-  disp_Color(dispEncMode==1||dispEncFnc[opMode]!=1);
-  disp_Str(3, 24, "btn");
-  disp_Str(45, 24, strArp_strBtnNm[strArp_strBtnFnc]);
-  disp_Color(dispEncMode==1||dispEncFnc[opMode]!=2);
-  disp_Str(3, 39, "enc");
-  disp_Str(45, 39, strArp_strEncNm[strArp_strEncFnc]);
-
-  disp_Color(1);
-  for(int s =0; s < nStrings;s++){
-    if(strArp_strEncFnc==strArp_strEncFnc_stps)disp_Int(108-s*21, 55, strArp_nRpt[s]);
-    if(strArp_strEncFnc==strArp_strEncFnc_tmDv)disp_Str(108-s*21, 55, strArp_tmDvNm[strArp_tmDvSel[s]]);
-    if(strArp_strEncFnc==strArp_strEncFnc_chn)disp_Int(108-s*21, 55, strArp_chn[s]);
-    if(strArp_strEncFnc==strArp_strEncFnc_mode)disp_Str(108-s*21, 55, strArp_modeNm[strArp_mode[s]]);
-    if(strArp_strEncFnc==strArp_strEncFnc_order)disp_Int(108-s*21, 55, strArp_order[s]);
-  }
-
-  disp_Color(1);
-}
-
-void strArp_updFleds(){
-  for(int s=0;s<nStrings;s++){
-    for(int f=0;f<strArp_maxVisSteps;f++){
-      for(int ch=0;ch < 3; ch++){
-        trgtC[s][f+1][ch]=strArp_gridPix[s][f][ch]+strArp_crsrPix[s][f][ch];
-        if(strArp_stp[s][f]>0)trgtC[s][f+1][ch]=strArp_stpPix[s][f][ch]+strArp_crsrPix[s][f][ch];      
-      }
-    }
-  }        
-}
-
 void strArp_ersStps(){
   for(int s=0;s<nStrings;s++){
     for(int f=0;f<strArp_maxVisSteps;f++){
@@ -124,7 +74,7 @@ void strArp_updClck(){
     strArp_mkArp();
 
     strArp_updClckSerial();
-    //strArp_drwGrid();
+    strArp_drwGrid();
     strArp_drwCursor();
     strArp_drwStep();
     //strArp_sndStp();
@@ -278,6 +228,56 @@ void strArp_sync(){
       strArp_clk[s]=0;
   }
   strArp_resetSerialCursor();
+}
+
+void strArp_updDisp(){
+  //disp_Str(3, 8, "strArp");
+  disp_Color(1);
+  switch (dispEncFnc[opMode]){
+    case 0:
+      if(dispEncMode==0)disp_RBox(0, 0, 128, 15, 3);
+      if(dispEncMode==1)disp_RFrm(0, 0, 128, 15, 3);
+      break;
+    case 1:
+      if(dispEncMode==0)disp_RBox(0, 15, 128, 15, 3);
+      if(dispEncMode==1)disp_RFrm(0, 15, 128, 15, 3);
+      break;
+    case 2:
+      if(dispEncMode==0)disp_RBox(0, 30, 128, 15, 3);
+      if(dispEncMode==1)disp_RFrm(0, 30, 128, 15, 3);
+      break;
+  }
+  disp_Color(dispEncMode==1||dispEncFnc[opMode]!=0);
+  disp_Str(3, 9, "str:");
+  disp_Str(45, 9, strArp_strPrsNm[strArp_strPrsFnc]);
+  disp_Color(dispEncMode==1||dispEncFnc[opMode]!=1);
+  disp_Str(3, 24, "btn");
+  disp_Str(45, 24, strArp_strBtnNm[strArp_strBtnFnc]);
+  disp_Color(dispEncMode==1||dispEncFnc[opMode]!=2);
+  disp_Str(3, 39, "enc");
+  disp_Str(45, 39, strArp_strEncNm[strArp_strEncFnc]);
+
+  disp_Color(1);
+  for(int s =0; s < nStrings;s++){
+    if(strArp_strEncFnc==strArp_strEncFnc_stps)disp_Int(108-s*21, 55, strArp_nRpt[s]);
+    if(strArp_strEncFnc==strArp_strEncFnc_tmDv)disp_Str(108-s*21, 55, strArp_tmDvNm[strArp_tmDvSel[s]]);
+    if(strArp_strEncFnc==strArp_strEncFnc_chn)disp_Int(108-s*21, 55, strArp_chn[s]);
+    if(strArp_strEncFnc==strArp_strEncFnc_mode)disp_Str(108-s*21, 55, strArp_modeNm[strArp_mode[s]]);
+    if(strArp_strEncFnc==strArp_strEncFnc_order)disp_Int(108-s*21, 55, strArp_order[s]);
+  }
+
+  disp_Color(1);
+}
+
+void strArp_updFleds(){
+  for(int s=0;s<nStrings;s++){
+    for(int f=0;f<strArp_maxVisSteps;f++){
+      for(int ch=0;ch < 3; ch++){
+        trgtC[s][f+1][ch]=strArp_gridPix[s][f][ch]+strArp_crsrPix[s][f][ch];
+        if(strArp_stp[s][f]>0)trgtC[s][f+1][ch]=strArp_stpPix[s][f][ch]+strArp_crsrPix[s][f][ch];      
+      }
+    }
+  }        
 }
 
 void strArp_drwGrid(){
