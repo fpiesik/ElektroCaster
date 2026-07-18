@@ -58,8 +58,18 @@ void genSq_pttnDrwGrid(){
       for(int f=0;f<genSq_nPttn/2;f++){
         for(int c=0;c<3;c++){  
           if(s==i*2+1||s==i*2){
-            if(inst==genSq_nInst-i-1)genSq_pttnGridPix[s][f][c]=genSq_gridColorA[genSq_nInst-i-1][c];
-            else genSq_pttnGridPix[s][f][c]=genSq_gridColorB[genSq_nInst-i-1][c];
+            if(!strArp_modeSel){
+              if(inst==genSq_nInst-i-1)genSq_pttnGridPix[s][f][c]=genSq_gridColorA[genSq_nInst-i-1][c];
+              else genSq_pttnGridPix[s][f][c]=genSq_gridColorB[genSq_nInst-i-1][c];
+            }
+            if(strArp_modeSel && i!=2){
+              if(inst==genSq_nInst-i-1)genSq_pttnGridPix[s][f][c]=genSq_gridColorA[genSq_nInst-i-1][c];
+              else genSq_pttnGridPix[s][f][c]=genSq_gridColorB[genSq_nInst-i-1][c];
+            }
+            if(strArp_modeSel && i==2){
+              if(inst==genSq_nInst-i-1)genSq_pttnGridPix[s][f][c]=strArp_gridColorA[c];
+              else genSq_pttnGridPix[s][f][c]=strArp_gridColorB[c];
+            }
           }
         }
       }
@@ -90,9 +100,9 @@ void genSq_pttnDrwStat(){
     int actFrt=actPttn-genSq_nPttn/2*(actPttn/(genSq_nPttn/2));
     int edtFrt=edtPttn-genSq_nPttn/2*(edtPttn/(genSq_nPttn/2));
     for(int c=0;c<3;c++){  
-      float edtVal=0.07;
-      float actVal=0.25;
-      if(i==0 && strArp_modeSel && c!=2)edtVal=0, actVal=0;
+      float edtVal=0.1;
+      float actVal=0.5;
+      //if(i==0 && strArp_modeSel && c!=2)edtVal=0, actVal=0;
       genSq_pttnPttnPix[nStrings-1-edtStr][edtFrt][c]=edtVal;
       genSq_pttnPttnPix[nStrings-1-actStr][actFrt][c]=actVal;
     }

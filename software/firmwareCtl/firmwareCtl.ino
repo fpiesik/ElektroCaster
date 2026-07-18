@@ -347,14 +347,14 @@ const int chipSelect = BUILTIN_SDCARD;
   bool genSq_stpEdtStrs[nStrings];
   int genSq_stpEdtFrt;
 
-  //fequencer colors
-  const float strArp_gridColorA[3]={0.5,0,0};
-  const float strArp_gridColorB[3]={0.05,0,0};
-  const float strArp_gridMuteColorA[3]={0.1,0,0};
-  const float strArp_gridMuteColorB[3]={0.02,0,0};
+  //sequencer colors
+  const float strArp_gridColorA[3]={0.1,0,0.6};
+  const float strArp_gridColorB[3]={0.01,0,0.06};
+  const float strArp_gridMuteColorA[3]={0.1,0.1,0.1};
+  const float strArp_gridMuteColorB[3]={0.02,0.02,0.2};
   const float strArp_cursorColor[3]={0,1,0};
-  const float strArp_stepColor[3]={1,0,1};
-  const float strArp_stepMuteColor[3]={0.2,0.2,0.2};
+  const float strArp_stepColor[3]={0.6,0,0.1};
+  const float strArp_stepMuteColor[3]={0.06,0,0.01};
   const float genSq_gridColorA[genSq_nInst][3]={{0.0,0.25,0.25},{0.375,0.0,0.25},{0.375,0.25,0.0}};
   const float genSq_gridColorB[genSq_nInst][3]={{0.0,0.05,0.05},{0.075,0.0,0.05},{0.075,0.05,0.0}};
   const float genSq_gridMuteColorA[genSq_nInst][3]={{0.0,0.025,0.025},{0.0375,0.0,0.025},{0.0375,0.025,0.0}};
