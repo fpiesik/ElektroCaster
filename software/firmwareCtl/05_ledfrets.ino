@@ -54,13 +54,13 @@ void genSq_updPttnFleds(){
 void genSq_pttnDrwGrid(){ 
   int inst=genSq_actInst;
   for(int i=0;i<genSq_nInst;i++){
-    float brght;
-    if(inst!=genSq_nInst-i-1)brght=1;
-    if(inst==genSq_nInst-i-1)brght=5;
     for(int s=0;s<nStrings;s++){
       for(int f=0;f<genSq_nPttn/2;f++){
         for(int c=0;c<3;c++){  
-          if(s==i*2+1||s==i*2)genSq_pttnGridPix[s][f][c]=genSq_gridColor[genSq_nInst-i-1][c]*brght;
+          if(s==i*2+1||s==i*2){
+            if(inst==genSq_nInst-i-1)genSq_pttnGridPix[s][f][c]=genSq_gridColorA[genSq_nInst-i-1][c];
+            else genSq_pttnGridPix[s][f][c]=genSq_gridColorB[genSq_nInst-i-1][c];
+          }
         }
       }
     }

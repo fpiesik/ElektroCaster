@@ -6,8 +6,6 @@ void genSq_updFleds(){
   for(int s=0;s<nStrings;s++){
     genSq_drwStep(s);
     genSq_drwCursor(s);
-    int muteCh=genSq_muteCh[inst][s];
-    
     for(int f=0;f<genSq_maxVisSteps;f++){
       bool stpOnOff=genSq_stpOnOff[inst][pttn][s][f];
       for(int ch=0;ch < 3; ch++){
@@ -15,9 +13,6 @@ void genSq_updFleds(){
       }
       if(stpOnOff>0)for(int ch=0;ch < 3; ch++){
         trgtC[s][f+1][ch]=genSq_stpPix[s][f][ch]+genSq_crsrPix[s][f][ch];
-      }
-      if(muteCh==1)for(int ch=0;ch < 3; ch++){
-        trgtC[s][f+1][ch]=trgtC[s][f+1][ch]*0.1;     
       }
     }
   }        
@@ -34,10 +29,12 @@ void genSq_drwGrid(){
       for(int c=0;c<3;c++){  
         genSq_gridPix[s][f][c]=0;  
         if((f%4==0 && f>=off && f<nSteps+off) || f<off+nSteps-genSq_maxVisSteps){
-          genSq_gridPix[s][f][c]=genSq_gridColor[inst][c]*5;
+          if(genSq_muteCh[inst][s]==0)genSq_gridPix[s][f][c]=genSq_gridColorA[inst][c];
+          else genSq_gridPix[s][f][c]=genSq_gridMuteColorA[inst][c];
         }
         if((f%4 != 0 && f>=off && f<nSteps+off) || f<off+nSteps-genSq_maxVisSteps){
-          genSq_gridPix[s][f][c]=genSq_gridColor[inst][c];
+          if(genSq_muteCh[inst][s]==0)genSq_gridPix[s][f][c]=genSq_gridColorB[inst][c];
+          else genSq_gridPix[s][f][c]=genSq_gridMuteColorB[inst][c];
         }
       }
     }
@@ -46,13 +43,12 @@ void genSq_drwGrid(){
 
 void genSq_drwCursor(byte s){
   int inst=genSq_actInst;
-  float color[3] = {0.25,0.25,0.25};
   if(genSq_clk[inst][s]>=0){
     for(int c=0;c<3;c++){
       for(int f=0;f<genSq_maxVisSteps;f++){
         genSq_crsrPix[s][f][c]=0;
       }    
-      genSq_crsrPix[s][genSq_clk[inst][s]][c]=color[c];
+      genSq_crsrPix[s][genSq_clk[inst][s]][c]=genSq_cursorColor[c];
     }
   }
 }
@@ -77,8 +73,9 @@ void genSq_drwStep(byte s){
     for(int c=0;c<3;c++){
       genSq_stpPix[s][f][c]=0;    
       if((genSq_stpOnOff[inst][pttn][s][f]>0 && f>=off && f<nSteps+off) || f<off+nSteps-genSq_maxVisSteps){
-        if(chnl>0)genSq_stpPix[s][f][c]=tnClrs[pitch][c]*brght;
-        if(chnl==0)genSq_stpPix[s][f][c]=brght/2;
+        if(genSq_muteCh[inst][s]==1)genSq_stpPix[s][f][c]=genSq_stepMuteColor[c]*brght;
+        else if(chnl>0)genSq_stpPix[s][f][c]=tnClrs[pitch][c]*brght;
+        else if(chnl==0)genSq_stpPix[s][f][c]=genSq_stepNoChannelColor[c]*brght;
       }
       if(genSq_stpOnOff[inst][pttn][s][f]==0){
         genSq_stpPix[s][f][c]=0;
