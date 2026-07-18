@@ -347,13 +347,28 @@ const int chipSelect = BUILTIN_SDCARD;
   bool genSq_stpEdtStrs[nStrings];
   int genSq_stpEdtFrt;
 
+  //fequencer colors
+  const float strArp_gridColorA[3]={0.5,0,0};
+  const float strArp_gridColorB[3]={0.05,0,0};
+  const float strArp_gridMuteColorA[3]={0.1,0,0};
+  const float strArp_gridMuteColorB[3]={0.02,0,0};
+  const float strArp_cursorColor[3]={0,1,0};
+  const float strArp_stepColor[3]={1,0,1};
+  const float strArp_stepMuteColor[3]={0.2,0.2,0.2};
+  const float genSq_gridColorA[genSq_nInst][3]={{0.0,0.25,0.25},{0.375,0.0,0.25},{0.375,0.25,0.0}};
+  const float genSq_gridColorB[genSq_nInst][3]={{0.0,0.05,0.05},{0.075,0.0,0.05},{0.075,0.05,0.0}};
+  const float genSq_gridMuteColorA[genSq_nInst][3]={{0.0,0.025,0.025},{0.0375,0.0,0.025},{0.0375,0.025,0.0}};
+  const float genSq_gridMuteColorB[genSq_nInst][3]={{0.0,0.005,0.005},{0.0075,0.0,0.005},{0.0075,0.005,0.0}};
+  const float genSq_cursorColor[3]={0.25,0.25,0.25};
+  const float genSq_stepNoChannelColor[3]={0.5,0.5,0.5};
+  const float genSq_stepMuteColor[3]={0.2,0.2,0.2};
+
   float genSq_edtPttnColor[3]={0.0,0.0,0.1};
 
   // GenSeq per-instance runtime state lives in genSeqRuntime.
   // GenSeq per-pattern step/channel data lives in genSeqPatterns.
   // Compatibility macros above keep existing index order unchanged.
   //int genSq_sndCh[genSq_nInst][nStrings]={{1,1,1,1,1,1},{2,2,2,2,2,2},{3,3,3,3,3,3}};
-  float genSq_gridColor[genSq_nInst][3]={{0.0,0.01,0.01},{0.015,0.0,0.01},{0.015,0.01,0.0}};
 
 // String Sequencer (from genSeq)
   bool strSeq_act=1;

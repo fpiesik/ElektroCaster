@@ -281,21 +281,16 @@ void strArp_updFleds(){
 }
 
 void strArp_drwGrid(){
-  float colorA[3]={0.5,0,0};
-  float colorB[3]={0.05,0,0};
-  float colorMA[3]={0.1,0,0};
-  float colorMB[3]={0.02,0,0};
-
   for(int s=0;s<nStrings;s++){
     for(int f=0;f<strArp_maxVisSteps;f++){
       for(int c=0;c<3;c++){    
         if(f%4==0){
-          if(strArp_muteCh[s]==0)strArp_gridPix[s][f][c]=colorA[c];
-          else strArp_gridPix[s][f][c]=colorMA[c];
+          if(strArp_muteCh[s]==0)strArp_gridPix[s][f][c]=strArp_gridColorA[c];
+          else strArp_gridPix[s][f][c]=strArp_gridMuteColorA[c];
         }
         if(f%4 != 0){
-          if(strArp_muteCh[s]==0)strArp_gridPix[s][f][c]=colorB[c];
-          else strArp_gridPix[s][f][c]=colorMB[c];
+          if(strArp_muteCh[s]==0)strArp_gridPix[s][f][c]=strArp_gridColorB[c];
+          else strArp_gridPix[s][f][c]=strArp_gridMuteColorB[c];
         }
       }
     }
@@ -304,7 +299,6 @@ void strArp_drwGrid(){
 
 
 void strArp_drwCursor(){
-  float color[3] = {0,1,0};
   for(int s=0;s<nStrings;s++){
     for(int f=0;f<strArp_maxVisSteps;f++){
       for(int c=0;c<3;c++){    
@@ -314,20 +308,18 @@ void strArp_drwCursor(){
     }
    for(int s=0;s<nStrings;s++){
     for(int c=0;c<3;c++){    
-      if(strArp_clk[s]>=0 && strArp_clk[s]<strArp_maxVisSteps)strArp_crsrPix[s][strArp_clk[s]][c]=color[c];
+      if(strArp_clk[s]>=0 && strArp_clk[s]<strArp_maxVisSteps)strArp_crsrPix[s][strArp_clk[s]][c]=strArp_cursorColor[c];
     }
   }
 }
 
 void strArp_drwStep(){
-  float color[3] = {1,0,1};
-  float colorM[3] = {0.2,0.2,0.2};
   for(int s=0;s<nStrings;s++){
     for(int f=0;f<strArp_maxVisSteps;f++){
       for(int c=0;c<3;c++){    
         if(strArp_stp[s][f]==1){
-          if(strArp_muteCh[s]==0)strArp_stpPix[s][f][c]=color[c];
-          if(strArp_muteCh[s]==1)strArp_stpPix[s][f][c]=colorM[c];
+          if(strArp_muteCh[s]==0)strArp_stpPix[s][f][c]=strArp_stepColor[c];
+          if(strArp_muteCh[s]==1)strArp_stpPix[s][f][c]=strArp_stepMuteColor[c];
         }
         if(strArp_stp[s][f]==0){
           strArp_stpPix[s][f][c]=0;
