@@ -68,7 +68,13 @@ void handleFretEventForAudioMidiKickSeq(int eventString, int eventPress, int sen
   int s = eventString;
   int press = eventPress;
   strArp_notePressOrder(s, press);
-  int chnl = genSq_chn[0][genSq_actPttn[0]][s][genSq_strEncFnc_chn];
+  int chnl;
+  if(strArp_modeSel==0){
+    chnl = genSq_chn[0][genSq_actPttn[0]][s][genSq_strEncFnc_chn];
+    }
+  else{
+    chnl = strArp_chn[s];
+    }
 
   if (strHold[s]==0||genSq_muteCh[0][s]){
     if (fbrdMode == 0 && strArp_act == 0 && strSeq_act==0) {

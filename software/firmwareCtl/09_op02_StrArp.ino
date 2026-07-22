@@ -143,7 +143,7 @@ bool strArp_isSameOrderGroup(byte a, byte b){
 }
 
 bool strArp_shouldPlayString(byte s){
-  return strPrs[s] > 0 && strArp_muteCh[s] == 0 && mtOut == 0 && strPrs[s] <= nFrets-genSq_nPttn/2-1;
+  return strPrs[s] > 0 && strArp_muteCh[s] == 0 && mtOut == 0 && strPrs[s];
 }
 
 void strArp_silenceInactiveSerialNotes(){
