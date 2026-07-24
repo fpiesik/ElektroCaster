@@ -229,7 +229,7 @@ const int chipSelect = BUILTIN_SDCARD;
   const int genSq_maxVisSteps = 16;
   const int genSq_maxSteps = 16;
   const int genSq_nPttn = 6;
-  const int genSq_nSngs = 12;
+  const int genSq_nSngs = 100;
   const int genSq_pttnMOff = nLedFrets-genSq_nPttn/2;
   int genSq_hrmInst=1;
   int genSq_strEncBtnSw = 1; //choose between button function or Encoder button select
@@ -302,7 +302,7 @@ const int chipSelect = BUILTIN_SDCARD;
   GenSeqSong genSeqSong = {
     0,
     {-1,-1,-1},
-    {"Song01","Song02","Song03","Song04","Song05","Song06","Song07","Song08","Song09","Song10","Song11","Song12"},
+    {"Song01", "Song02", "Song03", "Song04", "Song05", "Song06", "Song07", "Song08", "Song09", "Song10", "Song11", "Song12", "Song13", "Song14", "Song15", "Song16", "Song17", "Song18", "Song19", "Song20", "Song21", "Song22", "Song23", "Song24", "Song25", "Song26", "Song27", "Song28", "Song29", "Song30", "Song31", "Song32", "Song33", "Song34", "Song35", "Song36", "Song37", "Song38", "Song39", "Song40", "Song41", "Song42", "Song43", "Song44", "Song45", "Song46", "Song47", "Song48", "Song49", "Song50", "Song51", "Song52", "Song53", "Song54", "Song55", "Song56", "Song57", "Song58", "Song59", "Song60", "Song61", "Song62", "Song63", "Song64", "Song65", "Song66", "Song67", "Song68", "Song69", "Song70", "Song71", "Song72", "Song73", "Song74", "Song75", "Song76", "Song77", "Song78", "Song79", "Song80", "Song81", "Song82", "Song83", "Song84", "Song85", "Song86", "Song87", "Song88", "Song89", "Song90", "Song91", "Song92", "Song93", "Song94", "Song95", "Song96", "Song97", "Song98", "Song99", "Song100"},
     {0},
     0
   };
