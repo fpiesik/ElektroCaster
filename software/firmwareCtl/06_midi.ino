@@ -49,6 +49,10 @@ void sndMidiCC(byte cc, byte val,byte ch){
   usbMIDI.sendControlChange(cc, val, ch);
 }
 
+void sndMidiPC(byte program, byte ch){
+  usbMIDI.sendProgramChange(program, ch);
+}
+
 void sndMidiClck(int state){
     if(state==0)usbMIDI.sendRealTime(midi::Start);
     if(state==1)usbMIDI.sendRealTime(midi::Clock);

@@ -754,6 +754,7 @@ void loadSong(int sng){
     defaultSong();
     lastSongStatus = loadStatus;
   }
+  sndMidiPC(sng, mInst_chn);
 }
 
 void scanPttns(){
