@@ -33,8 +33,8 @@ void scls_chDispEnc(int val){
           scls_sclClr=(scls_sclClr + val)%2;
           break;
         case 4:
-          //if (shift==0)saveSong(genSq_actSng);
-          //if (shift==1)saveSong(0);
+          if (shift==0)saveSong(genSq_actSng);
+          if (shift==1)saveSong(0);
           if(genSq_actSng + val < 0)genSq_actSng = genSq_nSngs-1;
           genSq_actSng=(genSq_actSng + val)%genSq_nSngs;
           loadSong(genSq_actSng);
