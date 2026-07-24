@@ -193,7 +193,7 @@ const int chipSelect = BUILTIN_SDCARD;
   int strArp_serialDisplayStep=-1;
   byte strArp_serialNxtClkFil=0;
   byte strArp_tmDvs[12]={96,64,48,32,24,16,12,8,6,4,3,2};
-  const char* strArp_tmDvNm[12]={"1","1.5","2","3","4","6","8","12","16","24","32","64"};
+  const char* strArp_tmDvNm[12]={"1","1.5","2","3","4","6","8","12","16","24","32","48"};
   byte strArp_nTmDvs=12;
   byte strArp_nxtClkFil[nStrings];
 
