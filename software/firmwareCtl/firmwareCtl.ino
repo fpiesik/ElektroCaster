@@ -265,6 +265,7 @@ const int chipSelect = BUILTIN_SDCARD;
 
   const int genSq_nInst = 3;
   int genSq_actInst = 0;
+  int genSq_actTmDv[genSq_nInst][nStrings]; //time devision actually used (changes on timed occasions)
   const int genSq_nActPttns=12;
 
   struct GenSeqRuntimeState {
@@ -411,14 +412,13 @@ const int chipSelect = BUILTIN_SDCARD;
   long lastPulse;
   long bar;
   long lastBar;
-  long syncPnt;
-  long lastSyncPnt;
-  int syncInt;
-  int tmDv[genSq_nInst][nStrings]; //time devision actually used (changes on timed occasions)
+  long syncPnt[genSq_nInst];
+  long lastSyncPnt[genSq_nInst];
+  int syncInt[genSq_nInst];
   bool schdSync[genSq_nInst];
   bool schdSyncPnt[genSq_nInst];
   int schdPttnCh[genSq_nInst];
-  bool tgl_ply=0;
+  bool tgl_ply=1;
   unsigned int intClockInt; //inerval between clock ticks
   long intClockTimer; //to measure interval between clock ticks
   bool clckOn=0;
@@ -485,5 +485,5 @@ void loop() {
   }
   cueKicks();
   updLedFrets();
-  scanPttns();
+  //scanPttns();
 }

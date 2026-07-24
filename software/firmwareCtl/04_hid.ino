@@ -169,7 +169,7 @@ void procHidDChng(byte idx, bool val) {
 
     case 6:
       //middle tripple button
-      if (val == 1){
+      if (val == 0){
         tgl_ply=!tgl_ply;
         if (tgl_ply==1)clck_strt();
         if (tgl_ply==0)clck_stp();
