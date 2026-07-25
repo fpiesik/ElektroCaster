@@ -195,7 +195,7 @@ void procHidDChng(byte idx, bool val) {
       if (val == 0 && shift == 1 && dispEncMode == 1)defaultSong();
       if (val == 0 && shift == 0 && dispEncMode == 1)loadSong(0);
       if (val == 0 && shift == 0 && dispEncMode == 0)loadSong(genSq_actSng);
-      if (val == 0 && shift == 1 && dispEncMode == 0)saveSong(genSq_actSng);
+      if (val == 0 && shift == 1 && dispEncMode == 0)saveSong(0);
       break;
 
     case 10:
