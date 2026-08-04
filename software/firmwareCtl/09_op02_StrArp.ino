@@ -71,7 +71,18 @@ void strArp_ersStps(){
 
 void strArp_updClck(){
   if(strArp_act == 1){  
+    bool strArp_wasEmpty=strArp_seqLen==0;
     strArp_mkArp();
+
+    if(strArp_wasEmpty && strArp_seqLen>0){
+      byte firstString=strArp_seq[0];
+      byte firstDuration=strArp_tmDv[firstString];
+      if(firstDuration>0){
+        long clockPhase=mClock%firstDuration;
+        if(clockPhase<0)clockPhase+=firstDuration;
+        strArp_serialNxtClkFil=clockPhase==0 ? firstDuration-1 : clockPhase-1;
+      }
+    }
 
     strArp_updClckSerial();
     strArp_drwGrid();
