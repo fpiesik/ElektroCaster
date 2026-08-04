@@ -35,9 +35,10 @@ void updIntClock(){
       //intClockTimer+=intClockInt;
       //intClockTimer = micro;
       mClock++;
-      sndMidiClck(1);        
+      sndMidiClck(1);   
+      cmpClck(mClock);     
     }
-    cmpClck(mClock); 
+     
     intClockTimer+=intClockInt;
     updDisplay();
   }
