@@ -466,6 +466,7 @@ void setup() {
 
   //rstAllSngs(); //uncomment if the song structure has changed. Resets all songs
   loadSong(0);
+  loadStrSetupGlobals();
   chngBpm(bpm);
   strArp_drwGrid();
   mkColors();

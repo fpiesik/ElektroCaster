@@ -13,6 +13,10 @@ const char songMixChunkId[4] = {'M', 'I', 'X', ' '};
 const char songArpChunkId[4] = {'A', 'R', 'P', ' '};
 const char songEndChunkId[4] = {'E', 'N', 'D', ' '};
 
+const char strSetupFileName[] = "STRSETUP.ECG";
+const char strSetupMagic[4] = {'E', 'C', 'S', 'T'};
+const uint8_t strSetupFormatVersion = 1;
+
 struct SongFileHeader {
   uint16_t version;
   uint16_t headerSize;
@@ -72,6 +76,110 @@ SongStatus lastSongStatus = SONG_OK;
 int lastSongSlot = 0;
 static SongData songBuffer;
 static SongData songVerifyBuffer;
+
+uint8_t strSetupChecksum(const uint8_t* data, uint8_t length){
+  uint8_t checksum = 0;
+  for(uint8_t i = 0; i < length; i++){
+    checksum ^= data[i];
+  }
+  return checksum;
+}
+
+bool strSetupValuesValid(const uint8_t* savedTuning, const uint8_t* savedGain){
+  for(int str = 0; str < nStrings; str++){
+    if(savedGain[str] > strGainMx)return false;
+  }
+  return true;
+}
+
+void applyStrSetupGlobals(const uint8_t* savedTuning, const uint8_t* savedGain){
+  for(int str = 0; str < nStrings; str++){
+    tuning[str] = savedTuning[str];
+  }
+  for(int str = 0; str < nStrings; str++){
+    strGain[str] = savedGain[str];
+    sndStrGain(str, strGain[str]);
+  }
+}
+
+void loadDefaultStrSetupGlobals(){
+  for(int str = 0; str < nStrings; str++){
+    tuning[str] = defTuning[str];
+  }
+  for(int str = 0; str < nStrings; str++){
+    strGain[str] = defStrGain[str];
+    sndStrGain(str, strGain[str]);
+  }
+}
+
+bool loadStrSetupGlobals(){
+  if(!SD.exists(strSetupFileName)){
+    loadDefaultStrSetupGlobals();
+    return false;
+  }
+  File file = SD.open(strSetupFileName, FILE_READ);
+  if(!file){
+    loadDefaultStrSetupGlobals();
+    return false;
+  }
+  uint8_t payload[1 + nStrings + nStrings];
+  bool ok = true;
+  for(uint8_t i = 0; i < 4; i++){
+    int value = file.read();
+    if(value < 0 || (char)value != strSetupMagic[i])ok = false;
+  }
+  for(uint8_t i = 0; ok && i < sizeof(payload); i++){
+    int value = file.read();
+    if(value < 0)ok = false;
+    else payload[i] = value;
+  }
+  int savedChecksum = ok ? file.read() : -1;
+  file.close();
+  ok = ok && savedChecksum >= 0 && payload[0] == strSetupFormatVersion && savedChecksum == strSetupChecksum(payload, sizeof(payload));
+  if(ok){
+    uint8_t* savedTuning = &payload[1];
+    uint8_t* savedGain = &payload[1 + nStrings];
+    ok = strSetupValuesValid(savedTuning, savedGain);
+    if(ok)applyStrSetupGlobals(savedTuning, savedGain);
+  }
+  if(!ok)loadDefaultStrSetupGlobals();
+  return ok;
+}
+
+bool saveStrSetupGlobals(){
+  const char tempFileName[] = "STRSETUP.TMP";
+  if(SD.exists(tempFileName))SD.remove(tempFileName);
+  File file = SD.open(tempFileName, FILE_WRITE);
+  if(!file)return false;
+  uint8_t payload[1 + nStrings + nStrings];
+  payload[0] = strSetupFormatVersion;
+  for(int str = 0; str < nStrings; str++){
+    if(tuning[str] < 0 || tuning[str] > 255 || strGain[str] < 0 || strGain[str] > 255){
+      file.close();
+      return false;
+    }
+    payload[1 + str] = tuning[str];
+    payload[1 + nStrings + str] = strGain[str];
+  }
+  bool ok = true;
+  for(uint8_t i = 0; ok && i < 4; i++)ok = file.write(strSetupMagic[i]) == 1;
+  for(uint8_t i = 0; ok && i < sizeof(payload); i++)ok = file.write(payload[i]) == 1;
+  if(ok)ok = file.write(strSetupChecksum(payload, sizeof(payload))) == 1;
+  file.close();
+  if(!ok){
+    SD.remove(tempFileName);
+    return false;
+  }
+  if(SD.exists(strSetupFileName) && !SD.remove(strSetupFileName)){
+    SD.remove(tempFileName);
+    return false;
+  }
+  if(!SD.rename(tempFileName, strSetupFileName)){
+    SD.remove(tempFileName);
+    return false;
+  }
+  return true;
+}
 
 uint32_t songCrcUpdate(uint32_t crc, uint8_t data){
   crc ^= data;
@@ -399,13 +507,6 @@ void songApply(const struct SongData* song){
   bpm = song->songBpm;
   chngBpm(bpm);
   scls_fledSrc = song->fledSrc;
-  for(int str = 0; str < nStrings; str++){
-    tuning[str] = song->songTuning[str];
-  }
-  for(int str = 0; str < nStrings; str++){
-    strGain[str] = song->songStrGain[str];
-    sndStrGain(str, strGain[str]);
-  }
   for(int pttn = 0; pttn < strArp_nPttn; pttn++){
     strArp_patterns.pttn[pttn].strPrsFnc = song->arpStrPrsFnc[pttn];
     strArp_patterns.pttn[pttn].strEncFnc = song->arpStrEncFnc[pttn];
