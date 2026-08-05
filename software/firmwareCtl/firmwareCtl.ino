@@ -38,7 +38,7 @@ const int chipSelect = BUILTIN_SDCARD;
   int tuning[nStrings]={64,59,55,50,45,40};
   int defTuning[nStrings]={64,59,55,50,45,40};
   int strGain[nStrings];
-  int defStrGain[nStrings]={40,40,40,40,40,40};
+  int defStrGain[nStrings]={20,25,30,35,40,45};
   int strGainMx=50;
   unsigned long lastFretRead[nStrings];
   unsigned int fretMaskT=50; //time until a next strPres on he same string is detected
