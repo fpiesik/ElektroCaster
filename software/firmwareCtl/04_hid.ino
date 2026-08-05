@@ -569,6 +569,8 @@ void procHidEChng(byte idx, long val) {
 }
 
 void chOpMode(int val){
+  int lastOpMode = opMode;
   opMode = val;
+  if (lastOpMode == strSetup_opMode && opMode != strSetup_opMode) saveStrSetupGlobals();
   if (opMode >= genSq_opMode && opMode < genSq_opMode + genSq_nInst) genSq_actInst = opMode - genSq_opMode;
 }
