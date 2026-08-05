@@ -76,8 +76,12 @@ void handleFretEventForAudioMidiKickSeq(int eventString, int eventPress, int sen
     chnl = strArp_chn[s];
     }
 
+  bool manualTrigger = strArp_act == 0 && strSeq_act==0;
+  bool strArpZeroStepManualTrigger = strArp_modeSel==1 && strArp_act==1 && strArp_nRpt[s]==0 && (strArp_muteCh[s]==0 || press==0);
+  if(strArpZeroStepManualTrigger)manualTrigger=1;
+
   if (strHold[s]==0||genSq_muteCh[0][s]){
-    if (fbrdMode == 0 && strArp_act == 0 && strSeq_act==0) {
+    if (fbrdMode == 0 && manualTrigger) {
       sndTrigEnv(s, press>0);
       if(opMode>=genSq_opMode && opMode<genSq_opMode+genSq_nInst && press<=frtSplit){
         if(sensMode==0)sndMidiNotePress(s,press,chnl);

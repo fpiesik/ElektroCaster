@@ -28,8 +28,8 @@ void strArp_chDispEnc(int val){
 void strArp_chStrEnc(byte s, int val){
   switch(strArp_strEncFnc){
     case strArp_strEncFnc_stps:
-      if(strArp_nRpt[s] + val < 1) strArp_nRpt[s]=1;
-      strArp_nRpt[s] = strArp_nRpt[s] + val;
+      strArp_nRpt[s] = constrain(strArp_nRpt[s] + val, 0, strArp_maxSteps);
+      strArp_resetSerialCursor();
       break;
     case strArp_strEncFnc_tmDv:
       if(strArp_tmDvSel[s] + val < 0) strArp_tmDvSel[s]=strArp_nTmDvs;
