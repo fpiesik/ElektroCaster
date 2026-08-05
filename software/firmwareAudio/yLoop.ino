@@ -18,6 +18,7 @@ byte audioCommandPayloadLength(byte command) {
     case AUDIO_CMD_ENV_1: return 2;
     case AUDIO_CMD_ENV_2: return 2;
     case AUDIO_CMD_FILTER: return 2;
+    case AUDIO_CMD_MANUAL_ENV: return 2;
     case AUDIO_CMD_VOLUME: return 1;
     case AUDIO_CMD_STR_GAIN: return 2;
     case AUDIO_CMD_FX: return 2;
@@ -56,6 +57,10 @@ void handleAudioSerialPacket(byte command, const byte payload[]) {
     float sclVal = scale(payload[1] / 199.0, 1, sclEnvF[payload[0]]);
     chEnvF(payload[0], sclVal);
     envPF[payload[0]] = sclVal;
+  }
+
+  if (incoming == audioIncoming(AUDIO_CMD_MANUAL_ENV)) {
+    chManualEnvDecay(payload[0], payload[1]);
   }
 
   if (incoming == audioIncoming(AUDIO_CMD_FILTER)) {

@@ -16,6 +16,7 @@ constexpr byte AUDIO_CMD_BOW_ON = 206;
 constexpr byte AUDIO_CMD_ENV_1 = 207;
 constexpr byte AUDIO_CMD_ENV_2 = 208;
 constexpr byte AUDIO_CMD_FILTER = 209;
+constexpr byte AUDIO_CMD_MANUAL_ENV = 210;
 constexpr byte AUDIO_CMD_VOLUME = 211;
 constexpr byte AUDIO_CMD_STR_GAIN = 212;
 constexpr byte AUDIO_CMD_FX = 215;

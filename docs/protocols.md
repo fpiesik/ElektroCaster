@@ -112,6 +112,7 @@ Known command IDs:
 | `207` | `7` | `sndEnv1(para, val)` | `byte para`, `byte scaledVal` | Audio scales `scaledVal / 199.0` with `sclEnvA[para]`, calls `chEnvA`. |
 | `208` | `8` | `sndEnv2(para, val)` | `byte para`, `byte scaledVal` | Audio scales `scaledVal / 199.0` with `sclEnvF[para]`, calls `chEnvF`. |
 | `209` | `9` | `sndFilter(para, val)` | `byte para`, `byte scaledVal` | Audio scales with `sclFilter[para]`, calls `chFilter`. |
+| `210` | `10` | `sndManualEnv(str, state)` | `byte str`, `byte state` | Audio stores per-string manual envelope-decay override; while enabled, amplitude and filter decay keep sustain high regardless of decay fader value. |
 | `211` | `11` | `sndVol(val)` | `byte scaledVal` | Audio computes `(scaledVal / 199.0)^2 * 2`, then `ampOut.gain(val + 0.0001)`. |
 | `212` | `12` | `sndStrGain(str, val)` | `byte str`, `byte scaledVal` | Audio computes `scaledVal / 100.0`, calls `chngStrOutGain`. CTL sends `val * 2`. |
 | `215` | `15` | not found in CTL sender file | `byte para`, `byte scaledVal` | Audio scales with `sclFX[para]`, calls `chFX`. Source uncertain. |

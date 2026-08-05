@@ -73,6 +73,7 @@ float sclEnvF[7]={50,1000,300,5000,1,300,1};
 
 byte strState[nStrings]={0,0,0,0,0,0};
 byte lastStrState[nStrings]={0,0,0,0,0,0};
+byte manualEnvDecay[nStrings]={0,0,0,0,0,0};
 
 byte noteState[128];
 byte lastNoteState[128];
