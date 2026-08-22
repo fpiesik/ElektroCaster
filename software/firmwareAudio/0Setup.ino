@@ -78,7 +78,7 @@ void setup(void){
   }
   //init coils
   for (int i=0; i<nStrings; i++) {
-    coilOsc[i].begin(WAVEFORM_SINE);
+    coilOsc[i].begin(WAVEFORM_SQUARE);
     coilOsc[i].amplitude(0);
   }
 
