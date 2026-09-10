@@ -38,7 +38,7 @@ const int chipSelect = BUILTIN_SDCARD;
   int tuning[nStrings]={64,59,55,50,45,40};
   int defTuning[nStrings]={64,59,55,50,45,40};
   int strGain[nStrings];
-  int defStrGain[nStrings]={40,40,40,40,40,40};
+  int defStrGain[nStrings]={45,40,35,30,25,20};
   int strGainMx=50;
   unsigned long lastFretRead[nStrings];
   unsigned int fretMaskT=50; //time until a next strPres on he same string is detected
@@ -51,11 +51,12 @@ const int chipSelect = BUILTIN_SDCARD;
   bool strHold[nStrings]; //treat those strings as hold they were pressed
   int lastExStrPr[nStrings];
   int lastNZStrPrs[nStrings]; //last string press without releases (nz=non zero)
+  
 
 //led defintions and variables
   #define NUMPIXELS    150  //total number of leds
   const int nLedFrets=25; //how many led frets
-#include "HardwareConfig.h"
+  #include "HardwareConfig.h"
   //long sndLedTimer;
   //int sndLedInt=1000;
   float tnClrs[13][3];
@@ -73,6 +74,12 @@ const int chipSelect = BUILTIN_SDCARD;
   float trgtC[nStrings][nLedFrets][3];
   float actC[nStrings][nLedFrets][3];
 
+//display
+  unsigned long disp_frameTimer; //timer for the led update
+  unsigned int disp_frameInt=100;
+  unsigned long disp_lastDurationMicros=0; //measured display serialization time
+  const unsigned long disp_clockGuardMicros=200; //keep this margin before the next internal clock tick
+  
 //hid
   float hidAVal[22];
   bool hidDVal[19]={0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1};
@@ -86,7 +93,7 @@ const int chipSelect = BUILTIN_SDCARD;
   long lastHidEVal4[8];
 
 //fretboard
-  byte frtb_sensMode=1; //0=only senses if string is pressed 1=senses also where the string is pressed
+  byte frtb_sensMode=0; //1=only senses if string is pressed 0=senses also where the string is pressed
   bool frtState[nFrets][nStrings];
   bool lastFrtState[nFrets][nStrings];
   byte strPrs[nStrings]={0,0,0,0,0,0};
@@ -128,41 +135,93 @@ const int chipSelect = BUILTIN_SDCARD;
 
   //int scls_nDispEncFnc=4; 
   
+  //string setup
+  const char* toneNm[12]={"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
+  
 //string arpeggiator/sequencer
+  const int strArp_nPttn = 6;
+
+  struct StrArpPatternState {
+    byte tmDv[nStrings];
+    byte tmDvSel[nStrings];
+    byte nRpt[nStrings];
+    byte chn[nStrings];
+    byte order[nStrings];
+    byte mode[nStrings];
+    bool muteCh[nStrings];
+    byte strPrsFnc;
+    byte strEncFnc;
+    int strBtnFnc;
+  };
+
+  struct StrArpPatternBank {
+    StrArpPatternState pttn[strArp_nPttn];
+  };
+
+  byte strArp_actPttn = 0;
+  byte strArp_nxtPttn = 0;
+  int schdStrArpPttnCh = -1;
+  int schdStrArpModeSel = -1;
+  StrArpPatternBank strArp_patterns;
+
+  #define strArp_tmDv strArp_patterns.pttn[strArp_actPttn].tmDv
+  #define strArp_tmDvSel strArp_patterns.pttn[strArp_actPttn].tmDvSel
+  #define strArp_nRpt strArp_patterns.pttn[strArp_actPttn].nRpt
+  #define strArp_chn strArp_patterns.pttn[strArp_actPttn].chn
+  #define strArp_order strArp_patterns.pttn[strArp_actPttn].order
+  #define strArp_mode strArp_patterns.pttn[strArp_actPttn].mode
+  #define strArp_muteCh strArp_patterns.pttn[strArp_actPttn].muteCh
+  #define strArp_strPrsFnc strArp_patterns.pttn[strArp_actPttn].strPrsFnc
+  #define strArp_strEncFnc strArp_patterns.pttn[strArp_actPttn].strEncFnc
+  #define strArp_strBtnFnc strArp_patterns.pttn[strArp_actPttn].strBtnFnc
+
   byte strArp_act=0;
   float sclArpMode=7;
   float sclArpClkMode=4;
   float sclArpRpt=4;
   byte strArp_stp[nStrings][nFrets];
   long strArp_clk[nStrings];
-  const int strArp_maxVisSteps = 16;
+  const int strArp_maxVisSteps = 20;
   const int strArp_maxSteps = 64;
   float strArp_gridPix[nStrings][strArp_maxVisSteps][3];
   float strArp_crsrPix[nStrings][strArp_maxVisSteps][3];
   float strArp_stpPix[nStrings][strArp_maxVisSteps][3];
   byte strArp_nStps[nStrings];
-  byte strArp_tmDv[nStrings]={6,6,6,6,6,6};
+  byte strArp_seq[strArp_maxSteps];
+  byte strArp_seqLen=0;
+  byte strArp_serialStep=0;
+  int strArp_serialDisplayStep=-1;
+  byte strArp_serialNxtClkFil=0;
   byte strArp_tmDvs[12]={96,64,48,32,24,16,12,8,6,4,3,2};
-  const char* strArp_tmDvNm[12]={"1","1.5","2","3","4","6","8","12","16","24","32","64"};
-  byte strArp_tmDvSel[nStrings]={8,8,8,8,8,8};
+  const char* strArp_tmDvNm[12]={"1","1.5","2","3","4","6","8","12","16","24","32","48"};
   byte strArp_nTmDvs=12;
   byte strArp_nxtClkFil[nStrings];
-  byte strArp_nRpt[nStrings] = {1,1,1,1,1,1};
 
-  const char* strArp_strPrsNm[]={"serial", "parallel"}; 
-  const byte strArp_nStrPrsFnc=2;
-  byte strArp_strPrsFnc=0;
+  unsigned int strArp_pressOrder[nStrings] = {0,0,0,0,0,0};
+  unsigned int strArp_pressOrderNext = 1;
+
+  const byte strArp_modeSerial=0;
+  const byte strArp_modeParallel=1;
+  const char* strArp_modeNm[]={"se", "pa"};
+  const byte strArp_strPrsFnc_simple=0;
+  const byte strArp_strPrsFnc_back=1;
+  const byte strArp_strPrsFnc_mirror=2;
+  const byte strArp_strPrsFnc_revMirror=3;
+  const char* strArp_strPrsNm[]={"simple", "back", "mirror", "rev mirror"};
+  const byte strArp_nStrPrsFnc=sizeof(strArp_strPrsNm)/sizeof(strArp_strPrsNm[0]);
   
-  const char* strArp_strEncNm[]={"steps", "tmDv"}; 
-  const byte strArp_nStrEncFnc=2;
-  byte strArp_strEncFnc=0;
+  const byte strArp_strEncFnc_stps=0;
+  const byte strArp_strEncFnc_tmDv=1;
+  const byte strArp_strEncFnc_chn=4;
+  const byte strArp_strEncFnc_mode=3; //ser o par
+  const byte strArp_strEncFnc_order=2;
+  const char* strArp_strEncNm[]={"steps", "tmDv", "order", "ser o par", "chn"};
+  const byte strArp_nStrEncFnc=sizeof(strArp_strEncNm)/sizeof(strArp_strEncNm[0]);
   
   const char* strArp_strBtnNm[]={"mute", "randomise"};
   const int strArp_strBtnFnc_mute=0;
   const int strArp_strBtnFnc_rnd=1;
   const int strArp_nStrBtnFnc=2;
-  int strArp_strBtnFnc=0;
-  bool strArp_muteCh[nStrings]={0,0,0,0,0,0};
 
 //generic Sequenzer
   //globals
@@ -170,7 +229,7 @@ const int chipSelect = BUILTIN_SDCARD;
   const int genSq_maxVisSteps = 16;
   const int genSq_maxSteps = 16;
   const int genSq_nPttn = 6;
-  const int genSq_nSngs = 12;
+  const int genSq_nSngs = 100;
   const int genSq_pttnMOff = nLedFrets-genSq_nPttn/2;
   int genSq_hrmInst=1;
   int genSq_strEncBtnSw = 1; //choose between button function or Encoder button select
@@ -192,20 +251,21 @@ const int chipSelect = BUILTIN_SDCARD;
   const int genSq_maxStpV[genSq_nStrPrsFnc]={12,9,50,99,99,99};
   int genSq_strPrsFnc=0;
 
-  const char* genSq_strEncNm[]={"tmDv","offSt","stps","sync","chn"};
-  const int genSq_strEncFnc_stps=2;
-  const int genSq_strEncFnc_tmDv=0;
-  const int genSq_strEncFnc_offSt=1;
+  const int genSq_strEncFnc_tmDv=1;
+  const int genSq_strEncFnc_offSt=2;
+  const int genSq_strEncFnc_stps=0; //len
   const int genSq_strEncFnc_sync=3;
   const int genSq_strEncFnc_chn=4;
+  const char* genSq_strEncNm[]={"len","tmDv","offSt","sync","chn"};
 
-  const int genSq_nStrEncFnc=5;
-  const int genSeq_maxEncV[genSq_nStrPrsFnc]={genSq_nTmDvs,16,genSq_maxVisSteps,6,16};
+  const int genSq_nStrEncFnc=sizeof(genSq_strEncNm)/sizeof(genSq_strEncNm[0]);
+  const int genSeq_maxEncV[genSq_nStrEncFnc]={16,genSq_nTmDvs,genSq_maxVisSteps,6,16};
   int genSq_strEncFnc=0;
   int genSq_strEncChAStps=0;
 
   const int genSq_nInst = 3;
   int genSq_actInst = 0;
+  int genSq_actTmDv[genSq_nInst][nStrings]; //time devision actually used (changes on timed occasions)
   const int genSq_nActPttns=12;
 
   struct GenSeqRuntimeState {
@@ -243,7 +303,7 @@ const int chipSelect = BUILTIN_SDCARD;
   GenSeqSong genSeqSong = {
     0,
     {-1,-1,-1},
-    {"Song01","Song02","Song03","Song04","Song05","Song06","Song07","Song08","Song09","Song10","Song11","Song12"},
+    {"Song01", "Song02", "Song03", "Song04", "Song05", "Song06", "Song07", "Song08", "Song09", "Song10", "Song11", "Song12", "Song13", "Song14", "Song15", "Song16", "Song17", "Song18", "Song19", "Song20", "Song21", "Song22", "Song23", "Song24", "Song25", "Song26", "Song27", "Song28", "Song29", "Song30", "Song31", "Song32", "Song33", "Song34", "Song35", "Song36", "Song37", "Song38", "Song39", "Song40", "Song41", "Song42", "Song43", "Song44", "Song45", "Song46", "Song47", "Song48", "Song49", "Song50", "Song51", "Song52", "Song53", "Song54", "Song55", "Song56", "Song57", "Song58", "Song59", "Song60", "Song61", "Song62", "Song63", "Song64", "Song65", "Song66", "Song67", "Song68", "Song69", "Song70", "Song71", "Song72", "Song73", "Song74", "Song75", "Song76", "Song77", "Song78", "Song79", "Song80", "Song81", "Song82", "Song83", "Song84", "Song85", "Song86", "Song87", "Song88", "Song89", "Song90", "Song91", "Song92", "Song93", "Song94", "Song95", "Song96", "Song97", "Song98", "Song99", "Song100"},
     {0},
     0
   };
@@ -288,28 +348,39 @@ const int chipSelect = BUILTIN_SDCARD;
   bool genSq_stpEdtStrs[nStrings];
   int genSq_stpEdtFrt;
 
+  //sequencer colors
+  const float strArp_gridColorA[3]={0.1,0,0.6};
+  const float strArp_gridColorB[3]={0.01,0,0.06};
+  const float strArp_gridMuteColorA[3]={0.1,0.1,0.1};
+  const float strArp_gridMuteColorB[3]={0.02,0.02,0.2};
+  const float strArp_cursorColor[3]={0,1,0};
+  const float strArp_stepColor[3]={0.6,0,0.1};
+  const float strArp_stepMuteColor[3]={0.06,0,0.01};
+  const float genSq_gridColorA[genSq_nInst][3]={{0.0,0.25,0.25},{0.375,0.0,0.25},{0.375,0.25,0.0}};
+  const float genSq_gridColorB[genSq_nInst][3]={{0.0,0.05,0.05},{0.075,0.0,0.05},{0.075,0.05,0.0}};
+  const float genSq_gridMuteColorA[genSq_nInst][3]={{0.0,0.025,0.025},{0.0375,0.0,0.025},{0.0375,0.025,0.0}};
+  const float genSq_gridMuteColorB[genSq_nInst][3]={{0.0,0.005,0.005},{0.0075,0.0,0.005},{0.0075,0.005,0.0}};
+  const float genSq_cursorColor[3]={0.25,0.25,0.25};
+  const float genSq_stepNoChannelColor[3]={0.5,0.5,0.5};
+  const float genSq_stepMuteColor[3]={0.2,0.2,0.2};
+
   float genSq_edtPttnColor[3]={0.0,0.0,0.1};
 
   // GenSeq per-instance runtime state lives in genSeqRuntime.
   // GenSeq per-pattern step/channel data lives in genSeqPatterns.
   // Compatibility macros above keep existing index order unchanged.
   //int genSq_sndCh[genSq_nInst][nStrings]={{1,1,1,1,1,1},{2,2,2,2,2,2},{3,3,3,3,3,3}};
-  float genSq_gridColor[genSq_nInst][3]={{0.0,0.01,0.01},{0.015,0.0,0.01},{0.015,0.01,0.0}};
 
 // String Sequencer (from genSeq)
   bool strSeq_act=1;
+  bool strArp_modeSel=0;
+  byte strArp_modeVal=0;
 
 //sequence settings
   unsigned int bpm=90;
 
-//string setup
- const char* toneNm[12]={"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
 
-//display
-  unsigned long disp_frameTimer; //timer for the led update
-  unsigned int disp_frameInt=200;
-  unsigned long disp_lastDurationMicros=0; //measured display serialization time
-  const unsigned long disp_clockGuardMicros=1000; //keep this margin before the next internal clock tick
+
 
 // instance modes
   const int strSetup_opMode=0;
@@ -324,7 +395,7 @@ const int chipSelect = BUILTIN_SDCARD;
   int lastStrEnc;
   const byte nDispEncFnc[maxOpMds]={3,6,3,3,3,3,3,3,3,3,3,3}; //number of functions selectable with the disp encoder in each opMode
   //const byte nStrEncFnc[maxOpMds]={2,2,2,2,2,2,2,2,2,2,2,2}; //number of functions selectable with the string encoders in each opMode
-  int dispEncFnc[maxOpMds]={0,4,2,2,2,2,0,0,0,0,0,0};
+  int dispEncFnc[maxOpMds]={0,4,0,0,0,0,0,0,0,0,0,0}; //{0,4,2,2,2,2,0,0,0,0,0,0};
   byte strEncFnc[maxOpMds];
   
 //global parameters
@@ -341,14 +412,13 @@ const int chipSelect = BUILTIN_SDCARD;
   long lastPulse;
   long bar;
   long lastBar;
-  long syncPnt;
-  long lastSyncPnt;
-  int syncInt;
-  int tmDv[genSq_nInst][nStrings]; //time devision actually used (changes on timed occasions)
+  long syncPnt[genSq_nInst];
+  long lastSyncPnt[genSq_nInst];
+  int syncInt[genSq_nInst];
   bool schdSync[genSq_nInst];
   bool schdSyncPnt[genSq_nInst];
   int schdPttnCh[genSq_nInst];
-  bool tgl_ply=0;
+  bool tgl_ply=1;
   unsigned int intClockInt; //inerval between clock ticks
   long intClockTimer; //to measure interval between clock ticks
   bool clckOn=0;
@@ -393,31 +463,10 @@ void setup() {
     digitalWrite(frtPins[f], LOW);
   }
 
-//set default genSq-parameter
-//  for (int i=0; i < genSq_nInst; i++) {
-//    genSq_actPttn[i]=0;
-//    genSq_edtPttn[i]=0;
-//    for (int p=0; p < genSq_nPttn; p++) {
-//      for (int s=0; s < nStrings; s++) {
-//        genSq_chn[i][p][s][genSq_strEncFnc_tmDv]=8; 
-//        genSq_chn[i][p][s][genSq_strEncFnc_stps]=16;
-//        genSq_clk[i][s]=-1;
-//        for (int f=0; f < genSq_maxSteps; f++) {
-//          genSq_stpOnOff[i][p][s][f]=0;
-//          genSq_stp[i][p][s][f][genSq_strPrsFnc_sStp]=0;
-//          genSq_stp[i][p][s][f][genSq_strPrsFnc_oct]=4;
-//          genSq_stp[i][p][s][f][genSq_strPrsFnc_vel]=40; 
-//          genSq_stp[i][p][s][f][genSq_strPrsFnc_cc1]=0; 
-//          genSq_stp[i][p][s][f][genSq_strPrsFnc_cc2]=0; 
-//          genSq_stp[i][p][s][f][genSq_strPrsFnc_cc3]=0;     
-//          genSq_tmDv[i][p][s]=6;
-//        }
-//      }
-//    }
-//  }
 
   //rstAllSngs(); //uncomment if the song structure has changed. Resets all songs
   loadSong(0);
+  loadStrSetupGlobals();
   chngBpm(bpm);
   strArp_drwGrid();
   mkColors();
@@ -429,7 +478,7 @@ void loop() {
   debugPoll();
   usbMIDI.read();    
   updIntClock();
-  updDisplay();
+  //updDisplay();
   if (fbrdMode == 1)readFretboard(0);
   if (fbrdMode == 0){
     if (frtb_sensMode==1)readFretboard(1);
@@ -437,5 +486,5 @@ void loop() {
   }
   cueKicks();
   updLedFrets();
-  scanPttns();
+  //scanPttns();
 }

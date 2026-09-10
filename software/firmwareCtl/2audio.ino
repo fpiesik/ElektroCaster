@@ -21,6 +21,12 @@ void sndStrGain(int str, byte val) {
 //  msgOut_audio.streamPacket(&Serial1);
 }
 
+void sndManualEnv(byte str, byte state){
+  Serial1.write(AUDIO_CMD_MANUAL_ENV);
+  Serial1.write(str);
+  Serial1.write(state);
+}
+
 void sndVol(float val){
   Serial1.write(AUDIO_CMD_VOLUME);
   Serial1.write(byte(val*125)); //lowered to avoid clipping

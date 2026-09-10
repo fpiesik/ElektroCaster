@@ -31,6 +31,7 @@ bool displayStateChanged();
 void cancelDisplayJob();
 void buildDisplayJob();
 void sendDisplayJobChunk();
+unsigned long displayCommandBudgetMicros();
 bool displayClockSafeFor(unsigned long needed);
 unsigned long displayClockSlackMicros();
 void queueDisplayCmd(byte kind, int a, int b, int c, int d, int e, long l, const char* str);
@@ -69,7 +70,8 @@ void updDisplay(){
   if (displayJobStale()) cancelDisplayJob();
 
   if (!disp_jobActive){
-    if (!displayStateChanged() && millis()-disp_frameTimer <= disp_frameInt) return;
+    //if (!displayStateChanged() && millis()-disp_frameTimer <= disp_frameInt) return;
+    //if (!displayStateChanged) return;
     buildDisplayJob();
   }
 
@@ -108,12 +110,14 @@ void buildDisplayJob(){
       strSetup_updDisp();
       break;
     case strArp_opMode:
-      if(fbrdMode==0)strArp_updDisp();
-      if(fbrdMode==1)strArp_updDisp();
+      //if(fbrdMode==0)strArp_updDisp();
+      //if(fbrdMode==1)strArp_updDisp();
       break;
     case genSq_opMode:
-      if(fbrdMode==0&&fbrdSeqVHld==0)scls_updDisp();
-      if(fbrdMode==1||fbrdSeqVHld==1)genSq_updDisp();
+      if(fbrdMode==0&&fbrdSeqVHld==0&&strArp_modeSel==0)scls_updDisp();
+      if((fbrdMode==1||fbrdSeqVHld==1)&&strArp_modeSel==0)genSq_updDisp();
+      if(fbrdMode==0&&fbrdSeqVHld==0&&strArp_modeSel==1)scls_updDisp();
+      if((fbrdMode==1||fbrdSeqVHld==1)&&strArp_modeSel==1)strArp_updDisp();
       break;
     case genSq_opMode+1:
       if(fbrdMode==0&&fbrdSeqVHld==0)scls_updDisp();
@@ -135,7 +139,7 @@ void sendDisplayJobChunk(){
 
   byte sent = 0;
   while (disp_jobPos < disp_jobLen && sent < disp_maxCmdsPerChunk){
-    if (!displayClockSafeFor(disp_lastCommandDurationMicros + disp_clockGuardMicros)) return;
+    if (!displayClockSafeFor(displayCommandBudgetMicros() + disp_clockGuardMicros)) return;
     unsigned long slack = displayClockSlackMicros();
     if (slack > disp_lastClockSlackMicros) disp_lastClockSlackMicros = slack;
 
@@ -143,7 +147,7 @@ void sendDisplayJobChunk(){
     sendDisplayCmd(disp_jobPos);
     unsigned long cmdDurationMicros = micros()-cmdStartMicros;
     disp_jobSendMicros += cmdDurationMicros;
-    if (cmdDurationMicros > disp_lastCommandDurationMicros) disp_lastCommandDurationMicros = cmdDurationMicros;
+    disp_lastCommandDurationMicros = cmdDurationMicros;
     disp_jobPos++;
     sent++;
   }
@@ -158,7 +162,14 @@ void sendDisplayJobChunk(){
 }
 
 bool displayClockSafe(){
-  return displayClockSafeFor(disp_lastCommandDurationMicros+disp_clockGuardMicros);
+  return displayClockSafeFor(displayCommandBudgetMicros()+disp_clockGuardMicros);
+}
+
+unsigned long displayCommandBudgetMicros(){
+  if (extClk == 0 && clckOn == 1 && disp_lastCommandDurationMicros + disp_clockGuardMicros >= intClockInt){
+    return 0;
+  }
+  return disp_lastCommandDurationMicros;
 }
 
 bool displayClockSafeFor(unsigned long needed){

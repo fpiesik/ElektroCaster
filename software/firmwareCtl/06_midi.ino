@@ -39,7 +39,7 @@ void sndMidiNotePress(int str, int frt, int chn){
     sndMidiNote(note,127, chn);
   }    
   if (frt == 0){ 
-    sndMidiNote(lastNote[str],0, lastChn[str]);
+    if (lastNote[str]!=0) sndMidiNote(lastNote[str],0, lastChn[str]);
     lastNote[str]=0;
   }
 }
@@ -47,6 +47,10 @@ void sndMidiNotePress(int str, int frt, int chn){
 void sndMidiCC(byte cc, byte val,byte ch){
   //usbMIDI.sendControlChange(cc, val, ch);
   usbMIDI.sendControlChange(cc, val, ch);
+}
+
+void sndMidiPC(byte program, byte ch){
+  usbMIDI.sendProgramChange(program, ch);
 }
 
 void sndMidiClck(int state){

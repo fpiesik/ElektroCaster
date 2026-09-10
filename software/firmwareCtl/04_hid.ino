@@ -61,17 +61,41 @@ bool emitFretEvents(int *eventString, int *eventPress) {
       return 1;
     }
   }
-
   return 0;
+}
+
+bool stringHasManualEnvelopeDecay(int stringIndex, int press) {
+  bool manualTrigger = strArp_act == 0 && strSeq_act == 0;
+  bool strArpZeroStepManualTrigger = strArp_modeSel == 1 && strArp_act == 1 && strArp_nRpt[stringIndex] == 0 && (strArp_muteCh[stringIndex] == 0 || press == 0);
+  if (strArpZeroStepManualTrigger) manualTrigger = 1;
+  return fbrdMode == 0 && manualTrigger && press > 0;
+}
+
+void sendManualEnvelopeStateForPressedStrings() {
+  for (int s = 0; s < nStrings; s++) {
+    sndManualEnv(s, stringHasManualEnvelopeDecay(s, strPrs[s]));
+  }
 }
 
 void handleFretEventForAudioMidiKickSeq(int eventString, int eventPress, int sensMode) {
   int s = eventString;
   int press = eventPress;
-  int chnl = genSq_chn[0][genSq_actPttn[0]][s][genSq_strEncFnc_chn];
+  strArp_notePressOrder(s, press);
+  int chnl;
+  if(strArp_modeSel==0){
+    chnl = genSq_chn[0][genSq_actPttn[0]][s][genSq_strEncFnc_chn];
+    }
+  else{
+    chnl = strArp_chn[s];
+    }
+
+  bool manualTrigger = strArp_act == 0 && strSeq_act==0;
+  bool strArpZeroStepManualTrigger = strArp_modeSel==1 && strArp_act==1 && strArp_nRpt[s]==0 && (strArp_muteCh[s]==0 || press==0);
+  if(strArpZeroStepManualTrigger)manualTrigger=1;
+  sndManualEnv(s, stringHasManualEnvelopeDecay(s, press));
 
   if (strHold[s]==0||genSq_muteCh[0][s]){
-    if (fbrdMode == 0 && strArp_act == 0 && strSeq_act==0) {
+    if (fbrdMode == 0 && manualTrigger) {
       sndTrigEnv(s, press>0);
       if(opMode>=genSq_opMode && opMode<genSq_opMode+genSq_nInst && press<=frtSplit){
         if(sensMode==0)sndMidiNotePress(s,press,chnl);
@@ -82,9 +106,6 @@ void handleFretEventForAudioMidiKickSeq(int eventString, int eventPress, int sen
         if (press > 0)kick(s);
       }
     }
-  //if (fbrdMode == 0)sndStrPrs(s, strPrs[s]);
-  //lastStrPrs[s]=strPrs[s];
-  //lastExStrPr[s] = strPrs[s];
   }
   if (fbrdMode == 0 && press == 0)sndStrPrs(s, tuning[s],0);
   if (fbrdMode == 0 && press != 0)sndStrPrs(s, tuning[s] + press,1);
@@ -108,10 +129,6 @@ void rcvHidD(byte idx, int val) {
   hidDVal[idx] = val;
   if (hidDVal[idx] != lastHidDVal[idx]) {
     procHidDChng(idx, val);
-//    Serial.print("hidDVal: ");
-//    Serial.print(idx);
-//    Serial.print(" ");
-//    Serial.println(hidDVal[idx]);
   }
 }
 
@@ -132,9 +149,6 @@ void procHidDChng(byte idx, bool val) {
           genSq_lastActPttn[i]=genSq_actPttn[i];
         }
       }
-        
-//      Serial.print("dispEncMode: ");
-//      Serial.println(dispEncMode);
       break;
 
     case 1:
@@ -144,8 +158,9 @@ void procHidDChng(byte idx, bool val) {
 
     case 2:
       //tripple switch left
-      strArp_act = 0;
-      strSeq_act = val;
+      strSeq_act = val && !strArp_modeSel;
+      strArp_act = val && strArp_modeSel;
+      sendManualEnvelopeStateForPressedStrings();
       break;
 
     case 3:
@@ -164,18 +179,16 @@ void procHidDChng(byte idx, bool val) {
 
     case 5:
       //right tripple button
-      //if (val == 1)loadSong();
       if (val == 1){
         schdSync[0] = 1;
         schdSync[1] = 1;
         schdSync[2] = 1;
-        //schdSync[genSq_actInst] = 1;
       }
       break;
 
     case 6:
       //middle tripple button
-      if (val == 1){
+      if (val == 0){
         tgl_ply=!tgl_ply;
         if (tgl_ply==1)clck_strt();
         if (tgl_ply==0)clck_stp();
@@ -183,27 +196,25 @@ void procHidDChng(byte idx, bool val) {
       break;
 
     case 7:
-      //left tripple transport button
-      //if (val == 1)saveSong();
-      //if (val == 1)clck_strt();
+      //left tripple button
       if (val == 1){
         genSq_actInst=(genSq_actInst+1)%genSq_nInst;
-        chOpMode(genSq_actInst+2);
+        //if(genSq_actInst==0 && strArp_modeSel)chOpMode(strArp_opMode);
+        chOpMode(genSq_actInst+genSq_opMode);
       }
       break;
 
     case 8:
       //pots switch
-      //genSq_strEncFnc=val;
       genSq_strEncBtnSw = val;
       break;
 
     case 9:
-      //embedden button near pots 
+      //embedded button near pots 
       if (val == 0 && shift == 1 && dispEncMode == 1)defaultSong();
       if (val == 0 && shift == 0 && dispEncMode == 1)loadSong(0);
       if (val == 0 && shift == 0 && dispEncMode == 0)loadSong(genSq_actSng);
-      if (val == 0 && shift == 1 && dispEncMode == 0)saveSong(genSq_actSng);
+      if (val == 0 && shift == 1 && dispEncMode == 0)saveSong(0);
       break;
 
     case 10:
@@ -231,13 +242,16 @@ void procHidDChng(byte idx, bool val) {
     byte s = i - pO;
     if (genSq_strEncBtnSw == 1){
       if (hidDVal[pO + s] != lastHidDVal[pO + s]) {
-        genSq_strEncFnc=nStrings-s-1;
+        if(opMode>genSq_opMode)genSq_strEncFnc=nStrings-s-1;
+        if(opMode==genSq_opMode && strArp_modeSel==0)genSq_strEncFnc=nStrings-s-1;
+        if(opMode==genSq_opMode && strArp_modeSel==1)strArp_strEncFnc=nStrings-s-1;
       }
     }
     if (genSq_strEncBtnSw == 0){
       if (hidDVal[pO + s] != lastHidDVal[pO + s]) {
-        if(opMode>=genSq_opMode)genSq_chStrBtn(s, val);
-        if(opMode==strArp_opMode)strArp_chStrBtn(s, val);
+        if(opMode>genSq_opMode)genSq_chStrBtn(s, val);
+        if(opMode==genSq_opMode && strArp_modeSel==0)genSq_chStrBtn(s, val);
+        if(opMode==genSq_opMode && strArp_modeSel==1)strArp_chStrBtn(s, val);
       }
     }
   }
@@ -368,10 +382,18 @@ void rcvHidR(byte idx, int val) {
   hidRVal[idx] = val;
   if (hidRVal[idx] != lastHidRVal[idx])procHidRChng(idx, val);
 }
+void updStrAutoMode(){
+  bool autoTrig = hidDVal[2];
+  strSeq_act = autoTrig && !strArp_modeSel;
+  strArp_act = autoTrig && strArp_modeSel;
+}
+
 void procHidRChng(byte idx, byte val) {
   switch (idx) {
     case 0:
       if(val<genSq_nPttn){
+        schdStrArpModeSel = 0;
+        //if(opMode==strArp_opMode)chOpMode(genSq_opMode);
         if(shift==0){
           schdPttnCh[idx]=val;
           for (int i=0;i<genSq_nInst;i++){
@@ -383,11 +405,19 @@ void procHidRChng(byte idx, byte val) {
         }
         genSq_edtPttn[idx]=val;
       }
-      for (int i=0;i<genSq_nInst;i++){
-        if(val==11-i)genSq_syncInst[idx]=i;
-        if(val<=11-genSq_nInst)genSq_syncInst[idx]=-1;
+      if(val<genSq_nPttn){
+        for (int i=0;i<genSq_nInst;i++){
+          if(val==11-i)genSq_syncInst[idx]=i;
+          if(val<=11-genSq_nInst)genSq_syncInst[idx]=-1;
+        }
       }
-      if(val==genSq_nPttn)chOpMode(0);
+      if(val>=genSq_nPttn){
+        strArp_modeVal = val;
+        schdStrArpModeSel = 1;
+        schdStrArpPttnCh = 11 - val;
+        if(schdStrArpPttnCh >= strArp_nPttn)schdStrArpPttnCh = 0;
+        //if(opMode==genSq_opMode)chOpMode(strArp_opMode);
+      }
       break;
 
     case 1:
@@ -456,12 +486,14 @@ void procHidEChng(byte idx, long val) {
           strSetup_chDispEnc(val);
           break;
         case strArp_opMode:
-          if (fbrdMode == 0)strArp_chDispEnc(val);
-          if (fbrdMode == 1)strArp_chDispEnc(val);
+          if (fbrdMode==0&&fbrdSeqVHld==0)strArp_chDispEnc(val);
+          if (fbrdMode==1||fbrdSeqVHld==1)strArp_chDispEnc(val);
           break;
         case genSq_opMode:
-          if (fbrdMode==0&&fbrdSeqVHld==0)scls_chDispEnc(val);
-          if (fbrdMode==1||fbrdSeqVHld==1)genSq_chDispEnc(val);
+          if (fbrdMode==0&&fbrdSeqVHld==0&&strArp_modeSel==0)scls_chDispEnc(val);
+          if ((fbrdMode==1||fbrdSeqVHld==1)&&strArp_modeSel==0)genSq_chDispEnc(val);
+          if (fbrdMode==0&&fbrdSeqVHld==0&&strArp_modeSel==1)scls_chDispEnc(val);
+          if ((fbrdMode==1||fbrdSeqVHld==1)&&strArp_modeSel==1)strArp_chDispEnc(val);
           break;
         case genSq_opMode+1:
           if (fbrdMode==0&&fbrdSeqVHld==0)scls_chDispEnc(val);
@@ -485,7 +517,8 @@ void procHidEChng(byte idx, long val) {
               strArp_chStrEnc(s, val);
               break;
             case genSq_opMode:
-              if (strHold[s]==0) genSq_chStrEnc(s, val); //change only if string is not hold
+              if(strHold[s]==0&&strArp_modeSel==0) genSq_chStrEnc(s, val); //change only if string is not hold
+              if(strArp_modeSel==1)strArp_chStrEnc(s, val);
               break;
             case genSq_opMode+1:
               genSq_chStrEnc(s, val);
@@ -521,7 +554,8 @@ void procHidEChng(byte idx, long val) {
           strArp_chStrEnc(s, val);
           break;
         case genSq_opMode:
-          genSq_chStrEnc(s, val);
+          if(strArp_modeSel==0)genSq_chStrEnc(s, val);
+          if(strArp_modeSel==1)strArp_chStrEnc(s, val);
           break;
         case genSq_opMode+1:
           genSq_chStrEnc(s, val);
@@ -535,6 +569,8 @@ void procHidEChng(byte idx, long val) {
 }
 
 void chOpMode(int val){
+  int lastOpMode = opMode;
   opMode = val;
+  if (lastOpMode == strSetup_opMode && opMode != strSetup_opMode) saveStrSetupGlobals();
   if (opMode >= genSq_opMode && opMode < genSq_opMode + genSq_nInst) genSq_actInst = opMode - genSq_opMode;
 }

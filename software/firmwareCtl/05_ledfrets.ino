@@ -1,4 +1,3 @@
-
 void updLedFrets(){
   if (millis()-fled_frameTimer > fled_frameInt){
     ledsTrgOff();
@@ -7,12 +6,15 @@ void updLedFrets(){
         strSetup_updFleds();
         break;
       case strArp_opMode:
-        if(fbrdMode==0)scls_updFleds();
-        if(fbrdMode==1)strArp_updFleds();
+        //if(fbrdMode==0&&fbrdSeqVHld==0)scls_updFleds();
+        //if(fbrdMode==1||fbrdSeqVHld==1)strArp_updFleds();
+        //genSq_updPttnFleds();
         break;
       case genSq_opMode:
-        if(fbrdMode==0&&fbrdSeqVHld==0)scls_updFleds();
-        if(fbrdMode==1||fbrdSeqVHld==1)genSq_updFleds();
+        if(fbrdMode==0&&fbrdSeqVHld==0&&strArp_modeSel==0)scls_updFleds();
+        if((fbrdMode==1||fbrdSeqVHld==1)&&strArp_modeSel==0)genSq_updFleds();
+        if(fbrdMode==0&&fbrdSeqVHld==0&&strArp_modeSel==1)scls_updFleds();
+        if((fbrdMode==1||fbrdSeqVHld==1)&&strArp_modeSel==1)strArp_updFleds();
         genSq_updPttnFleds();
         break;
       case genSq_opMode+1:
@@ -34,6 +36,76 @@ void updLedFrets(){
       FastLED.show();
     }
     fled_frameTimer=millis();
+  }
+}
+
+void genSq_updPttnFleds(){ 
+  genSq_pttnDrwGrid();
+  genSq_pttnDrwStat();
+  for(int s=0;s<nStrings;s++){
+    for(int p=0;p<genSq_nPttn/2;p++){
+      for(int ch=0;ch < 3; ch++){
+        trgtC[s][p+genSq_pttnMOff][ch]=genSq_pttnGridPix[s][p][ch]+genSq_pttnPttnPix[s][p][ch];
+      }
+    }
+  }        
+}
+
+void genSq_pttnDrwGrid(){ 
+  int inst=genSq_actInst;
+  for(int i=0;i<genSq_nInst;i++){
+    for(int s=0;s<nStrings;s++){
+      for(int f=0;f<genSq_nPttn/2;f++){
+        for(int c=0;c<3;c++){  
+          if(s==i*2+1||s==i*2){
+            if(!strArp_modeSel){
+              if(inst==genSq_nInst-i-1)genSq_pttnGridPix[s][f][c]=genSq_gridColorA[genSq_nInst-i-1][c];
+              else genSq_pttnGridPix[s][f][c]=genSq_gridColorB[genSq_nInst-i-1][c];
+            }
+            if(strArp_modeSel && i!=2){
+              if(inst==genSq_nInst-i-1)genSq_pttnGridPix[s][f][c]=genSq_gridColorA[genSq_nInst-i-1][c];
+              else genSq_pttnGridPix[s][f][c]=genSq_gridColorB[genSq_nInst-i-1][c];
+            }
+            if(strArp_modeSel && i==2){
+              if(inst==genSq_nInst-i-1)genSq_pttnGridPix[s][f][c]=strArp_gridColorA[c];
+              else genSq_pttnGridPix[s][f][c]=strArp_gridColorB[c];
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+void genSq_pttnDrwStat(){ 
+  for(int s = 0;s<nStrings;s++){
+    for(int f = 0;f<genSq_nPttn/2;f++){
+      for(int c = 0;c<3;c++){
+        genSq_pttnPttnPix[s][f][c]=0;
+      }
+    }
+  }
+  for(int i=0;i<genSq_nInst;i++){
+    int actPttn=genSq_actPttn[i];
+    int edtPttn=genSq_edtPttn[i];
+    if(i==0 && strArp_modeSel){
+      int arpPttn=11-strArp_modeVal;
+      if(arpPttn<0)arpPttn=0;
+      if(arpPttn>=genSq_nPttn)arpPttn=genSq_nPttn-1;
+      actPttn=arpPttn;
+      edtPttn=arpPttn;
+    }
+    int actStr=i*2+actPttn/(genSq_nPttn/2);
+    int edtStr=i*2+edtPttn/(genSq_nPttn/2);
+    int actFrt=actPttn-genSq_nPttn/2*(actPttn/(genSq_nPttn/2));
+    int edtFrt=edtPttn-genSq_nPttn/2*(edtPttn/(genSq_nPttn/2));
+    for(int c=0;c<3;c++){  
+      float edtVal=0.1;
+      float actVal=0.5;
+      //if(i==0 && strArp_modeSel && c!=2)edtVal=0, actVal=0;
+      genSq_pttnPttnPix[nStrings-1-edtStr][edtFrt][c]=edtVal;
+      genSq_pttnPttnPix[nStrings-1-actStr][actFrt][c]=actVal;
+    }
   }
 }
 
