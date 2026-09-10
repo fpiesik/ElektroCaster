@@ -41,3 +41,6 @@ This repository contains three cooperating firmware targets. The tables below su
 | Realtime intervals | `docs/realtime.md` | Documents LED, fretboard debounce, Kickup, display, clock, HID, and audio intervals. |
 | Testing guidance | `docs/testing.md` | Lists safe checks and hardware validation areas. |
 
+### User manual
+
+The German, code-derived operating guide is available at [`docs/bedienungsanleitung.md`](docs/bedienungsanleitung.md). It distinguishes implemented behavior from hardware details that cannot be confirmed from the repository.
