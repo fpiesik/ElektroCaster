@@ -319,13 +319,13 @@ Unter `enc`:
 
 | Anzeige | Funktion | Bereich |
 | --- | --- | ---: |
-| `steps` | Anzahl Wiederholungen der Saite in der Arpeggiofolge | 0 … 64 |
+| `steps` | Anzahl Steps der Saite in der Arpeggiofolge | 0 … 64 |
 | `tmDv` | Dauer dieser Saite | `1`, `1.5`, `2`, `3`, `4`, `6`, `8`, `12`, `16`, `24`, `32`, `48` |
+| `repeat` | Anzahl Trigger pro Step; die Step-Länge bleibt unverändert | 1 … 6 |
 | `order` | feste Reihenfolge/Gruppe | 0 … 6 |
-| `ser o par` | `se` oder `pa` | derzeit ändert der Code zwar den Wert, die Wiedergabelogik verwendet für Parallelität tatsächlich gleiche positive `order`-Werte |
 | `chn` | USB-MIDI-Kanal | 0 … 16 |
 
-`order = 0` ordnet Saiten nach der Reihenfolge ihres Greifens ein. Gleiche positive `order`-Werte gruppieren Saiten; sie werden gemeinsam ausgelöst. Die Wiederholungszahl 0 nimmt eine Saite aus der getakteten Folge. Eine solche Saite kann bei aktivem Arpeggiator weiterhin manuell triggern.
+`order = 0` ordnet Saiten nach der Reihenfolge ihres Greifens ein. Gleiche positive `order`-Werte gruppieren Saiten; sie werden gemeinsam ausgelöst. `steps = 0` nimmt eine Saite aus der getakteten Folge. Eine solche Saite kann bei aktivem Arpeggiator weiterhin manuell triggern.
 
 ## 10. Spielen, Griffbrettsensing und Aktoren
 
@@ -456,11 +456,10 @@ Folgende Punkte sind direkt aus dem aktiven Code erkennbar und sollten bei der B
 2. Arpeggiator-`randomise` ist nicht implementiert.
 3. Generisches `rnd` löscht nach aktueller Implementierung die Spur, statt ein Zufallsmuster zu erzeugen.
 4. Die Skala `off` ist mit Step-/Stufenoperationen nicht robust kombinierbar.
-5. Der Arpeggiatorparameter `ser o par` wird gespeichert und angezeigt, bestimmt aber nicht die aktive Parallelwiedergabe; diese folgt gleichen positiven `order`-Werten.
-6. Die drei Pattern-Drehschalter teilen sich Wertebereiche mit Sonderfunktionen (Arpeggiator, Instanzsync, String Setup). Vor Live-Betrieb die physischen Rastpositionen markieren.
-7. Songwechsel und Patternkopieren können ohne Bestätigung Daten überschreiben.
-8. Die Firmware initialisiert die SD-Karte vor weiteren Hauptcontroller-Initialisierungen und beendet `setup()` bei Fehlschlag vorzeitig. Ohne funktionsfähige SD-Karte ist daher kein normaler Betrieb zu erwarten.
-9. Die physische Saitenreihenfolge, Steckerbelegung und Reglerbeschriftung müssen am konkreten Aufbau verifiziert werden.
+5. Die drei Pattern-Drehschalter teilen sich Wertebereiche mit Sonderfunktionen (Arpeggiator, Instanzsync, String Setup). Vor Live-Betrieb die physischen Rastpositionen markieren.
+6. Songwechsel und Patternkopieren können ohne Bestätigung Daten überschreiben.
+7. Die Firmware initialisiert die SD-Karte vor weiteren Hauptcontroller-Initialisierungen und beendet `setup()` bei Fehlschlag vorzeitig. Ohne funktionsfähige SD-Karte ist daher kein normaler Betrieb zu erwarten.
+8. Die physische Saitenreihenfolge, Steckerbelegung und Reglerbeschriftung müssen am konkreten Aufbau verifiziert werden.
 
 ## 16. Empfohlener erster Funktionstest
 

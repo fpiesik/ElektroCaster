@@ -66,7 +66,7 @@ bool emitFretEvents(int *eventString, int *eventPress) {
 
 bool stringHasManualEnvelopeDecay(int stringIndex, int press) {
   bool manualTrigger = strArp_act == 0 && strSeq_act == 0;
-  bool strArpZeroStepManualTrigger = strArp_modeSel == 1 && strArp_act == 1 && strArp_nRpt[stringIndex] == 0 && (strArp_muteCh[stringIndex] == 0 || press == 0);
+  bool strArpZeroStepManualTrigger = strArp_modeSel == 1 && strArp_act == 1 && strArp_steps[stringIndex] == 0 && (strArp_muteCh[stringIndex] == 0 || press == 0);
   if (strArpZeroStepManualTrigger) manualTrigger = 1;
   return fbrdMode == 0 && manualTrigger && press > 0;
 }
@@ -90,7 +90,7 @@ void handleFretEventForAudioMidiKickSeq(int eventString, int eventPress, int sen
     }
 
   bool manualTrigger = strArp_act == 0 && strSeq_act==0;
-  bool strArpZeroStepManualTrigger = strArp_modeSel==1 && strArp_act==1 && strArp_nRpt[s]==0 && (strArp_muteCh[s]==0 || press==0);
+  bool strArpZeroStepManualTrigger = strArp_modeSel==1 && strArp_act==1 && strArp_steps[s]==0 && (strArp_muteCh[s]==0 || press==0);
   if(strArpZeroStepManualTrigger)manualTrigger=1;
   sndManualEnv(s, stringHasManualEnvelopeDecay(s, press));
 

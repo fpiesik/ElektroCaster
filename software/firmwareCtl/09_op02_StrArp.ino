@@ -28,7 +28,7 @@ void strArp_chDispEnc(int val){
 void strArp_chStrEnc(byte s, int val){
   switch(strArp_strEncFnc){
     case strArp_strEncFnc_stps:
-      strArp_nRpt[s] = constrain(strArp_nRpt[s] + val, 0, strArp_maxSteps);
+      strArp_steps[s] = constrain(strArp_steps[s] + val, 0, strArp_maxSteps);
       strArp_resetSerialCursor();
       break;
     case strArp_strEncFnc_tmDv:
@@ -39,9 +39,8 @@ void strArp_chStrEnc(byte s, int val){
     case strArp_strEncFnc_chn:
       strArp_chn[s] = constrain(strArp_chn[s] + val, 0, 16);
       break;
-    case strArp_strEncFnc_mode:
-      strArp_mode[s] = strArp_mode[s] == strArp_modeSerial ? strArp_modeParallel : strArp_modeSerial;
-      strArp_resetSerialCursor();
+    case strArp_strEncFnc_repeat:
+      strArp_repeat[s] = constrain(strArp_repeat[s] + val, 1, 6);
       break;
     case strArp_strEncFnc_order:
       strArp_order[s] = constrain(strArp_order[s] + val, 0, nStrings);
@@ -130,7 +129,7 @@ unsigned int strArp_orderGroupPressOrder(byte order){
 }
 
 void strArp_addStringToArp(byte arpSeq[], int *arpIdx, byte s){
-  for(int r=0;r<strArp_nRpt[s] && *arpIdx<strArp_maxSteps;r++){
+  for(int r=0;r<strArp_steps[s] && *arpIdx<strArp_maxSteps;r++){
     arpSeq[*arpIdx]=s;
     (*arpIdx)++;
   }
@@ -187,6 +186,29 @@ void strArp_updClckSerial(){
   byte durationString = s;
   if(strArp_serialDisplayStep >= 0)durationString=strArp_seq[strArp_serialDisplayStep];
   strArp_serialNxtClkFil++;
+
+  if(strArp_serialDisplayStep >= 0){
+    byte repeatString=strArp_seq[strArp_serialDisplayStep];
+    int repeat=strArp_repeat[repeatString];
+    int duration=strArp_tmDv[repeatString];
+    bool repeatNow=strArp_serialNxtClkFil>0 &&
+                   strArp_serialNxtClkFil<duration &&
+                   (strArp_serialNxtClkFil*repeat)/duration !=
+                   ((strArp_serialNxtClkFil-1)*repeat)/duration;
+    if(repeatNow){
+      for(int i=0;i<nStrings;i++){
+        if(i==repeatString || strArp_isSameOrderGroup(repeatString,i)){
+          int playChnl=strArp_chn[i];
+          if(frtb_sensMode==0)sndMidiNotePress(i,0,playChnl);
+          if(strArp_shouldPlayString(i)){
+            if(frtb_sensMode==0)sndMidiNotePress(i,strPrs[i],playChnl);
+            sndTrigEnv(i,1);
+            kick(i);
+          }
+        }
+      }
+    }
+  }
   
   //if(strArp_serialNxtClkFil == strArp_tmDv[durationString]-1){
   //  if(strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
@@ -270,10 +292,10 @@ void strArp_updDisp(){
 
   disp_Color(1);
   for(int s =0; s < nStrings;s++){
-    if(strArp_strEncFnc==strArp_strEncFnc_stps)disp_Int(108-s*21, 55, strArp_nRpt[s]);
+    if(strArp_strEncFnc==strArp_strEncFnc_stps)disp_Int(108-s*21, 55, strArp_steps[s]);
     if(strArp_strEncFnc==strArp_strEncFnc_tmDv)disp_Str(108-s*21, 55, strArp_tmDvNm[strArp_tmDvSel[s]]);
+    if(strArp_strEncFnc==strArp_strEncFnc_repeat)disp_Int(108-s*21, 55, strArp_repeat[s]);
     if(strArp_strEncFnc==strArp_strEncFnc_chn)disp_Int(108-s*21, 55, strArp_chn[s]);
-    if(strArp_strEncFnc==strArp_strEncFnc_mode)disp_Str(108-s*21, 55, strArp_modeNm[strArp_mode[s]]);
     if(strArp_strEncFnc==strArp_strEncFnc_order)disp_Int(108-s*21, 55, strArp_order[s]);
   }
 
