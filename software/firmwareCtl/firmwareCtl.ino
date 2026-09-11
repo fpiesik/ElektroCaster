@@ -239,16 +239,16 @@ const int chipSelect = BUILTIN_SDCARD;
   int genSq_tmDvs[genSq_nTmDvs]={384,192,96,64,48,32,24,16,12,8,6,4,3,2};
   const char* genSq_tmDvNm[genSq_nTmDvs]={"4","2","1",".75","/2","/3","/4","/6","/8","/12","/16","/24","/32","/48"};
 
-  const char* genSq_strPrsNm[]={"pStp","oct","vel","c10","c11","c12"};
+  const char* genSq_strPrsNm[]={"pStp","rpt","vel","c10","c11","c12"};
   const int genSq_strPrsFnc_sStp=0;
-  const int genSq_strPrsFnc_oct=1;
+  const int genSq_strPrsFnc_rpt=1;
   const int genSq_strPrsFnc_vel=2;
   const int genSq_strPrsFnc_cc1=3;
   const int genSq_strPrsFnc_cc2=4;
   const int genSq_strPrsFnc_cc3=5;
   const int genSq_nStrPrsFnc=6;
   const int genSq_SelChnCC=127; //selected channel; currently commented
-  const int genSq_maxStpV[genSq_nStrPrsFnc]={12,9,50,99,99,99};
+  const int genSq_maxStpV[genSq_nStrPrsFnc]={127,6,50,99,99,99};
   int genSq_strPrsFnc=0;
 
   const int genSq_strEncFnc_tmDv=1;

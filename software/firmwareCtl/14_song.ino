@@ -1,5 +1,5 @@
 const char songMagic[4] = {'E', 'C', 'S', 'G'};
-const uint16_t songFormatVersion = 2;
+const uint16_t songFormatVersion = 3;
 const uint16_t songHeaderSize = 32;
 const uint16_t songChunkHeaderSize = 10;
 const uint16_t songHeaderUsedSize = 26;
@@ -451,7 +451,7 @@ bool songValidateData(const struct SongData* song){
         for(int stp = 0; stp < genSq_maxSteps; stp++){
           if(song->stpOnOff[inst][pttn][str][stp] > 1)return false;
           if(song->stp[inst][pttn][str][stp][genSq_strPrsFnc_sStp] > genSq_maxStpV[genSq_strPrsFnc_sStp])return false;
-          if(song->stp[inst][pttn][str][stp][genSq_strPrsFnc_oct] > genSq_maxStpV[genSq_strPrsFnc_oct])return false;
+          if(song->stp[inst][pttn][str][stp][genSq_strPrsFnc_rpt] < 1 || song->stp[inst][pttn][str][stp][genSq_strPrsFnc_rpt] > genSq_maxStpV[genSq_strPrsFnc_rpt])return false;
           if(song->stp[inst][pttn][str][stp][genSq_strPrsFnc_vel] > 127)return false;
           if(song->stp[inst][pttn][str][stp][genSq_strPrsFnc_cc1] > 127)return false;
           if(song->stp[inst][pttn][str][stp][genSq_strPrsFnc_cc2] > 127)return false;
@@ -537,8 +537,8 @@ void songBuildDefault(struct SongData* song){
         song->chn[inst][pttn][str][genSq_strEncFnc_chn] = inst + 1;
         for(int stp = 0; stp < genSq_maxSteps; stp++){
           song->stpOnOff[inst][pttn][str][stp] = 0;
-          song->stp[inst][pttn][str][stp][genSq_strPrsFnc_sStp] = 0;
-          song->stp[inst][pttn][str][stp][genSq_strPrsFnc_oct] = 3;
+          song->stp[inst][pttn][str][stp][genSq_strPrsFnc_sStp] = 36;
+          song->stp[inst][pttn][str][stp][genSq_strPrsFnc_rpt] = 1;
           song->stp[inst][pttn][str][stp][genSq_strPrsFnc_vel] = 40;
           song->stp[inst][pttn][str][stp][genSq_strPrsFnc_cc1] = 0;
           song->stp[inst][pttn][str][stp][genSq_strPrsFnc_cc2] = 0;

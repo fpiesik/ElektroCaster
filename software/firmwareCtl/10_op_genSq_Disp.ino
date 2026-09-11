@@ -63,12 +63,7 @@ void genSq_drwStep(byte s){
     int chnl = genSq_chn[inst][pttn][s][genSq_strEncFnc_chn];
     int stpV=genSq_stp[inst][pttn][s][f][genSq_strPrsFnc_sStp];
     float brght=genSq_stp[inst][pttn][s][f][genSq_strPrsFnc_vel]/float(genSq_maxStpV[genSq_strPrsFnc_vel]);
-    //int pitch=(scls_scls[scls_sclSel][stpV]+rootNote)%12;
-    int actSStp=(stpV+scls_sclStp)%scls_numSclStp[scls_sclSel];
-    int stpOff=scls_scls[scls_sclSel][scls_sclStp];
-    int pitch;
-    if(genSq_sclQ[inst][s]==1)pitch=(scls_scls[scls_sclSel][actSStp]+rootNote-stpOff+12)%12;
-    if(genSq_sclQ[inst][s]==0)pitch=stpV%12;
+    int pitch=genSq_noteForStep(inst,s,stpV)%12;
     //int pitch=scls_scls[scls_sclSel][(genSq_stp[inst][pttn][s][f][genSq_strPrsFnc_sStp]+scls_sclStp)%scls_numSclStp[scls_sclSel]];
     for(int c=0;c<3;c++){
       genSq_stpPix[s][f][c]=0;    
@@ -143,15 +138,15 @@ void genSq_updDisp(){
   disp_Color(1);
 
   disp_Line(70, 0, 70, 44);
-  int pitch;
-  int stpOff=scls_scls[scls_sclSel][scls_sclStp]; 
-  if(genSq_sclQ[inst][genSq_stpEdtStr]==1)pitch=(scls_scls[scls_sclSel][(genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_sStp]+scls_sclStp)%scls_numSclStp[scls_sclSel]]+rootNote-stpOff+12)%12;
-  if(genSq_sclQ[inst][genSq_stpEdtStr]==0)pitch=genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_sStp]%12;
+  int stpV=genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_sStp];
+  int note=genSq_noteForStep(inst,genSq_stpEdtStr,stpV);
+  int pitch=note%12;
 
   disp_Str(73, 9, toneNm[pitch%12]);
-  disp_Int(90, 9, genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_oct]+1);
+  disp_Int(toneNm[pitch][1] == '\0' ? 80 : 86, 9, note/12+1);
+  disp_Int(100, 9, genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_rpt]);
 
-  disp_Int(105, 9, genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_vel]);
+  disp_Int(112, 9, genSq_stp[inst][pttn][genSq_stpEdtStr][genSq_stpEdtFrt][genSq_strPrsFnc_vel]);
 
   disp_Str(80, 39, "sclQ");
   disp_Int(113, 39, genSq_sclQ[inst][genSq_stpEdtStr]);
