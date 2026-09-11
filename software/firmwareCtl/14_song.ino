@@ -1,5 +1,5 @@
 const char songMagic[4] = {'E', 'C', 'S', 'G'};
-const uint16_t songFormatVersion = 3;
+const uint16_t songFormatVersion = 4;
 const uint16_t songHeaderSize = 32;
 const uint16_t songChunkHeaderSize = 10;
 const uint16_t songHeaderUsedSize = 26;
@@ -50,10 +50,10 @@ struct SongData {
   uint8_t songTuning[nStrings];
   uint8_t songStrGain[nStrings];
   uint8_t arpTmDvSel[strArp_nPttn][nStrings];
-  uint8_t arpRpt[strArp_nPttn][nStrings];
+  uint8_t arpSteps[strArp_nPttn][nStrings];
   uint8_t arpChn[strArp_nPttn][nStrings];
   uint8_t arpOrder[strArp_nPttn][nStrings];
-  uint8_t arpMode[strArp_nPttn][nStrings];
+  uint8_t arpRepeat[strArp_nPttn][nStrings];
   uint8_t arpMute[strArp_nPttn][nStrings];
   uint8_t arpStrPrsFnc[strArp_nPttn];
   uint8_t arpStrEncFnc[strArp_nPttn];
@@ -425,10 +425,10 @@ bool songCollectFromRuntime(struct SongData* song){
     song->arpStrBtnFnc[pttn] = strArp_patterns.pttn[pttn].strBtnFnc;
     for(int str = 0; str < nStrings; str++){
       song->arpTmDvSel[pttn][str] = strArp_patterns.pttn[pttn].tmDvSel[str];
-      song->arpRpt[pttn][str] = strArp_patterns.pttn[pttn].nRpt[str];
+      song->arpSteps[pttn][str] = strArp_patterns.pttn[pttn].steps[str];
       song->arpChn[pttn][str] = strArp_patterns.pttn[pttn].chn[str];
       song->arpOrder[pttn][str] = strArp_patterns.pttn[pttn].order[str];
-      song->arpMode[pttn][str] = strArp_patterns.pttn[pttn].mode[str];
+      song->arpRepeat[pttn][str] = strArp_patterns.pttn[pttn].repeat[str];
       song->arpMute[pttn][str] = strArp_patterns.pttn[pttn].muteCh[str];
     }
   }
@@ -469,10 +469,10 @@ bool songValidateData(const struct SongData* song){
     if(song->arpStrBtnFnc[pttn] >= strArp_nStrBtnFnc)return false;
     for(int str = 0; str < nStrings; str++){
       if(song->arpTmDvSel[pttn][str] >= strArp_nTmDvs)return false;
-      if(song->arpRpt[pttn][str] < 1)return false;
+      if(song->arpSteps[pttn][str] > strArp_maxSteps)return false;
       if(song->arpChn[pttn][str] > 16)return false;
       if(song->arpOrder[pttn][str] > nStrings)return false;
-      if(song->arpMode[pttn][str] > strArp_modeParallel)return false;
+      if(song->arpRepeat[pttn][str] < 1 || song->arpRepeat[pttn][str] > 6)return false;
       if(song->arpMute[pttn][str] > 1)return false;
     }
   }
@@ -514,10 +514,10 @@ void songApply(const struct SongData* song){
     for(int str = 0; str < nStrings; str++){
       strArp_patterns.pttn[pttn].tmDvSel[str] = song->arpTmDvSel[pttn][str];
       strArp_patterns.pttn[pttn].tmDv[str] = strArp_tmDvs[song->arpTmDvSel[pttn][str]];
-      strArp_patterns.pttn[pttn].nRpt[str] = song->arpRpt[pttn][str];
+      strArp_patterns.pttn[pttn].steps[str] = song->arpSteps[pttn][str];
       strArp_patterns.pttn[pttn].chn[str] = song->arpChn[pttn][str];
       strArp_patterns.pttn[pttn].order[str] = song->arpOrder[pttn][str];
-      strArp_patterns.pttn[pttn].mode[str] = song->arpMode[pttn][str];
+      strArp_patterns.pttn[pttn].repeat[str] = song->arpRepeat[pttn][str];
       strArp_patterns.pttn[pttn].muteCh[str] = song->arpMute[pttn][str];
     }
   }
@@ -563,10 +563,10 @@ void songBuildDefault(struct SongData* song){
     song->arpStrBtnFnc[pttn] = strArp_strBtnFnc_mute;
     for(int str = 0; str < nStrings; str++){
       song->arpTmDvSel[pttn][str] = 8;
-      song->arpRpt[pttn][str] = 1;
+      song->arpSteps[pttn][str] = 1;
       song->arpChn[pttn][str] = 1;
       song->arpOrder[pttn][str] = 0;
-      song->arpMode[pttn][str] = strArp_modeSerial;
+      song->arpRepeat[pttn][str] = 1;
       song->arpMute[pttn][str] = 0;
     }
   }
@@ -632,10 +632,10 @@ bool songWriteArp(File& file, const struct SongData* song, uint32_t* crc){
     if(!songWriteByte(file, song->arpStrBtnFnc[pttn], crc))return false;
     for(int str = 0; str < nStrings; str++){
       if(!songWriteByte(file, song->arpTmDvSel[pttn][str], crc))return false;
-      if(!songWriteByte(file, song->arpRpt[pttn][str], crc))return false;
+      if(!songWriteByte(file, song->arpSteps[pttn][str], crc))return false;
       if(!songWriteByte(file, song->arpChn[pttn][str], crc))return false;
       if(!songWriteByte(file, song->arpOrder[pttn][str], crc))return false;
-      if(!songWriteByte(file, song->arpMode[pttn][str], crc))return false;
+      if(!songWriteByte(file, song->arpRepeat[pttn][str], crc))return false;
       if(!songWriteByte(file, song->arpMute[pttn][str], crc))return false;
     }
   }
@@ -719,10 +719,10 @@ bool songReadArp(File& file, struct SongData* song, uint32_t* crc){
     value = songReadByte(file, crc); if(value < 0)return false; song->arpStrBtnFnc[pttn] = value;
     for(int str = 0; str < nStrings; str++){
       value = songReadByte(file, crc); if(value < 0)return false; song->arpTmDvSel[pttn][str] = value;
-      value = songReadByte(file, crc); if(value < 0)return false; song->arpRpt[pttn][str] = value;
+      value = songReadByte(file, crc); if(value < 0)return false; song->arpSteps[pttn][str] = value;
       value = songReadByte(file, crc); if(value < 0)return false; song->arpChn[pttn][str] = value;
       value = songReadByte(file, crc); if(value < 0)return false; song->arpOrder[pttn][str] = value;
-      value = songReadByte(file, crc); if(value < 0)return false; song->arpMode[pttn][str] = value;
+      value = songReadByte(file, crc); if(value < 0)return false; song->arpRepeat[pttn][str] = value;
       value = songReadByte(file, crc); if(value < 0)return false; song->arpMute[pttn][str] = value;
     }
   }

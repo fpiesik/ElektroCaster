@@ -144,10 +144,10 @@ const int chipSelect = BUILTIN_SDCARD;
   struct StrArpPatternState {
     byte tmDv[nStrings];
     byte tmDvSel[nStrings];
-    byte nRpt[nStrings];
+    byte steps[nStrings];
+    byte repeat[nStrings];
     byte chn[nStrings];
     byte order[nStrings];
-    byte mode[nStrings];
     bool muteCh[nStrings];
     byte strPrsFnc;
     byte strEncFnc;
@@ -166,10 +166,10 @@ const int chipSelect = BUILTIN_SDCARD;
 
   #define strArp_tmDv strArp_patterns.pttn[strArp_actPttn].tmDv
   #define strArp_tmDvSel strArp_patterns.pttn[strArp_actPttn].tmDvSel
-  #define strArp_nRpt strArp_patterns.pttn[strArp_actPttn].nRpt
+  #define strArp_steps strArp_patterns.pttn[strArp_actPttn].steps
+  #define strArp_repeat strArp_patterns.pttn[strArp_actPttn].repeat
   #define strArp_chn strArp_patterns.pttn[strArp_actPttn].chn
   #define strArp_order strArp_patterns.pttn[strArp_actPttn].order
-  #define strArp_mode strArp_patterns.pttn[strArp_actPttn].mode
   #define strArp_muteCh strArp_patterns.pttn[strArp_actPttn].muteCh
   #define strArp_strPrsFnc strArp_patterns.pttn[strArp_actPttn].strPrsFnc
   #define strArp_strEncFnc strArp_patterns.pttn[strArp_actPttn].strEncFnc
@@ -200,9 +200,6 @@ const int chipSelect = BUILTIN_SDCARD;
   unsigned int strArp_pressOrder[nStrings] = {0,0,0,0,0,0};
   unsigned int strArp_pressOrderNext = 1;
 
-  const byte strArp_modeSerial=0;
-  const byte strArp_modeParallel=1;
-  const char* strArp_modeNm[]={"se", "pa"};
   const byte strArp_strPrsFnc_simple=0;
   const byte strArp_strPrsFnc_back=1;
   const byte strArp_strPrsFnc_mirror=2;
@@ -213,9 +210,9 @@ const int chipSelect = BUILTIN_SDCARD;
   const byte strArp_strEncFnc_stps=0;
   const byte strArp_strEncFnc_tmDv=1;
   const byte strArp_strEncFnc_chn=4;
-  const byte strArp_strEncFnc_mode=3; //ser o par
-  const byte strArp_strEncFnc_order=2;
-  const char* strArp_strEncNm[]={"steps", "tmDv", "order", "ser o par", "chn"};
+  const byte strArp_strEncFnc_repeat=2;
+  const byte strArp_strEncFnc_order=3;
+  const char* strArp_strEncNm[]={"steps", "tmDv", "repeat", "order", "chn"};
   const byte strArp_nStrEncFnc=sizeof(strArp_strEncNm)/sizeof(strArp_strEncNm[0]);
   
   const char* strArp_strBtnNm[]={"mute", "randomise"};
