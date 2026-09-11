@@ -20,6 +20,18 @@ void genSq_updClck(){
         }
       }
       for(int s=0;s<nStrings;s++){
+        if(genSq_clk[inst][s] < 0)continue;
+        int repeat = genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_rpt];
+        bool repeatNow = genSq_nxtClkFil[inst][s] > 0 &&
+                         genSq_nxtClkFil[inst][s] < genSq_actTmDv[inst][s] &&
+                         (genSq_nxtClkFil[inst][s] * repeat) / genSq_actTmDv[inst][s] !=
+                         ((genSq_nxtClkFil[inst][s] - 1) * repeat) / genSq_actTmDv[inst][s];
+        if(repeatNow && !(inst==0 && strArp_modeSel)){
+          genSq_sndStpOff(inst,pttn,s);
+          if(genSq_muteCh[inst][s] == 0)genSq_sndStpOn(inst,pttn,s);
+        }
+      }
+      for(int s=0;s<nStrings;s++){
         if(genSq_nxtClkFil[inst][s] >= genSq_actTmDv[inst][s] - 1 && !(inst==0 && strArp_modeSel)){
           genSq_sndStpOff(inst,pttn, s);
         }
@@ -42,6 +54,18 @@ void genSq_updClck(){
         }
       }
     }
+}
+
+int genSq_noteForStep(int inst, int str, int stpV){
+  if(genSq_sclQ[inst][str]==0)return constrain(stpV,0,127);
+  int scaleSteps=scls_numSclStp[scls_sclSel];
+  if(scaleSteps < 1)return constrain(stpV,0,127);
+  int degree=stpV+scls_sclStp;
+  int octave=degree/scaleSteps;
+  int scaleStep=degree%scaleSteps;
+  int stpOff=scls_scls[scls_sclSel][scls_sclStp];
+  int pitch=(scls_scls[scls_sclSel][scaleStep]+rootNote-stpOff+120)%12;
+  return constrain(octave*12+pitch,0,127);
 }
 
 void genSq_sync(int inst){
@@ -133,16 +157,10 @@ void genSq_sndStpOn(int inst,int pttn, byte s){
   int chnl = genSq_chn[inst][pttn][s][genSq_strEncFnc_chn];
   if(genSq_stpOnOff[inst][pttn][s][genSq_clk[inst][s]] > 0 && chnl > 0){
     int stpV=genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_sStp];
-    //int pitch=(scls_scls[scls_sclSel][(stpV+scls_sclStp)%scls_numSclStp[scls_sclSel]]+rootNote)%12;
-    int actSStp=(stpV+scls_sclStp)%scls_numSclStp[scls_sclSel];
-    int stpOff=scls_scls[scls_sclSel][scls_sclStp];
-    int pitch;
-    if(genSq_sclQ[inst][s]==1)pitch=(scls_scls[scls_sclSel][actSStp]+rootNote-stpOff+12)%12;
-    if(genSq_sclQ[inst][s]==0)pitch=stpV%12;
+    int note=genSq_noteForStep(inst,s,stpV);
+    int pitch=note%12;
     //int pitch=scls_scls[scls_sclSel][(genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_sStp]+scls_sclStp)%scls_numSclStp[scls_sclSel]];
     //int pitch=scls_scls[scls_sclSel][genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_sStp]];
-    int oct=genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_oct];
-    int note = oct*12+pitch;
     //int note = genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_sStp];
     float vel = genSq_stp[inst][pttn][s][genSq_clk[inst][s]][genSq_strPrsFnc_vel]*1.0/genSq_maxStpV[genSq_strPrsFnc_vel]; 
     int mvel=vel*127.0;
