@@ -2,6 +2,34 @@
 
 > **Stand und Geltungsbereich:** Diese Anleitung beschreibt ausschließlich das Verhalten, das sich aus dem aktuellen Firmware-Quellcode ableiten lässt. Die Bedienelemente sind im Code nur teilweise beschriftet; deshalb werden sie hier zusätzlich mit ihren Firmware-Indizes bezeichnet. Aussagen mit **„unklar“**, **„derzeit ohne Wirkung“** oder **„zu prüfen“** sind bewusst keine Vermutungen über die Hardware.
 
+## Inhaltsverzeichnis
+
+1. [Sicherheit und wichtige Einschränkungen](#1-sicherheit-und-wichtige-einschränkungen)
+2. [Systemüberblick](#2-systemüberblick)
+3. [Bedienelemente und Bezeichnungen](#3-bedienelemente-und-bezeichnungen)
+4. [Globale Schalter und Taster](#4-globale-schalter-und-taster)
+5. [Fader, Potis und Joystick](#5-fader-potis-und-joystick)
+6. [String Setup und Stimmhilfe](#6-string-setup-und-stimmhilfe)
+7. [Skalen- und Spielansicht](#7-skalen--und-spielansicht)
+8. [Generischer Sequencer](#8-generischer-sequencer)
+   - [Aufbau](#81-aufbau)
+   - [Pattern-Drehschalter](#82-pattern-drehschalter)
+   - [Spurparameter über Saiten-Encoder](#83-spurparameter-über-saiten-encoder)
+   - [Step setzen und bearbeiten](#84-step-setzen-und-bearbeiten)
+   - [Step-Parameter (`str`)](#85-step-parameter-str)
+   - [Saitentaster-Funktionen (`btn`)](#86-saitentaster-funktionen-btn)
+   - [Pattern kopieren](#87-pattern-kopieren)
+9. [Saiten-Arpeggiator](#9-saiten-arpeggiator)
+   - [Aktivieren](#91-aktivieren)
+   - [Globale Arpeggiatorfunktionen](#92-globale-arpeggiatorfunktionen)
+10. [Spielen, Griffbrettsensing und Aktoren](#10-spielen-griffbrettsensing-und-aktoren)
+11. [Clock und Synchronisation](#11-clock-und-synchronisation)
+12. [MIDI-Funktionen](#12-midi-funktionen)
+13. [Songs und SD-Karte](#13-songs-und-sd-karte)
+14. [OLED- und LED-Anzeigen lesen](#14-oled--und-led-anzeigen-lesen)
+15. [Bekannte derzeitige Grenzen](#15-bekannte-derzeitige-grenzen)
+16. [Empfohlener erster Funktionstest](#16-empfohlener-erster-funktionstest)
+
 ## 1. Sicherheit und wichtige Einschränkungen
 
 - Die ElektroCaster ist ein Prototyp mit sechs **Kickup-Magneten** und sechs elektromagnetischen **MulEBow-Spulen**. Aktoren nur mit korrekt dimensionierter Versorgung und Treiberhardware betreiben. Vor Arbeiten an Saiten, Steg, Spulen oder Verkabelung die Aktorversorgung trennen.
@@ -214,7 +242,7 @@ Es existieren drei Instanzen. Jede besitzt:
 - sechs Saitenspuren,
 - maximal 16 Steps je Spur,
 - unabhängige Länge, Zeitteilung, Startversatz, Sync-/Patternsteuerung und MIDI-Kanal je Spur,
-- pro Step: Ton/Skalenstufe, Oktave, Velocity und drei CC-Werte.
+- pro Step: MIDI-Note/Skalenstufe, Repeat-Anzahl, Velocity und drei CC-Werte.
 
 Die linke Transporttaste wählt Instanz 1 … 3. Die Pattern-Drehschalter 1 … 3 gehören den entsprechenden Instanzen.
 
@@ -258,12 +286,16 @@ Mehrere gleichzeitig erkannte Bundkontakte auf einer Saite bewirken, dass Änder
 
 | Anzeige | Bedeutung | Bereich / Ausgabe |
 | --- | --- | --- |
-| `pStp` | Tonklasse oder Skalenstufe | 0 … 11 chromatisch; bei `sclQ` Index in der gewählten Skala |
-| `oct` | Oktavindex | 0 … 9; OLED zeigt 1 … 10 |
+| `pStp` | MIDI-Note oder fortlaufende Skalenstufe | 0 … 127 |
+| `rpt` | Trigger pro Step | 1 … 6; die Step-Länge bleibt unverändert |
 | `vel` | Velocity | 0 … 50, für MIDI auf 0 … 127 skaliert |
 | `c10` | interner Name; gesendet wird CC 2 | 0 … 99 |
 | `c11` | interner Name; gesendet wird CC 3 | 0 … 99 |
 | `c12` | interner Name; gesendet wird CC 4 | 0 … 99 |
+
+`pStp` enthält jetzt Tonhöhe und Oktavlage gemeinsam; der frühere separate Parameter `oct` wurde durch `rpt` ersetzt. Bei `sclQ = 0` entspricht `pStp` direkt der ausgegebenen MIDI-Notennummer. Bei `sclQ = 1` wird der Wert als fortlaufende Stufe der gewählten und rotierten Skala ausgewertet: Werte oberhalb der ersten Skalenrunde führen in entsprechend höhere Oktaven. Das OLED zeigt die daraus berechnete Note mit Oktave an.
+
+`rpt = 1` löst den Step einmal am Step-Anfang aus. Höhere Werte verteilen bis zu sechs Trigger gleichmäßig innerhalb derselben Step-Dauer; sie verlängern den Step nicht. Die zusätzlichen Trigger wiederholen die Note, Audiohüllkurve und gegebenenfalls Kickup, nicht jedoch die drei CC-Ausgaben des Steps.
 
 Die OLED-Namen `c10`, `c11`, `c12` stimmen nicht mit den tatsächlich gesendeten Controller-Nummern 2, 3 und 4 überein.
 
@@ -283,7 +315,7 @@ Ein CC-/Steuerwert von 0 führt keine Aktion aus. Bei Kanal 0 und aktivem `sync`
 | `rnd` | soll eine Spur randomisieren; im aktuellen Code ist die Zielanzahl jedoch immer 0, sodass die aktiven Steps der Spur gelöscht werden |
 | `sclQ` | Skalenquantisierung für die Spur ein/aus |
 
-Bei `sclQ = 0` ist `pStp` eine chromatische Tonklasse. Bei `sclQ = 1` ist es eine Stufe der aktuell ausgewählten, rotierten Skala.
+Bei `sclQ = 0` ist `pStp` eine absolute MIDI-Note. Bei `sclQ = 1` ist es eine fortlaufende Stufe der aktuell ausgewählten, rotierten Skala.
 
 ### 8.7 Pattern kopieren
 
@@ -326,6 +358,8 @@ Unter `enc`:
 | `chn` | USB-MIDI-Kanal | 0 … 16 |
 
 `order = 0` ordnet Saiten nach der Reihenfolge ihres Greifens ein. Gleiche positive `order`-Werte gruppieren Saiten; sie werden gemeinsam ausgelöst. `steps = 0` nimmt eine Saite aus der getakteten Folge. Eine solche Saite kann bei aktivem Arpeggiator weiterhin manuell triggern.
+
+`repeat = 1` löst jeden Arpeggiator-Step einmal aus. Höhere Werte verteilen die Trigger gleichmäßig innerhalb der über `tmDv` gewählten Dauer, ohne den Step zu verlängern. Bei gruppierten Saiten werden auch die zusätzlichen Trigger für alle Saiten derselben positiven `order`-Gruppe ausgeführt. Der frühere Parameter `ser o par` ist entfallen; parallele Wiedergabe wird ausschließlich über solche `order`-Gruppen eingestellt.
 
 ## 10. Spielen, Griffbrettsensing und Aktoren
 
@@ -421,6 +455,8 @@ Ein Song enthält nach aktuellem Dateiformat:
 
 Die Dateien heißen `SONG00.ECS` bis `SONG99.ECS`. Beim Schreiben wird zunächst eine temporäre Datei erstellt, wieder eingelesen und per CRC geprüft, bevor sie den eigentlichen Slot ersetzt.
 
+Das aktuelle Songformat hat **Version 4**. Durch die neuen Sequencer- und Arpeggiator-Repeat-Parameter sind Dateien älterer Formatversionen nicht kompatibel; beim Laden greift die Firmware für solche Slots auf den Standard-Song zurück. Bestehende Songdateien deshalb vor dem Firmwarewechsel sichern und die Patterns im aktuellen Format neu speichern.
+
 ### 13.2 Speichertaster
 
 Der eingebettete Taster nahe der Potis reagiert beim Drücken:
@@ -438,13 +474,13 @@ Das Speichern des aktuell ausgewählten Slots erfolgt dagegen automatisch, wenn 
 
 Fehlt eine Songdatei, ist sie beschädigt, hat eine falsche Version/Größe/Prüfsumme oder enthält ungültige Werte, lädt die Firmware stattdessen den Standard-Song. Der Fehlerstatus ist nur über die Debug-Schnittstelle sichtbar, nicht über das OLED.
 
-Der Standard-Song setzt unter anderem 90 BPM, C-Dur, farbige Skala, Sequencerlänge 16, Zeitteilung `/16`, leere Steps und unverstummte Arpeggiatorspuren.
+Der Standard-Song setzt unter anderem 90 BPM, C-Dur, farbige Skala, Sequencerlänge 16, Zeitteilung `/16`, leere Steps, `pStp = 36`, `rpt = 1` und unverstummte Arpeggiatorspuren mit `steps = 1` und `repeat = 1`.
 
 ## 14. OLED- und LED-Anzeigen lesen
 
 - Das OLED zeigt jeweils nur die kontextabhängigen Parameter; eine permanente Statuszeile für Clock, Kickup, MulEBow oder externe Clock existiert nicht.
 - Ein **gefüllter** abgerundeter Rahmen markiert in Sequencer/Arpeggiator die aktuell veränderbare Zeile; ein **leerer** Rahmen markiert die Zeile, während der Display-Taster zur Funktionsauswahl gedrückt ist.
-- Im Step-Edit zeigt die rechte OLED-Hälfte Tonname/Oktave, Velocity, drei CC-Werte und `sclQ` des zuletzt ausgewählten Steps.
+- Im Step-Edit zeigt die rechte OLED-Hälfte Tonname/Oktave, Repeat-Anzahl, Velocity, drei CC-Werte und `sclQ` des zuletzt ausgewählten Steps.
 - Im Sequencerraster markieren schwache Farben das Raster, Tonfarben gesetzte Steps, Grau Kanal 0, gedämpfte Farben stummgeschaltete Spuren und eine helle Überlagerung die aktuelle Cursorposition.
 - Die LED-Anzeige blendet abklingend aus, statt jeden Pixel sofort hart abzuschalten.
 
