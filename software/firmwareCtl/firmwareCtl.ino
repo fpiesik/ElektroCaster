@@ -25,7 +25,7 @@ AsciiMassageParser msgIn_audio; //todo
   int extNotes[17][128];
   int ccState[127];
   const int genSq_nCc=3;
-  const int genSq_ccMp[genSq_nCc]={2,3,4};
+  const int genSq_ccMp[genSq_nCc]={1,2,3};
 
 //sdCard
 File myFile;
