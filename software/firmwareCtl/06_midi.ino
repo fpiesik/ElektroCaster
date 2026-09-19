@@ -34,7 +34,7 @@ void sndMidiNotePress(int str, int frt, int chn){
 //    }
     int note=tuning[str]+frt+12;
     sndMidiNote(note,127, chn);
-    delay(10);
+    delay(1);
     if (lastNote[str]!=0) sndMidiNote(lastNote[str],0, lastChn[str]);
     lastNote[str]=note;
     lastChn[str]=chn;
