@@ -95,7 +95,7 @@ const int chipSelect = BUILTIN_SDCARD;
 
 //fretboard
   // Provisional values: tune from captured contact traces on the physical instrument.
-  const FretDetectionTimings fretDetectionTimings = {4, 12, 30, 12};
+  const FretDetectionTimings fretDetectionTimings = {1, 12, 30, 12};
   FretDetector fretDetectors[nStrings];
   byte frtb_sensMode=0; //1=only senses if string is pressed 0=senses also where the string is pressed
   bool frtState[nFrets][nStrings];
