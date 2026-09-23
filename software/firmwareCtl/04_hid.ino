@@ -21,7 +21,7 @@ void scanFretboardPins(int sensMode) {
   }
 }
 
-void updateFretDebounce() {
+void updateLegacyFretDebounce() {
   for (int s = 0; s < nStrings; s++) {
     strPrs[s] = 0;
     bool used = 0;
@@ -44,16 +44,29 @@ void updateFretDebounce() {
   }
 }
 
-bool emitFretEvents(int *eventString, int *eventPress) {
+void updateRobustFretDetection(unsigned long now) {
+  for (int s = 0; s < nStrings; s++) {
+    uint32_t contacts = 0;
+    for (int f = 0; f < nFrets; f++) {
+      if (frtState[f][s]) contacts |= uint32_t(1) << f;
+      lastFrtState[f][s] = frtState[f][s];
+    }
+
+    FretObservation observation = FretDetector::observe(contacts, nFrets);
+    frtPrs[s] = observation.contactCount;
+    strPrs[s] = fretDetectors[s].update(observation, now, fretDetectionTimings);
+  }
+}
+
+bool emitFretEvents(int *eventString, int *eventPress, bool robustDetection) {
   static long lastChng[nStrings];
   static int lastExStrPr[nStrings];
   for (int s = 0; s < nStrings; s++) {
-    unsigned int sB = strBnc[s];
-    unsigned int sBncs = strBncs;
     if (shift==1 && fbrdMode == 0 && strPrs[s]>0 )strHold[s]=1;
     if (shift==1 && fbrdMode == 0 && strPrs[s]==0 )strHold[s]=0;
-    //if(frtSplt==1 && strPrs[s]>=frtSplit) sBncs=strBncsP; //extended string bounces threshold for switching patterns
-    if (sB >= sBncs && millis() - lastChng[s] > fretMaskT && lastExStrPr[s] != strPrs[s]) {
+    bool stable = robustDetection || strBnc[s] >= strBncs;
+    bool maskElapsed = robustDetection || millis() - lastChng[s] > fretMaskT;
+    if (stable && maskElapsed && lastExStrPr[s] != strPrs[s]) {
       *eventString = s;
       *eventPress = strPrs[s];
       lastExStrPr[s] = strPrs[s];
@@ -115,12 +128,13 @@ void handleFretEventForAudioMidiKickSeq(int eventString, int eventPress, int sen
 
 void readFretboard(int sensMode) {
   scanFretboardPins(sensMode);
-  updateFretDebounce();
+  if (sensMode == 0) updateRobustFretDetection(millis());
+  else updateLegacyFretDebounce();
 
   //actions when string is pressed or released
   int eventString;
   int eventPress;
-  while (emitFretEvents(&eventString, &eventPress)) {
+  while (emitFretEvents(&eventString, &eventPress, sensMode == 0)) {
     handleFretEventForAudioMidiKickSeq(eventString, eventPress, sensMode);
   }
 }
