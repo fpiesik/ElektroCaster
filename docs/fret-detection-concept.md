@@ -178,3 +178,24 @@ Fehlereignisse erzeugen, ohne die gemessene typische Anschlagslatenz zu erhöhen
 - **Ungewissheit:** Ob wirklich jeder reale Griff ab Bund 2 zuverlässig das
   benachbarte Paar bildet, ist aus dem Code nicht belegbar. Diese Annahme muss mit
   Rohdaten aller Saiten und relevanten Bünde validiert werden.
+
+## Implementierungsstand
+
+Der zustandsbehaftete Filter ist als hardwareunabhängige Logik in
+`software/firmwareCtl/FretDetection.h` umgesetzt. Im vollständigen Sensormodus
+wertet `firmwareCtl` nach jedem unveränderten Matrixscan die Kontaktmaske aus und
+verwendet den höchsten benachbarten Kontakt als schnelle Bestätigung. Bund 1,
+einzelne höhere Kontakte und die Nullphase besitzen getrennte Zeitgrenzen. Der
+vereinfachte Sensormodus verwendet weiterhin den bisherigen scanbasierten
+Debounce und die 50-ms-Ereignismaske.
+
+Die Startwerte betragen 4 ms für ein Paar, 12 ms für Bund 1, 30 ms für den
+Einzelkontakt-Fallback und 12 ms für das Loslassen. Diese Werte sind ausdrücklich
+vorläufig. Vor dem Einsatz am Instrument müssen sie mit der oben beschriebenen
+Testmatrix und aufgezeichneten Rohkontakten validiert und gegebenenfalls
+angepasst werden.
+
+Die reine Filterlogik wird hostseitig durch `tests/fret_detection_test.cpp`
+geprüft. Der Test deckt Paarbestätigung, zerfallende Paare, Loslassen, Bund 1,
+Einzelkontakt-Fallback, direkte Bundwechsel, mehrdeutige Kontaktmasken und den
+Überlauf von `millis()` ab.
