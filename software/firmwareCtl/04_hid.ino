@@ -528,11 +528,11 @@ void procHidEChng(byte idx, long val) {
               tuning[s] = tuning[s] + val;
               break;
             case strArp_opMode:
-              strArp_chStrEnc(s, val);
+              if(strHold[s]==0)strArp_chStrEnc(s, val);
               break;
             case genSq_opMode:
               if(strHold[s]==0&&strArp_modeSel==0) genSq_chStrEnc(s, val); //change only if string is not hold
-              if(strArp_modeSel==1)strArp_chStrEnc(s, val);
+              if(strHold[s]==0&&strArp_modeSel==1)strArp_chStrEnc(s, val);
               break;
             case genSq_opMode+1:
               genSq_chStrEnc(s, val);

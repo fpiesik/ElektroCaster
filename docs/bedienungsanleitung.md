@@ -75,7 +75,7 @@ Die Zuordnung „Fader/Poti“ folgt den Kommentaren im Controllercode. Ein anal
 
 - **Display-Encoder:** Der einzelne Encoder neben dem OLED. Drehen verändert je nach Ansicht einen Wert oder die gewählte Funktionszeile. Drücken schaltet zwischen diesen beiden Ebenen um.
 - **Saiten-Encoder 0 … 5:** Je ein Encoder pro Saite. Sie ändern den aktuell gewählten Saitenparameter. Ihre Anzeige auf dem OLED erfolgt von links nach rechts in der Reihenfolge Saite 5 … 0.
-- **Sammel-Encoder:** Ändert den aktuellen Parameter grundsätzlich für alle sechs Saiten. Im Step-Edit-Modus kann er stattdessen den gewählten Step-Parameter bearbeiten.
+- **Sammel-Encoder:** Ändert den aktuellen Saitenparameter gemeinsam. Im Saitensequencer der Instanz 1 und im Arpeggiator werden Saiten mit aktivem StringHold übersprungen. Im Step-Edit-Modus kann er stattdessen den gewählten Step-Parameter bearbeiten.
 - Die HID-Firmware teilt Encoderbewegungen durch vier. Eine wahrnehmbare Rasterbewegung entspricht daher erst nach vier Rohschritten einer Änderung.
 
 ### 3.3 Display-Encoder bedienen
