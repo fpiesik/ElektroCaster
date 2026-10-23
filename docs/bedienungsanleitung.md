@@ -109,6 +109,8 @@ Der Code wertet einen Zustand aus, nicht ausdrücklich eine Haltezeit. Ob der ph
 | Mitte | MulEBow ein/aus | setzt gleichzeitig `extClk`: aus = interne Clock, ein = externe USB-MIDI-Clock |
 | rechts | Kickup ein/aus | setzt gleichzeitig den Griffbrett-Sensormodus: aus = Bundposition erkennen, ein = nur gedrückt/nicht gedrückt erkennen |
 
+StringHold-Saiten laufen im gewählten Saitensequencer beziehungsweise Arpeggiator bei laufender Clock auch mit ausgeschalteter Automatik als MIDI weiter.
+
 **Wichtig:** Mit Shift werden MulEBow beziehungsweise Kickup trotzdem ebenfalls geschaltet. Die Clock- beziehungsweise Sensormoduswahl ist keine getrennte, „stumme“ Zweitfunktion.
 
 ### 4.3 Dreifach-Tastergruppe
@@ -332,6 +334,8 @@ Beim Drücken des Display-Encoders merkt sich die Firmware die aktuell laufenden
 Der Arpeggiator baut seine Folge dynamisch aus den aktuell gedrückten Saiten. Er sendet pro ausgelöstem Saitenschritt MIDI, triggert die Audiohüllkurve und – falls freigegeben – Kickup.
 
 Saiten mit aktivem **StrHold** bilden gemeinsam ein eigenes, parallel laufendes Arpeggio. Sie verwenden jeweils den zuletzt im Spielmodus gedrückten Bund und senden ausschließlich MIDI; Hüllkurve und Kickup werden dabei nicht getriggert. Die übrigen gedrückten Saiten bilden die normale Arpeggiofolge. Beide Folgen haben einen eigenen Cursor und verwenden die eingestellten Werte für `steps`, `tmDv`, `repeat`, `order`, `chn` und `mute`. Gleiche positive `order`-Werte gruppieren nur Saiten innerhalb derselben Folge. Bei StrHold unterdrückt auch `steps = 0` die manuelle Triggerung.
+
+Das StrHold-Arpeggio läuft bei laufender Clock auch mit ausgeschaltetem Auto-Mode weiter. Die normale Arpeggiofolge benötigt den Auto-Mode; bei ausgeschaltetem Auto-Mode lassen sich die übrigen Saiten manuell spielen. Mute und das Aufheben von StringHold gelten weiterhin für die gehaltenen Saiten. Start/Stop steuert die Clock für beide Folgen.
 
 ### 9.2 Globale Arpeggiatorfunktionen
 

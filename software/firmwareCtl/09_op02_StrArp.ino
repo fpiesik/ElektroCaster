@@ -69,7 +69,7 @@ void strArp_ersStps(){
 }
 
 void strArp_updClck(){
-  if(strArp_act == 1){  
+  if(strArp_modeSel == 1){
     bool wasEmpty[2]={strArp_playback[0].seqLen==0, strArp_playback[1].seqLen==0};
     strArp_mkArp();
     strArp_silenceInactiveSerialNotes();
@@ -127,7 +127,7 @@ void strArp_notePressOrder(byte s, int press){
 
 bool strArp_stringInArp(byte s, bool held){
   if(held)return strHold[s] && lastNZStrPrs[s]>0;
-  return !strHold[s] && strPrs[s]>0;
+  return strArp_act && !strHold[s] && strPrs[s]>0;
 }
 
 unsigned int strArp_orderGroupPressOrder(byte order, bool held){
@@ -172,6 +172,8 @@ void strArp_silenceInactiveSerialNotes(){
   if(frtb_sensMode!=0)return;
 
   for(int i = 0; i<nStrings; i++){
+    // With Auto off, pressed live strings use manual MIDI handling.
+    if(!strArp_act && !strHold[i] && strPrs[i]>0)continue;
     if(!strArp_shouldPlayString(i)){
       int chnl = strArp_chn[i];
       sndMidiNotePress(i,0,chnl);

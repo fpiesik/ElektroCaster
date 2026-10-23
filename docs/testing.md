@@ -189,6 +189,7 @@ Affected board: CTL (Teensy 4.1). The HID link supplies existing controls; the A
 5. Test `simple`, `back`, `mirror`, `rev mirror`, positive `order` groups within the held sequence, `steps = 0`, mute/unmute and pattern/sync changes. Held strings must remain MIDI-only.
 6. Activate Shift while the held strings are released to clear Hold. Confirm Note Off for the held notes and continued normal playback. Also stop the clock and confirm that no MIDI notes remain active.
 7. Return to sequencer mode and confirm its existing StrHold behavior.
+8. In arpeggiator mode, switch Auto off while the clock keeps running. Confirm that held strings continue their MIDI sequence and repeats without restarting or triggering envelopes/Kickup. Play a non-held string manually and confirm that the held sequence does not cut off its MIDI note, including when its arpeggiator track is muted. Clear Hold and check Note Off; re-enable Auto and confirm normal arpeggio playback resumes on the configured clock phase.
 
 ## Tests requiring hardware
 

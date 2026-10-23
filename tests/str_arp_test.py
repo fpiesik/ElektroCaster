@@ -128,6 +128,45 @@ int main() {
   assert(count(note(0,4),1,false)==1);
   assert(envelopes[0]==0 && kicks[0]==0);
 
+  // Held strings start and advance with Auto off, using MIDI only.
+  reset(); strArp_act=0;
+  press(0,4,true); press(1,5,true); release(0); release(1);
+  tick(0); tick(6); tick(12);
+  sequence(0,{}); sequence(1,{0,1});
+  assert(count(note(0,4),1,true)==2 && count(note(1,5),2,true)==1);
+  for(int s=0;s<nStrings;s++)assert(envelopes[s]==0 && kicks[s]==0);
+
+  // Switching Auto off preserves held repeats and leaves live strings manual.
+  reset(); press(0,4,true); release(0); press(1,5);
+  strArp_repeat[0]=3; tick(0); tick(1); strArp_act=0;
+  strArp_muteCh[2]=true; press(2,6); tick(6);
+  sequence(0,{}); sequence(1,{0});
+  assert(count(note(0,4),1,true)==4);
+  assert(count(note(1,5),2,true)==1 && envelopes[1]==1 && kicks[1]==1);
+  assert(count(note(2,6),3,true)==1 && count(note(2,6),3,false)==0);
+  assert(envelopes[2]==1 && kicks[2]==1 && manual[2]==1);
+  assert(envelopes[0]==0 && kicks[0]==0);
+  release(2); tick(7); assert(count(note(2,6),3,false)==1);
+  strHold[0]=false; tick(8); sequence(1,{});
+  assert(count(note(0,4),1,false)==4);
+
+  // Re-enabling Auto aligns live steps without restarting the held sequence.
+  reset(); strArp_act=0; press(0,4); press(1,5,true); release(1); tick(2);
+  strArp_act=1; tick(5);
+  assert(count(note(0,4),1,true)==1 && count(note(1,5),2,true)==1);
+  tick(6);
+  assert(count(note(0,4),1,true)==2 && count(note(1,5),2,true)==2);
+
+  // Mute and All Notes Off still stop held MIDI with Auto off.
+  reset(); strArp_act=0; press(0,4,true); release(0); tick(0);
+  strArp_muteCh[0]=true; tick(1); assert(count(note(0,4),1,false)==1);
+  strArp_muteCh[0]=false; tick(6); assert(count(note(0,4),1,true)==2);
+  genSq_allNOff(); assert(count(note(0,4),1,false)==2);
+
+  // Selecting GenSeq must leave held-string playback to that sequencer.
+  reset(); strArp_act=0; strArp_modeSel=false;
+  press(0,4,true); release(0); tick(6); assert(events.empty());
+
   // Multiple held strings preserve press order after release and update pitch.
   reset(); press(3,7,true); press(1,5,true); release(3); release(1);
   tick(0); tick(6); tick(12);
