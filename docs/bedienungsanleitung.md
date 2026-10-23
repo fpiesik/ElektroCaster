@@ -331,6 +331,8 @@ Beim Drücken des Display-Encoders merkt sich die Firmware die aktuell laufenden
 
 Der Arpeggiator baut seine Folge dynamisch aus den aktuell gedrückten Saiten. Er sendet pro ausgelöstem Saitenschritt MIDI, triggert die Audiohüllkurve und – falls freigegeben – Kickup.
 
+Saiten mit aktivem **StrHold** bilden gemeinsam ein eigenes, parallel laufendes Arpeggio. Sie verwenden jeweils den zuletzt im Spielmodus gedrückten Bund und senden ausschließlich MIDI; Hüllkurve und Kickup werden dabei nicht getriggert. Die übrigen gedrückten Saiten bilden die normale Arpeggiofolge. Beide Folgen haben einen eigenen Cursor und verwenden die eingestellten Werte für `steps`, `tmDv`, `repeat`, `order`, `chn` und `mute`. Gleiche positive `order`-Werte gruppieren nur Saiten innerhalb derselben Folge. Bei StrHold unterdrückt auch `steps = 0` die manuelle Triggerung.
+
 ### 9.2 Globale Arpeggiatorfunktionen
 
 Unter `str`:
@@ -380,7 +382,7 @@ Im Sensormodus `1` erkennt die Firmware nur, ob eine Saite irgendeinen Bund ber�
 
 ### 10.3 Saiten halten
 
-Wird im Spielmodus bei aktivem Shift eine Saite gegriffen, setzt die Firmware für diese Saite `hold`. Nach Loslassen der Saite wird `hold` wieder gelöscht. Im generischen Sequencer kann eine gehaltene Saite ihre zuletzt bekannte Griffposition als MIDI-Note verwenden. Das ist ein momentaner, an Shift und aktuellen Kontakt gebundener Zustand, kein dauerhaft verriegeltes Hold.
+Wird im Spielmodus bei aktivem Shift eine Saite gegriffen, setzt die Firmware für diese Saite `hold`. Solange Shift aktiv ist, aktualisiert der Saitenkontakt diesen Zustand: Greifen setzt Hold, Loslassen löscht Hold. Wird Shift zuerst losgelassen, bleibt Hold auch nach dem Loslassen der Saite bestehen. Zum Aufheben Shift bei losgelassener Saite aktivieren. Im generischen Sequencer verwendet eine gehaltene Saite ihre zuletzt bekannte Griffposition als MIDI-Note. Im Arpeggiator bilden die gehaltenen Saiten eine eigene MIDI-Arpeggiofolge ohne Hüllkurven- oder Kickup-Trigger.
 
 ### 10.4 Kickup
 

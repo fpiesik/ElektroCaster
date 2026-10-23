@@ -170,12 +170,25 @@ Expected results:
 
 ## Tests possible without hardware
 
+- StrHold arpeggiator regression test: `python3 tests/str_arp_test.py` (requires `g++` with AddressSanitizer and UndefinedBehaviorSanitizer). This compiles the actual CTL arpeggiator, MIDI output and fret-event handlers with hardware stubs. It checks independent held/live sequences, remembered pitches, order groups, repeats, mute, Hold release, zero-step behavior, sync, sensing-mode MIDI suppression and sequence bounds. In environments where LeakSanitizer cannot run under tracing, use `ASAN_OPTIONS=detect_leaks=0 python3 tests/str_arp_test.py`; address and undefined-behavior checks remain enabled.
 - Documentation diff review.
 - Markdown review.
 - Static file inventory with `rg --files`.
 - Git checks: `git status --short`, `git diff --stat`, `git diff --check`.
 - Future host-side protocol encode/decode tests, if protocol code is extracted into testable modules.
 - Future song serialization tests, if SD layout is abstracted into host-testable code.
+
+## StrHold arpeggiator hardware test
+
+Affected board: CTL (Teensy 4.1). The HID link supplies existing controls; the Audio link carries existing envelope commands. USB MIDI carries the notes. Pin mappings, serial formats, fretboard scanning/debounce, clock intervals and Kickup pulse/queue timing are unchanged.
+
+1. Select an arpeggiator pattern, enable string automation and start the clock. Monitor USB MIDI and the existing CTL-to-Audio envelope commands; observe Kickup with actuator power initially disconnected.
+2. Hold Shift and fret one string, release Shift first, then release the string. Confirm that MIDI continues at its last pressed pitch without envelope triggers or Kickup requests for that string.
+3. Add a second held string. Confirm that both held strings form one sequence and keep their last pitches after release. Change the fret on one held string and confirm that its MIDI pitch updates.
+4. Play additional strings without Shift. Confirm that their normal arpeggio runs alongside the held sequence. Use different `tmDv`/`repeat` values and equal positive `order` values across held/live strings; confirm independent progression and Note Off handling. Normal strings should still trigger their envelopes and enabled Kickup.
+5. Test `simple`, `back`, `mirror`, `rev mirror`, positive `order` groups within the held sequence, `steps = 0`, mute/unmute and pattern/sync changes. Held strings must remain MIDI-only.
+6. Activate Shift while the held strings are released to clear Hold. Confirm Note Off for the held notes and continued normal playback. Also stop the clock and confirm that no MIDI notes remain active.
+7. Return to sequencer mode and confirm its existing StrHold behavior.
 
 ## Tests requiring hardware
 

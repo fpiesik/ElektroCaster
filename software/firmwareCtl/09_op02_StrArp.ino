@@ -70,20 +70,23 @@ void strArp_ersStps(){
 
 void strArp_updClck(){
   if(strArp_act == 1){  
-    bool strArp_wasEmpty=strArp_seqLen==0;
+    bool wasEmpty[2]={strArp_playback[0].seqLen==0, strArp_playback[1].seqLen==0};
     strArp_mkArp();
+    strArp_silenceInactiveSerialNotes();
 
-    if(strArp_wasEmpty && strArp_seqLen>0){
-      byte firstString=strArp_seq[0];
-      byte firstDuration=strArp_tmDv[firstString];
-      if(firstDuration>0){
-        long clockPhase=mClock%firstDuration;
-        if(clockPhase<0)clockPhase+=firstDuration;
-        strArp_serialNxtClkFil=clockPhase==0 ? firstDuration-1 : clockPhase-1;
+    for(int held=0;held<2;held++){
+      StrArpPlaybackState &playback=strArp_playback[held];
+      if(wasEmpty[held] && playback.seqLen>0){
+        byte firstString=playback.seq[0];
+        byte firstDuration=strArp_tmDv[firstString];
+        if(firstDuration>0){
+          long clockPhase=mClock%firstDuration;
+          if(clockPhase<0)clockPhase+=firstDuration;
+          playback.nextClock=clockPhase==0 ? firstDuration-1 : clockPhase-1;
+        }
       }
+      strArp_updClckSerial(playback, held);
     }
-
-    strArp_updClckSerial();
     strArp_drwGrid();
     strArp_drwCursor();
     strArp_drwStep();
@@ -94,15 +97,19 @@ void strArp_updClck(){
 }
 
 
+void strArp_resetPlaybackCursor(StrArpPlaybackState &playback){
+  playback.step=0;
+  playback.displayStep=-1;
+  playback.nextClock=0;
+  if(playback.seqLen > 0)playback.nextClock=strArp_tmDv[playback.seq[0]];
+}
+
 void strArp_resetSerialCursor(){
-  strArp_serialStep=0;
-  strArp_serialDisplayStep=-1;
-  strArp_serialNxtClkFil=0;
-  if(strArp_seqLen > 0)strArp_serialNxtClkFil=strArp_tmDv[strArp_seq[0]];
+  for(int held=0;held<2;held++)strArp_resetPlaybackCursor(strArp_playback[held]);
 }
 
 void strArp_notePressOrder(byte s, int press){
-  if(press > 0){
+  if(press > 0 || (strHold[s] && lastNZStrPrs[s]>0)){
     if(strArp_pressOrder[s] == 0){
       strArp_pressOrder[s] = strArp_pressOrderNext;
       strArp_pressOrderNext++;
@@ -118,10 +125,15 @@ void strArp_notePressOrder(byte s, int press){
   }
 }
 
-unsigned int strArp_orderGroupPressOrder(byte order){
+bool strArp_stringInArp(byte s, bool held){
+  if(held)return strHold[s] && lastNZStrPrs[s]>0;
+  return !strHold[s] && strPrs[s]>0;
+}
+
+unsigned int strArp_orderGroupPressOrder(byte order, bool held){
   unsigned int groupPressOrder=0;
   for(int s=0;s<nStrings;s++){
-    if(strPrs[s]>0 && strArp_order[s]==order && strArp_pressOrder[s]>0){
+    if(strArp_stringInArp(s, held) && strArp_order[s]==order && strArp_pressOrder[s]>0){
       if(groupPressOrder==0 || strArp_pressOrder[s]<groupPressOrder)groupPressOrder=strArp_pressOrder[s];
     }
   }
@@ -135,10 +147,10 @@ void strArp_addStringToArp(byte arpSeq[], int *arpIdx, byte s){
   }
 }
 
-void strArp_addPressedZeroOrderStrings(byte arpSeq[], int *arpIdx, bool zeroOrderAdded[], unsigned int beforePressOrder, bool addRemaining){
+void strArp_addPressedZeroOrderStrings(byte arpSeq[], int *arpIdx, bool zeroOrderAdded[], unsigned int beforePressOrder, bool addRemaining, bool held){
   for(unsigned int pressed=1;pressed<strArp_pressOrderNext;pressed++){
     for(int s=0;s<nStrings;s++){
-      if(strPrs[s]>0 && strArp_order[s]==0 && strArp_pressOrder[s]==pressed && !zeroOrderAdded[s]){
+      if(strArp_stringInArp(s, held) && strArp_order[s]==0 && strArp_pressOrder[s]==pressed && !zeroOrderAdded[s]){
         if(addRemaining || pressed<beforePressOrder){
           strArp_addStringToArp(arpSeq, arpIdx, s);
           zeroOrderAdded[s]=1;
@@ -149,11 +161,11 @@ void strArp_addPressedZeroOrderStrings(byte arpSeq[], int *arpIdx, bool zeroOrde
 }
 
 bool strArp_isSameOrderGroup(byte a, byte b){
-  return a != b && strArp_order[a] > 0 && strArp_order[a] == strArp_order[b];
+  return a != b && strHold[a] == strHold[b] && strArp_order[a] > 0 && strArp_order[a] == strArp_order[b];
 }
 
 bool strArp_shouldPlayString(byte s){
-  return strPrs[s] > 0 && strArp_muteCh[s] == 0 && mtOut == 0 && strPrs[s];
+  return strArp_stringInArp(s, strHold[s]) && strArp_muteCh[s] == 0 && mtOut == 0;
 }
 
 void strArp_silenceInactiveSerialNotes(){
@@ -168,88 +180,88 @@ void strArp_silenceInactiveSerialNotes(){
 }
 
 
-void strArp_updClckSerial(){
-  strArp_silenceInactiveSerialNotes();
-
-  if(strArp_seqLen == 0){
-    for(int s = 0; s<nStrings; s++){
-      strArp_clk[s]=-1;
+void strArp_playString(byte s, bool retrigger){
+  int chnl=strArp_chn[s];
+  if(frtb_sensMode==0 && (retrigger || !strArp_shouldPlayString(s)))sndMidiNotePress(s,0,chnl);
+  if(strArp_shouldPlayString(s)){
+    int press=strHold[s] ? lastNZStrPrs[s] : strPrs[s];
+    if(frtb_sensMode==0)sndMidiNotePress(s,press,chnl);
+    if(!strHold[s]){
+      sndTrigEnv(s,1);
+      kick(s);
     }
-    strArp_resetSerialCursor();
+  }
+}
+
+void strArp_updClckSerial(StrArpPlaybackState &playback, bool held){
+
+  if(playback.seqLen == 0){
+    for(int s = 0; s<nStrings; s++){
+      if(strHold[s]==held)strArp_clk[s]=-1;
+    }
+    strArp_resetPlaybackCursor(playback);
     return;
   }
 
-  if(strArp_serialStep >= strArp_seqLen)strArp_serialStep=0;
-  if(strArp_serialDisplayStep >= strArp_seqLen)strArp_serialDisplayStep=-1;
-  byte s = strArp_seq[strArp_serialStep];
+  if(playback.step >= playback.seqLen)playback.step=0;
+  if(playback.displayStep >= playback.seqLen)playback.displayStep=-1;
+  byte s = playback.seq[playback.step];
   // Time the next trigger from the currently playing step, not the upcoming one.
   byte durationString = s;
-  if(strArp_serialDisplayStep >= 0)durationString=strArp_seq[strArp_serialDisplayStep];
-  strArp_serialNxtClkFil++;
+  if(playback.displayStep >= 0)durationString=playback.seq[playback.displayStep];
+  playback.nextClock++;
 
-  if(strArp_serialDisplayStep >= 0){
-    byte repeatString=strArp_seq[strArp_serialDisplayStep];
+  if(playback.displayStep >= 0){
+    byte repeatString=playback.seq[playback.displayStep];
     int repeat=strArp_repeat[repeatString];
     int duration=strArp_tmDv[repeatString];
-    bool repeatNow=strArp_serialNxtClkFil>0 &&
-                   strArp_serialNxtClkFil<duration &&
-                   (strArp_serialNxtClkFil*repeat)/duration !=
-                   ((strArp_serialNxtClkFil-1)*repeat)/duration;
+    bool repeatNow=playback.nextClock>0 &&
+                   playback.nextClock<duration &&
+                   (playback.nextClock*repeat)/duration !=
+                   ((playback.nextClock-1)*repeat)/duration;
     if(repeatNow){
       for(int i=0;i<nStrings;i++){
-        if(i==repeatString || strArp_isSameOrderGroup(repeatString,i)){
-          int playChnl=strArp_chn[i];
-          if(frtb_sensMode==0)sndMidiNotePress(i,0,playChnl);
-          if(strArp_shouldPlayString(i)){
-            if(frtb_sensMode==0)sndMidiNotePress(i,strPrs[i],playChnl);
-            sndTrigEnv(i,1);
-            kick(i);
-          }
+        if(strHold[i]==held && (i==repeatString || strArp_isSameOrderGroup(repeatString,i))){
+          strArp_playString(i,1);
         }
       }
     }
   }
   
-  //if(strArp_serialNxtClkFil == strArp_tmDv[durationString]-1){
+  //if(playback.nextClock == strArp_tmDv[durationString]-1){
   //  if(strPrs[s] > 0 && strArp_muteCh[s]==0 && mtOut==0 && strPrs[s]<=nFrets-genSq_nPttn/2-1){
   //    if(frtb_sensMode==0)sndMidiNotePress(s,0,chnl);
   //  }
   //}
   
-  if(strArp_serialNxtClkFil >= strArp_tmDv[durationString]){
-    strArp_serialNxtClkFil=0;
+  if(playback.nextClock >= strArp_tmDv[durationString]){
+    playback.nextClock=0;
     if(frtb_sensMode==0){
       for(int i = 0; i<nStrings; i++){
-        if(i != s && !strArp_isSameOrderGroup(s, i)){
+        if(strHold[i]==held && i != s && !strArp_isSameOrderGroup(s, i)){
           int offChnl = strArp_chn[i];
           sndMidiNotePress(i,0,offChnl);
         }
       }
     }
     for(int i = 0; i<nStrings; i++){
-      if(i == s || strArp_isSameOrderGroup(s, i)){
-        int playChnl = strArp_chn[i];
-        if(frtb_sensMode==0 && strPrs[i]==0)sndMidiNotePress(i,0,playChnl);
-        if(strArp_shouldPlayString(i)){
-          if(frtb_sensMode==0)sndMidiNotePress(i,strPrs[i],playChnl);
-          sndTrigEnv(i, 1);
-          kick(i);
-        }
+      if(strHold[i]==held && (i == s || strArp_isSameOrderGroup(s, i))){
+        strArp_playString(i,0);
       }
     }
-    strArp_serialDisplayStep=strArp_serialStep;
-    strArp_serialStep++;
-    if(strArp_serialStep>=strArp_seqLen)strArp_serialStep=0;
+    playback.displayStep=playback.step;
+    playback.step++;
+    if(playback.step>=playback.seqLen)playback.step=0;
   }
 
   for(int i = 0; i<nStrings; i++){
-    strArp_clk[i]=-1;
+    if(strHold[i]==held)strArp_clk[i]=-1;
   }
-  if(strArp_serialDisplayStep >= 0){
-    byte cursorString = strArp_seq[strArp_serialDisplayStep];
+  if(playback.displayStep >= 0){
+    byte cursorString = playback.seq[playback.displayStep];
     for(int i = 0; i<nStrings; i++){
-      if(i == cursorString || strArp_isSameOrderGroup(cursorString, i)){
-        strArp_clk[i]=strArp_serialDisplayStep;
+      if(strHold[i]==held && (i == cursorString || strArp_isSameOrderGroup(cursorString, i))){
+        strArp_clk[i]=playback.displayStep;
       }
     }
   }
@@ -362,7 +374,7 @@ void strArp_drwStep(){
   }
 }
 
-void strArp_mkArp(){
+void strArp_mkArpForHold(StrArpPlaybackState &playback, bool held){
   byte back=0;
   byte mirror=0;
   byte revMirror=0;
@@ -373,7 +385,6 @@ void strArp_mkArp(){
   if(strArp_strPrsFnc==strArp_strPrsFnc_mirror)mirror=1;
   if(strArp_strPrsFnc==strArp_strPrsFnc_revMirror)revMirror=1;
 
-  strArp_ersStps(); //clear the sequence
   arpSize=0; //reset arp size
 
   int arpIdx=0;
@@ -383,23 +394,23 @@ void strArp_mkArp(){
   //-----make arp sequence by configurable string order
   if(1){
     for(int order=1;order<=nStrings;order++){
-      unsigned int groupPressOrder=strArp_orderGroupPressOrder(order);
-      if(groupPressOrder>0)strArp_addPressedZeroOrderStrings(arpSeq, &arpIdx, zeroOrderAdded, groupPressOrder, 0);
+      unsigned int groupPressOrder=strArp_orderGroupPressOrder(order, held);
+      if(groupPressOrder>0)strArp_addPressedZeroOrderStrings(arpSeq, &arpIdx, zeroOrderAdded, groupPressOrder, 0, held);
       for(int s=0;s<nStrings;s++){
-        if(strPrs[s]>0 && strArp_order[s]==order){
+        if(strArp_stringInArp(s, held) && strArp_order[s]==order){
           strArp_addStringToArp(arpSeq, &arpIdx, s);
           break;
         }
       }
     }
-    strArp_addPressedZeroOrderStrings(arpSeq, &arpIdx, zeroOrderAdded, 0, 1);
+    strArp_addPressedZeroOrderStrings(arpSeq, &arpIdx, zeroOrderAdded, 0, 1, held);
   }
 
   arpSize=arpIdx;
 
   //----back sequence----
   if(back==1){
-    byte seqbuf[arpSize];
+    byte seqbuf[strArp_maxSteps];
     for(int i=0;i<arpSize;i++){
       seqbuf[i]=arpSeq[arpSize-i-1];
     }
@@ -410,7 +421,7 @@ void strArp_mkArp(){
 
   if(mirror==1 || revMirror==1){
     int baseSize=arpSize;
-    byte seqbuf[baseSize];
+    byte seqbuf[strArp_maxSteps];
     for(int i=0;i<baseSize;i++){
       seqbuf[i]=arpSeq[i];
     }
@@ -426,14 +437,14 @@ void strArp_mkArp(){
     }
   }
 
-  strArp_seqLen=arpSize;
+  playback.seqLen=arpSize;
   for(int i=0;i<arpSize;i++){
-    strArp_seq[i]=arpSeq[i];
+    playback.seq[i]=arpSeq[i];
   }
-  if(strArp_serialStep>=strArp_seqLen)strArp_serialStep=0;
+  if(playback.step>=playback.seqLen)playback.step=0;
 
   //---copy serial arp sequence to sequencer----
-  for(int i=0;i<arpSize;i++){
+  for(int i=0;i<arpSize && i<strArp_maxVisSteps;i++){
     byte stepString = arpSeq[i];
     strArp_stp[stepString][i]=1;
     for(int s=0;s<nStrings;s++){
@@ -442,6 +453,15 @@ void strArp_mkArp(){
   }
   //---set seq length----
   for(int s=0;s<nStrings;s++){
-    strArp_nStps[s]=arpSize;
+    if(strHold[s]==held)strArp_nStps[s]=arpSize;
   }
+}
+
+void strArp_mkArp(){
+  strArp_ersStps();
+  for(int s=0;s<nStrings;s++){
+    // Retain the press order after release while StrHold owns the string.
+    strArp_notePressOrder(s, strPrs[s]);
+  }
+  for(int held=0;held<2;held++)strArp_mkArpForHold(strArp_playback[held], held);
 }

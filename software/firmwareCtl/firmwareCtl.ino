@@ -191,11 +191,14 @@ const int chipSelect = BUILTIN_SDCARD;
   float strArp_crsrPix[nStrings][strArp_maxVisSteps][3];
   float strArp_stpPix[nStrings][strArp_maxVisSteps][3];
   byte strArp_nStps[nStrings];
-  byte strArp_seq[strArp_maxSteps];
-  byte strArp_seqLen=0;
-  byte strArp_serialStep=0;
-  int strArp_serialDisplayStep=-1;
-  byte strArp_serialNxtClkFil=0;
+  struct StrArpPlaybackState {
+    byte seq[strArp_maxSteps];
+    byte seqLen=0;
+    byte step=0;
+    int displayStep=-1;
+    byte nextClock=0;
+  };
+  StrArpPlaybackState strArp_playback[2]; //0: pressed strings, 1: StrHold MIDI only
   byte strArp_tmDvs[12]={96,64,48,32,24,16,12,8,6,4,3,2};
   const char* strArp_tmDvNm[12]={"1","1.5","2","3","4","6","8","12","16","24","32","48"};
   byte strArp_nTmDvs=12;

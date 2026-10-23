@@ -81,7 +81,7 @@ bool stringHasManualEnvelopeDecay(int stringIndex, int press) {
   bool manualTrigger = strArp_act == 0 && strSeq_act == 0;
   bool strArpZeroStepManualTrigger = strArp_modeSel == 1 && strArp_act == 1 && strArp_steps[stringIndex] == 0 && (strArp_muteCh[stringIndex] == 0 || press == 0);
   if (strArpZeroStepManualTrigger) manualTrigger = 1;
-  return fbrdMode == 0 && manualTrigger && press > 0;
+  return fbrdMode == 0 && manualTrigger && press > 0 && !(strArp_modeSel && strHold[stringIndex]);
 }
 
 void sendManualEnvelopeStateForPressedStrings() {
@@ -107,7 +107,7 @@ void handleFretEventForAudioMidiKickSeq(int eventString, int eventPress, int sen
   if(strArpZeroStepManualTrigger)manualTrigger=1;
   sndManualEnv(s, stringHasManualEnvelopeDecay(s, press));
 
-  if (strHold[s]==0||genSq_muteCh[0][s]){
+  if (strHold[s]==0 || (!strArp_modeSel && genSq_muteCh[0][s])){
     if (fbrdMode == 0 && manualTrigger) {
       sndTrigEnv(s, press>0);
       if(opMode>=genSq_opMode && opMode<genSq_opMode+genSq_nInst && press<=frtSplit){
