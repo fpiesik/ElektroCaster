@@ -62,9 +62,10 @@ void sndBowMode(byte mode){
 }
 
 void sndBowOn(byte mode){
+  // Keep the MulEBow switch request, but suppress it while Auto and Kickup are on.
+  bool enabled = mode && !(hidDVal[2] && kickOn);
   Serial1.write(AUDIO_CMD_BOW_ON);
-  Serial1.write(mode);
-  //bowOn=mode;
+  Serial1.write(enabled);
 }
 
 void sndTrigEnv(byte str, float vel){

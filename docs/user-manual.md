@@ -111,6 +111,8 @@ The code evaluates a state, not an explicit hold duration. Whether the physical 
 
 With the clock running, StringHold strings continue to output MIDI in the selected string sequencer or arpeggiator even when automation is off.
 
+When Auto mode (left switch) and Kickup (right switch) are both on, MulEBow is inactive regardless of the center switch. Turning either Auto mode or Kickup off restores MulEBow if its switch is still on. This applies in both string sequencer and arpeggiator operation, even with the clock stopped.
+
 **Important:** With Shift active, MulEBow or Kickup is still switched as well. Clock or sensor mode selection is not a separate secondary function that leaves the actuator state unchanged.
 
 ### 4.3 Three-button group
@@ -398,6 +400,7 @@ If a string is fretted in play mode while Shift is active, the firmware sets `ho
 ### 10.5 MulEBow
 
 - The center switch in the three-switch group turns MulEBow on/off.
+- Auto mode and Kickup being on together suppress MulEBow. The suppression immediately stops any active coil signals; removing it restores signals for currently fretted strings if the MulEBow switch is on.
 - With MulEBow on, the audio controller generates a coil signal at the reported pitch only for strings reported as fretted.
 - On release, the string's signal is switched off.
 - The global `bowMode` exists in the code, but no current control sends a change. No user-selectable MulEBow mode beyond on/off can therefore be documented.

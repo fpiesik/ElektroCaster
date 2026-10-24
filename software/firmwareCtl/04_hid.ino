@@ -174,6 +174,7 @@ void procHidDChng(byte idx, bool val) {
       //tripple switch left
       strSeq_act = val && !strArp_modeSel;
       strArp_act = val && strArp_modeSel;
+      sndBowOn(hidDVal[3]);
       sendManualEnvelopeStateForPressedStrings();
       break;
 
@@ -187,6 +188,7 @@ void procHidDChng(byte idx, bool val) {
     case 4:
       //tripple switch right
       kickOn = val;
+      sndBowOn(hidDVal[3]);
       if (val == 0 && shift == 1 )frtb_sensMode = val;
       if (val == 1 && shift == 1 )frtb_sensMode = val;
       break;

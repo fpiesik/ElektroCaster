@@ -97,7 +97,7 @@ void handleAudioSerialPacket(byte command, const byte payload[]) {
     if (incoming == audioIncoming(AUDIO_CMD_DISP_MODE)) chDispMode(payload[0]);
     if (incoming == audioIncoming(AUDIO_CMD_KICK_MODE)) chKickMode(payload[0]);
     if (incoming == audioIncoming(AUDIO_CMD_BOW_MODE)) chBowMode(payload[0]);
-    if (incoming == audioIncoming(AUDIO_CMD_BOW_ON)) bowOn = payload[0];
+    if (incoming == audioIncoming(AUDIO_CMD_BOW_ON)) chBowOn(payload[0]);
 
     if (incoming == audioIncoming(AUDIO_CMD_VOLUME)) {
       float val = payload[0] / 199.0;

@@ -168,8 +168,21 @@ Expected results:
 - Bow on drives only expected active strings.
 - No stuck actuator output after release or mode changes.
 
+## MulEBow Auto/Kickup suppression test
+
+Affected boards: CTL (Teensy 4.1) and Audio (Teensy 4.1). The HID link supplies the three existing switch states. CTL sends the existing `AUDIO_CMD_BOW_ON` command over Serial1 at 250000 baud; Audio immediately applies it to all coil oscillators. Pin assignments, serial command IDs/payloads, audio routing, fretboard scanning, clock timing and Kickup timing are unchanged.
+
+1. Start with actuator power disconnected and monitor coil outputs with an oscilloscope or suitable instrumentation. Enable MulEBow and fret several strings.
+2. Turn Auto mode and Kickup on, testing both switch orders. Confirm that all MulEBow signals stop as soon as both are on, including signals for strings that remain fretted.
+3. While both remain on, toggle the MulEBow switch and fret/release additional strings. Confirm that no coil signal is produced.
+4. Leave the MulEBow switch on and turn either Auto mode or Kickup off. Confirm that only currently fretted strings resume their coil signals without needing a new fret contact.
+5. Turn the MulEBow switch off while suppression is active, then remove suppression. Confirm that the coils remain off.
+6. Repeat in the generic string sequencer and arpeggiator, with the clock running and stopped. Also repeat with Shift active and verify the existing external-clock and sensing-mode switch functions.
+7. With a suitable actuator power supply and low coil levels, confirm the same behavior on the instrument and monitor coil temperature.
+
 ## Tests possible without hardware
 
+- MulEBow suppression regression test: `python3 tests/bow_control_test.py` (requires `g++` with AddressSanitizer and UndefinedBehaviorSanitizer). This compiles the actual CTL digital-input handler and audio senders, plus the Audio command handler and coil controls, with hardware stubs. It checks every switch combination and transition order in both automation modes, immediate muting of active coils, restoration for fretted strings and existing Shift functions. If LeakSanitizer is unavailable under tracing, use `ASAN_OPTIONS=detect_leaks=0 python3 tests/bow_control_test.py`.
 - StrHold arpeggiator regression test: `python3 tests/str_arp_test.py` (requires `g++` with AddressSanitizer and UndefinedBehaviorSanitizer). This compiles the actual CTL arpeggiator, MIDI output and fret-event handlers with hardware stubs. It checks independent held/live sequences, remembered pitches, order groups, repeats, mute, Hold release, zero-step behavior, sync, sensing-mode MIDI suppression and sequence bounds. In environments where LeakSanitizer cannot run under tracing, use `ASAN_OPTIONS=detect_leaks=0 python3 tests/str_arp_test.py`; address and undefined-behavior checks remain enabled.
 - Documentation diff review.
 - Markdown review.

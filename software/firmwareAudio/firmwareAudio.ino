@@ -221,6 +221,14 @@ void chBowMode(byte data){
   DBG_AUDIO_PRINTLN(bowMode);
   }
 
+void chBowOn(byte state){
+  bowOn = state;
+  // Apply switch changes to already fretted strings without waiting for a fret event.
+  for (int s = 0; s < nStrings; s++) {
+    coilOsc[s].amplitude(bowOn == 1 && strState[s] > 0 ? coilgain[s] : 0);
+  }
+}
+
 void chDispMode(byte data){
   dispMode=data;
   DBG_AUDIO_PRINT("dispmode: ");
