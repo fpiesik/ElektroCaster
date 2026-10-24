@@ -156,10 +156,18 @@ void loop(){
 if (millis()-ctlTimer > ctlInt){ 
   for(int i=0;i<nStrings;i++){
     if(strState[i]!=lastStrState[i]){
+//      for (int str=0; str<nStrings; str++) {
+//        if(bowOn==1 && strState[str]>0){
+//          coilOsc[str].amplitude(coilgain[s]);
+//        }
+//        if(bowOn==0 || strState[str]==0)coilOsc[str].amplitude(0);
+//      }
       //strFret(i,strState[i]);
       lastStrState[i]=strState[i];
     }
   }
+
+
   ctlTimer=millis();
 }
 
@@ -174,8 +182,9 @@ static int nSmp=5;
         float prob = nFreq[s].probability();
         
         float mNote = base_pitch + (12.0 * log(note / base_frequency) / log(2));
-        if(prob>0.96){
+        if(prob>=0.98){
           strP[s]=mNote;
+          coilOsc[s].frequency(midiFreq(strP[s]));
           //chLfo1(0, mNote,s);
           //chCoilDel(s,note);
 //          Serial.printf("freq1: %3.2f | Probability: %.2f\n", note, prob);    
@@ -223,10 +232,6 @@ if(bowOn!=lastBowOn){
   //   if(bowOn==0)coilAmp[i].gain(0.000);
   //   if(bowOn==1 && strState[i]>0)coilAmp[i].gain(100);
   // }
-  for (int str=0; str<nStrings; str++) {
-    if(bowOn==1 && strState[str]>0)coilOsc[str].amplitude(1);
-    if(bowOn==0)coilOsc[str].amplitude(0);
-  }
 
   DBG_AUDIO_PRINT("bowOn: ");
   DBG_AUDIO_PRINTLN(bowOn);
