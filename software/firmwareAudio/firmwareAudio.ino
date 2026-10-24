@@ -257,7 +257,8 @@ void strFret(byte str, byte pitch, byte state){
   if(bowOn==1&&state>0){
     //coilAmp[str].gain(50);
     coilOsc[str].amplitude(0.1);
-    coilOsc[str].frequency(midiFreq(pitch));
+    //coilOsc[str].frequency(midiFreq(pitch));
+    coilOsc[str].frequency(strP[str]);
   }
   //sndMidiNote(str,fret);
   //chLfo1(2,0,str);

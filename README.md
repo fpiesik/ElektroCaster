@@ -43,4 +43,4 @@ This repository contains three cooperating firmware targets. The tables below su
 
 ### User manual
 
-The German, code-derived operating guide is available at [`docs/bedienungsanleitung.md`](docs/bedienungsanleitung.md). It distinguishes implemented behavior from hardware details that cannot be confirmed from the repository.
+The English, code-derived user manual is available at [`docs/user-manual.md`](docs/user-manual.md). It distinguishes implemented behavior from hardware details that cannot be confirmed from the repository.
