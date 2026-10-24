@@ -16,7 +16,7 @@
 const byte nStrings=6;
 #include "HardwareConfig.h"
 
-#define DEBUG_AUDIO 1
+#define DEBUG_AUDIO 0
 #if DEBUG_AUDIO
 #define DBG_AUDIO_PRINT(x) Serial.print(x)
 #define DBG_AUDIO_PRINTLN(x) Serial.println(x)
@@ -38,7 +38,7 @@ byte dispMode=0;
 byte lastDispMode=0;
 int waitS=100;
 float strInGain[nStrings]={0.65,0.65,0.65,0.65,0.65,0.65};
-float coilgain[nStrings] = {0.75,0.75,0.75,0.75,0.75,0.75};
+float coilgain[nStrings] = {0.13,0.11,0.1,0.075,0.08,0.08};
 
 float tuning[nStrings]={59,54,50,45,40,35}; //{35,40,45,50,54,59};
 //int inputHicut[nStrings]={5000,4500,4000,3500,3000,2500}; //{35,40,45,50,54,59};
