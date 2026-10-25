@@ -24,8 +24,10 @@ main = (CTL / "firmwareCtl.ino").read_text()
 arp = (CTL / "09_op02_StrArp.ino").read_text()
 hid = (CTL / "04_hid.ino").read_text()
 midi = (CTL / "06_midi.ino").read_text()
+seq_hid = (CTL / "12_op_genSq_Hid.ino").read_text()
 # Use the actual firmware state declarations and implementation, not a second model.
 state = main.split("//string arpeggiator/sequencer\n", 1)[1].split("//generic Sequenzer", 1)[0]
+encoder_state = "\n".join(re.findall(r"^  (?:int genSq_strEncFnc=|const int genSq_nStrEncFnc=|const char\* genSq_strEncNm\[\]=).*;", main, re.M))
 colors = "\n".join(re.findall(r"^  const float strArp_.*;", main, re.M))
 prototypes = "\n".join(signature + ";" for signature in re.findall(
     r"^([A-Za-z_][^\n{}]*\([^;\n]*\))\s*\{", arp, re.M))
@@ -48,6 +50,11 @@ int dispEncMode, opMode, dispEncFnc[8], nDispEncFnc[8];
 const int genSq_opMode=2, genSq_nInst=3, genSq_nPttn=6, genSq_strEncFnc_chn=0;
 byte genSq_chn[3][6][6][1], genSq_actPttn[3];
 bool genSq_muteCh[3][6];
+int genSq_actInst, genSq_edtPttn[genSq_nInst];
+int genSq_strPrsFnc, genSq_strBtnFnc, genSq_stpEdtFrt;
+const int genSq_nStrPrsFnc=6, genSq_nStrBtnFnc=4, genSq_maxSteps=16;
+bool shift, genSq_stpEdtStrs[nStrings], genSq_stpOnOff[3][6][6][16];
+void genSq_addStpValue(int, int, int, int, int, int) {}
 float trgtC[nStrings][25][3];
 int envelopes[nStrings], kicks[nStrings], manual[nStrings];
 struct Event { long tick; int note, velocity, channel; };
@@ -121,6 +128,36 @@ void sequence(int held, std::initializer_list<int> expected) {
 }
 int note(int s, int fret) { return tuning[s]+fret+12; }
 int main() {
+  // Both display handlers share the index across all instances and patterns.
+  reset(); dispEncMode=0; opMode=genSq_opMode;
+  dispEncFnc[opMode]=2;
+  for(int inst=0;inst<genSq_nInst;inst++) {
+    genSq_actInst=inst;
+    for(int selected=0;selected<genSq_nStrEncFnc;selected++) {
+      genSq_strEncFnc=selected;
+      strArp_chDispEnc(1);
+      int expected=(selected+1)%genSq_nStrEncFnc;
+      assert(genSq_strEncFnc==expected);
+      for(int pattern=0;pattern<strArp_nPttn;pattern++) {
+        strArp_actPttn=pattern;
+        strArp_patterns.pttn[pattern].strEncFnc=selected;
+        assert(strArp_strEncFnc==expected);
+      }
+      genSq_chDispEnc(-1);
+      assert(strArp_strEncFnc==selected);
+    }
+  }
+  genSq_strEncFnc=0; strArp_chDispEnc(-1);
+  assert(genSq_strEncFnc==genSq_nStrEncFnc-1);
+  genSq_chDispEnc(1); assert(strArp_strEncFnc==0);
+
+  // A shared index keeps the arpeggiator's own parameter meanings.
+  genSq_strEncFnc=2; strArp_chStrEnc(0,1);
+  assert(strArp_repeat[0]==1 && strArp_order[0]==0);
+  genSq_chDispEnc(1); strArp_chStrEnc(0,1);
+  assert(strArp_order[0]==1 && strArp_repeat[0]==1);
+  strArp_actPttn=0;
+
   // A released held string repeats its last fret as MIDI only.
   reset(); press(0,4,true); release(0); tick(0); tick(6);
   sequence(0,{}); sequence(1,{0});
@@ -283,7 +320,8 @@ int main() {
 '''
 
 source = "\n".join([
-    stubs, state, colors, prototypes,
+    stubs, state, encoder_state, colors, prototypes,
+    function(seq_hid, "void genSq_chDispEnc("),
     function(midi, "void sndMidiNote("),
     function(midi, "void sndMidiNotePress("),
     function(midi, "void genSq_allNOff("),

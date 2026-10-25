@@ -154,7 +154,7 @@ const int chipSelect = BUILTIN_SDCARD;
     byte order[nStrings];
     bool muteCh[nStrings];
     byte strPrsFnc;
-    byte strEncFnc;
+    byte strEncFnc; // Legacy per-pattern selection retained for song compatibility.
     int strBtnFnc;
   };
 
@@ -176,7 +176,7 @@ const int chipSelect = BUILTIN_SDCARD;
   #define strArp_order strArp_patterns.pttn[strArp_actPttn].order
   #define strArp_muteCh strArp_patterns.pttn[strArp_actPttn].muteCh
   #define strArp_strPrsFnc strArp_patterns.pttn[strArp_actPttn].strPrsFnc
-  #define strArp_strEncFnc strArp_patterns.pttn[strArp_actPttn].strEncFnc
+  #define strArp_strEncFnc genSq_strEncFnc // Shared parameter index for sequencers and arpeggiator.
   #define strArp_strBtnFnc strArp_patterns.pttn[strArp_actPttn].strBtnFnc
 
   byte strArp_act=0;
