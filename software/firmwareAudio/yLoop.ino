@@ -185,7 +185,7 @@ static int nSmp=5;
         if(prob>=0.98){
           strP[s]=mNote;
           coilOsc[s].frequency(midiFreq(strP[s]));
-          //chLfo1(0, mNote,s);
+          chLfo1(0, mNote,s);
           //chCoilDel(s,note);
 //          Serial.printf("freq1: %3.2f | Probability: %.2f\n", note, prob);    
 //          Serial.print(i+1);

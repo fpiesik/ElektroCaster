@@ -255,7 +255,7 @@ void trigEnv(byte str, float val){
 
 void strFret(byte str, byte pitch, byte state){
   //if(pitch==0)coilAmp[str].gain(0);
-  chLfo1(0, pitch,str);
+  //chLfo1(0, pitch,str);
   DBG_AUDIO_PRINT("Str: ");
   DBG_AUDIO_PRINT(str);
   DBG_AUDIO_PRINT(" pitch: ");
